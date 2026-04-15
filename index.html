@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>sebasmobil sudoku v1.0</title>
+  <title>S-Sudoku Pro 2.0 — sebasmobil</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#f0f2f8" media="(prefers-color-scheme: light)" id="theme-color-light">
@@ -31,7 +31,7 @@
   --shadow:    0 4px 24px rgba(59,91,219,.12);
   --radius:    14px;
   --topbar-h:  0px;
-  --bottombar-h: 68px;
+  --bottombar-h: 74px;
   --cell-hl:   rgba(92,124,250,.13);
   --cell-same: rgba(92,124,250,.22);
   --mono:      'JetBrains Mono', monospace;
@@ -315,65 +315,100 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .btn-ok { background: var(--accent); color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; padding: 12px 32px; transition: opacity .15s; }
 .btn-ok:active { opacity: .8; }
 
-/* Safe area for iPhone */
+/* ── BOTTOM BAR — yeni tasarım ── */
 .bottom-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   height: var(--bottombar-h);
   background: var(--bg2);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px solid var(--border);
   display: flex;
-  align-items: center;
-  padding: 0 2px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  align-items: stretch;
+  padding: 6px 8px;
+  padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
   z-index: 100;
-  box-shadow: 0 -2px 16px rgba(0,0,0,.06);
-  gap: 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.10);
+  gap: 4px;
   overflow: hidden;
 }
-.bb-btn {
+
+/* Her nav öğesi */
+.bb-item {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 4px 1px;
-  border-radius: 8px;
+  gap: 3px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  padding: 4px 2px;
   color: var(--text2);
-  transition: color .15s, background .15s;
-  font-size: 8.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .3px;
-  white-space: nowrap;
-  overflow: hidden;
+  border: none;
+  background: none;
+  font-family: var(--font);
 }
-.bb-btn .bb-icon { font-size: 18px; line-height: 1; }
-.bb-btn .bb-label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.bb-btn.active, .bb-btn:active { color: var(--accent); background: rgba(59,91,219,.08); }
+.bb-item:active  { background: var(--bg3); }
+.bb-item.active  { color: var(--accent); background: rgba(92,124,250,.10); }
 
-/* Brand + theme toggle birleşik alan */
-.bb-center {
-  flex: 1.2;
+.bb-icon  { font-size: 20px; line-height: 1; display:block; }
+.bb-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+
+/* Orta alan — marka + versiyon + tema */
+.bb-brand-area {
+  flex: 1.5;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 2px 4px;
+  gap: 3px;
+  border-radius: 12px;
   cursor: pointer;
-  border-radius: 8px;
   transition: background .15s;
+  padding: 4px 6px;
+  border: none;
+  background: none;
+  font-family: var(--font);
 }
-.bb-center:active { background: var(--bg3); }
-.bb-brand-name { font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: -.3px; white-space: nowrap; }
-.bb-brand-ver  { font-size: 8px; font-family: var(--mono); color: var(--text2); white-space: nowrap; }
-/* Eski ayrı elemanlar artık kullanılmıyor */
+.bb-brand-area:active { background: var(--bg3); }
+
+.bb-app-name {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -.3px;
+  white-space: nowrap;
+}
+.bb-version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: .3px;
+  white-space: nowrap;
+}
+.bb-copyright {
+  font-size: 7.5px;
+  color: var(--text2);
+  font-family: var(--mono);
+  white-space: nowrap;
+  letter-spacing: .2px;
+}
+
+/* Eski elemanlar — artık kullanılmıyor */
+.bb-btn   { display: none; }
 .bb-brand { display: none; }
 .bb-theme { display: none; }
+.bb-center { display: none; }
 
 /* Panels */
 .panel {
@@ -535,8 +570,8 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   <div id="changelog-overlay" class="overlay hidden">
     <div class="changelog-modal">
       <div class="changelog-header">
-        <div class="changelog-logo">sebasmobil</div>
-        <div class="changelog-version" id="cl-version">v1.0</div>
+        <div class="changelog-logo">S-Sudoku</div>
+        <div class="changelog-version" id="cl-version">Pro 2.0</div>
         <h2 class="changelog-title">🎉 Yenilikler</h2>
       </div>
       <div class="changelog-body" id="changelog-body"></div>
@@ -606,7 +641,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
         <button class="btn-primary" id="resume-btn">▶ Devam</button>
       </div>
       <div class="home-hero">
-        <div class="hero-title">SUDOKU</div>
+        <div class="hero-title">S-SUDOKU</div>
         <div class="hero-sub">Zorluk seviyeni seç</div>
       </div>
       <div class="difficulty-grid">
@@ -677,13 +712,23 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
   <!-- BOTTOM BAR -->
   <nav class="bottom-bar">
-    <button class="bb-btn active" id="bb-home"><span class="bb-icon">⊞</span><span class="bb-label">Ana Sayfa</span></button>
-    <button class="bb-btn" id="bb-stats"><span class="bb-icon">📊</span><span class="bb-label">İstatistik</span></button>
-    <div class="bb-center" id="theme-toggle" title="Tema değiştir">
-      <span class="bb-brand-name">sebasmobil</span>
-      <span class="bb-brand-ver" id="bb-theme-icon">🌙 sudoku v1.0</span>
-    </div>
-    <button class="bb-btn contact-btn" id="bb-contact"><span class="bb-icon">📬</span><span class="bb-label">İletişim</span></button>
+    <button class="bb-item active" id="bb-home">
+      <span class="bb-icon">◻</span>
+      <span class="bb-label">Ana Sayfa</span>
+    </button>
+    <button class="bb-item" id="bb-stats">
+      <span class="bb-icon">📊</span>
+      <span class="bb-label">İstatistik</span>
+    </button>
+    <button class="bb-brand-area" id="theme-toggle" title="Tema değiştir">
+      <span class="bb-app-name">S-Sudoku</span>
+      <span class="bb-version-pill" id="bb-theme-icon">✦ Pro 2.0</span>
+      <span class="bb-copyright">© sebasmobil</span>
+    </button>
+    <button class="bb-item" id="bb-contact">
+      <span class="bb-icon">📬</span>
+      <span class="bb-label">İletişim</span>
+    </button>
   </nav>
 
   <!-- STATS PANEL -->
@@ -703,9 +748,9 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
       </button>
       <button class="contact-action-btn" id="contact-mail">
         <span style="font-size:22px">✉️</span>
-        <div><div style="font-weight:800;font-size:14px">E-posta Gönder</div><div style="font-size:12px;color:var(--text2)">Konu: sebasmobil sudoku iletişim</div></div>
+        <div><div style="font-weight:800;font-size:14px">E-posta Gönder</div><div style="font-size:12px;color:var(--text2)">Konu: S-Sudoku iletişim</div></div>
       </button>
-      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:8px;font-family:var(--mono)">sebasmobil sudoku v1.0 · GNU AGPL v3.0</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:8px;font-family:var(--mono)">© sebasmobil · S-Sudoku Pro 2.0 · GNU AGPL v3.0</div>
     </div>
   </div>
 
@@ -716,20 +761,19 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 // CHANGELOG — GNU AGPL v3.0
 // ============================================================
 const CHANGELOGS = {
-  "1.0": {
+  "2.0": {
     items: [
-      { emoji: "🎮", title: "6 Zorluk Seviyesi", desc: "Başlangıç'tan Kabus'a kadar 6 farklı zorluk seviyesi." },
-      { emoji: "⏱️", title: "Zamanlayıcı", desc: "Her oyunda süreyi takip edebilirsin." },
-      { emoji: "💡", title: "İpucu Sistemi", desc: "Her oyunda 3 ipucu hakkın var. Gerçekten sıkışınca kullan!" },
+      { emoji: "🚀", title: "S-Sudoku Pro 2.0", desc: "Tamamen yenilendi! Yeni isim, yeni tasarım, daha iyi deneyim." },
+      { emoji: "⏸️", title: "Duraklat & Devam", desc: "Oyunu istediğin zaman duraklat, kaldığın yerden devam et." },
+      { emoji: "💾", title: "Otomatik Kayıt", desc: "Her hamlen kaydedilir. Uygulama kapansa bile oyun kaybolmaz." },
+      { emoji: "🎮", title: "6 Zorluk Seviyesi", desc: "Başlangıç'tan Kabus'a kadar 6 farklı zorluk." },
       { emoji: "✏️", title: "Not Modu", desc: "Hücrelere küçük notlar ekleyerek olası sayıları işaretle." },
-      { emoji: "↩️", title: "Geri Al", desc: "Yanlış yazdın mı? Son hamleni geri alabilirsin." },
+      { emoji: "🌙", title: "Tema", desc: "Karanlık ve aydınlık tema. Alt bardaki S-Sudoku'ya dokun." },
       { emoji: "📊", title: "İstatistikler", desc: "Zorluk bazlı oyun sayısı ve en iyi süreler." },
-      { emoji: "🌙", title: "Karanlık Tema", desc: "Göz yormayan karanlık mod desteği." },
-      { emoji: "📱", title: "Mobil Öncelikli", desc: "Tamamen mobil cihazlar için optimize edildi." },
     ]
   }
 };
-const APP_VERSION = "1.0";
+const APP_VERSION = "2.0";
 
 function initChangelog() {
   const stored = JSON.parse(localStorage.getItem('cl_prefs') || '{}');
@@ -1163,10 +1207,8 @@ function startGame(level) {
 function initTheme() { applyTheme(localStorage.getItem('theme')||'light'); }
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  // bb-center'daki tema ikonu
-  const icon = document.getElementById('bb-theme-icon');
-  if (icon) icon.textContent = (t==='dark' ? '☀️' : '🌙') + ' sudoku v1.0';
-  // Tarayıcı chrome rengini güncelle
+  const pill = document.getElementById('bb-theme-icon');
+  if (pill) pill.textContent = (t==='dark' ? '☀️' : '🌙') + ' Pro 2.0';
   const dark  = t === 'dark';
   const color = dark ? '#0f1117' : '#f0f2f8';
   const meta  = document.getElementById('theme-color-meta');
@@ -1240,7 +1282,13 @@ document.addEventListener('DOMContentLoaded', () => {
     updateResumeBanner();
   });
 
-  $('new-game-btn').addEventListener('click', () => startGame(state.level));
+  $('new-game-btn').addEventListener('click', () => {
+    // Oyun devam ediyorsa onay iste
+    if (state.puzzle && !state.isComplete) {
+      if (!confirm('Mevcut oyun silinecek. Yeni oyun başlatmak istediğine emin misin?')) return;
+    }
+    startGame(state.level);
+  });
   $('theme-toggle').addEventListener('click', () => {
     applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
   });
@@ -1269,14 +1317,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('bb-home').addEventListener('click', () => {
     if (state.puzzle && !state.isComplete && !state.isPaused) {
-      stopTimer();
-      state.isPaused = true;
-      saveCurrentGame();
+      stopTimer(); state.isPaused = true; saveCurrentGame();
     }
-    // Pause overlay açıksa kapat (ana sayfaya gidiyoruz)
     $('pause-overlay').classList.add('hidden');
     showScreen('screen-home');
     updateResumeBanner();
+    document.querySelectorAll('.bb-item').forEach(b => b.classList.remove('active'));
+    $('bb-home').classList.add('active');
   });
 
   $('bb-stats').addEventListener('click', () => { renderStats(); $('stats-panel').classList.remove('hidden'); $('panel-backdrop').classList.remove('hidden'); });
