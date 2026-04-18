@@ -6,40 +6,108 @@
 <title>Yilan Oyunu</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;}
-#root{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;height:100%;padding:8px 0 4px;}
-#topbar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:420px;padding:0 12px 6px;}
-.hb{display:flex;flex-direction:column;align-items:flex-start;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;}
+body{background:#111;color:#eee;display:flex;flex-direction:column;align-items:center;}
+
+/* ── TOP STATS ── */
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:6px 12px 2px;
+}
+.hb{display:flex;flex-direction:column;min-width:50px;}
 .hb.r{align-items:flex-end;}
-.hl{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;}
-.hv{font-size:20px;font-weight:700;color:#eee;line-height:1.1;}
-#lvlbadge{background:#1e1e1e;border:1px solid #3a3a3a;border-radius:10px;padding:4px 12px;text-align:center;}
-#lvltxt{font-size:9px;color:#555;letter-spacing:1px;}
-#lvlnum{font-size:16px;font-weight:700;color:#3fb950;line-height:1.1;}
-#sborder{background:#000;border-radius:8px;padding:6px;border:2px solid #333;width:100%;max-width:420px;}
-#sscreen{position:relative;width:100%;overflow:hidden;border-radius:3px;}
-canvas{display:block;width:100%;height:auto;}
-#overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;}
-#otitle{font-size:5vw;font-weight:800;letter-spacing:2px;color:#eee;text-align:center;}
-#osub{font-size:3vw;color:#aaa;text-align:center;}
-#controls{display:flex;flex-direction:column;align-items:center;width:100%;max-width:420px;padding:6px 12px 0;gap:10px;}
-#ctrlrow{display:flex;align-items:center;justify-content:space-between;width:100%;}
-#dpad{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.dr{display:flex;gap:4px;justify-content:center;}
-.dp{width:52px;height:52px;border-radius:12px;background:#2a2a2a;border:1.5px solid #555;color:#ddd;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
-.dp:active{background:#3a3a3a;border-color:#888;}
-.sp{width:52px;height:52px;}
-#rightcol{display:flex;flex-direction:column;align-items:center;gap:10px;}
-#startbtn{width:62px;height:62px;border-radius:31px;background:#3fb950;border:3px solid #56d364;color:#0d1117;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;font-weight:bold;line-height:1;}
+.hl{font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:0.45;}
+.hv{font-size:19px;font-weight:700;line-height:1.1;}
+#lvlbadge{display:flex;flex-direction:column;align-items:center;border-radius:10px;padding:3px 12px;border:1px solid #3a3a3a;}
+#lvltxt{font-size:9px;letter-spacing:1px;opacity:0.45;}
+#lvlnum{font-size:15px;font-weight:700;color:#3fb950;line-height:1.1;}
+
+/* ── ACTION BAR ── */
+#actionbar{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:4px 12px;
+}
+#startbtn{
+  width:48px;height:48px;border-radius:24px;
+  background:#3fb950;border:3px solid #56d364;
+  color:#0d1117;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;font-weight:bold;
+  flex-shrink:0;
+}
 #startbtn:active{opacity:0.8;}
 #startbtn.pau{background:#f0a030;border-color:#f5b942;}
-#botbtns{display:flex;gap:8px;}
-#thsel{font-size:11px;padding:5px 10px;background:#222;border:1px solid #444;color:#aaa;border-radius:10px;cursor:pointer;outline:none;}
-#sndbtn{background:#222;border:1px solid #444;cursor:pointer;color:#aaa;font-size:15px;padding:5px 10px;border-radius:10px;-webkit-tap-highlight-color:transparent;}
-#speedbar{display:flex;gap:3px;align-items:center;width:100%;}
-.sdot{width:18px;height:8px;border-radius:3px;background:#2a2a2a;border:1px solid #333;transition:background 0.15s;}
-.sdot.on{background:#3fb950;border-color:#3fb950;}
-#speedlabel{font-size:10px;color:#555;margin-right:4px;white-space:nowrap;}
+#thsel{
+  font-size:12px;padding:6px 8px;border-radius:10px;cursor:pointer;
+  outline:none;border:1px solid #444;background:#222;color:#aaa;
+  flex:1;min-width:0;
+}
+#sndbtn{
+  font-size:13px;padding:6px 10px;border-radius:10px;cursor:pointer;
+  border:1px solid #444;background:#222;color:#aaa;
+  -webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;
+}
+
+/* ── SPEED ROW ── */
+#speedrow{
+  display:flex;align-items:center;gap:3px;
+  width:100%;padding:2px 12px 3px;
+}
+#speedlbl{font-size:9px;color:#555;letter-spacing:1px;margin-right:3px;flex-shrink:0;}
+.sdot{height:6px;flex:1;border-radius:3px;}
+
+/* ── CANVAS ── */
+#sborder{
+  width:100%;border-radius:6px;padding:4px;border:2px solid #333;
+  background:#0d1117;flex-shrink:1;min-height:0;
+}
+#sscreen{position:relative;width:100%;overflow:hidden;border-radius:2px;}
+canvas{display:block;width:100%;height:auto;}
+#overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;pointer-events:none;
+}
+#otitle{font-size:5.5vw;font-weight:800;letter-spacing:2px;text-align:center;}
+#osub{font-size:3vw;text-align:center;opacity:0.65;}
+
+/* ── CONTROLS WRAPPER ── */
+#controls{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;padding:6px 12px 4px;gap:12px;
+}
+#ccw,#cw{
+  width:52px;height:52px;border-radius:12px;
+  font-size:24px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  border:1.5px solid #555;background:#2a2a2a;color:#ddd;
+  flex-shrink:0;
+}
+#ccw:active,#cw:active{opacity:0.7;}
+#dpad{
+  display:grid;
+  grid-template-columns:54px 54px 54px;
+  grid-template-rows:54px 54px 54px;
+  gap:4px;
+  flex-shrink:0;
+}
+.dp{
+  width:54px;height:54px;border-radius:12px;
+  background:#2a2a2a;border:1.5px solid #555;
+  color:#ddd;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.dp:active{background:#3a3a3a;border-color:#888;}
+#up   {grid-column:2;grid-row:1;}
+#left {grid-column:1;grid-row:2;}
+#right{grid-column:3;grid-row:2;}
+#down {grid-column:2;grid-row:3;}
+
+/* ── MODAL ── */
 #modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.78);align-items:center;justify-content:center;z-index:99;}
 #modal.show{display:flex;}
 #mbox{background:#1e1e1e;border-radius:14px;border:1px solid #444;padding:22px 24px;text-align:center;max-width:260px;width:85%;}
@@ -51,46 +119,46 @@ canvas{display:block;width:100%;height:auto;}
 </style>
 </head>
 <body>
-<div id="root">
-  <div id="topbar">
-    <div class="hb"><span class="hl">Puan</span><span class="hv" id="score">0</span></div>
-    <div id="lvlbadge"><div id="lvltxt">SEVİYE</div><div id="lvlnum">1</div></div>
-    <div class="hb r"><span class="hl">En İyi</span><span class="hv" id="best">0</span></div>
-  </div>
 
-  <div id="sborder">
-    <div id="sscreen">
-      <canvas id="c"></canvas>
-      <div id="overlay">
-        <div id="otitle">SNAKE</div>
-        <div id="osub">Yeşil tuşa bas</div>
-      </div>
-    </div>
-  </div>
+<div id="topbar">
+  <div class="hb"><span class="hl">PUAN</span><span class="hv" id="score">0</span></div>
+  <div id="lvlbadge"><div id="lvltxt">SEVİYE</div><div id="lvlnum">1</div></div>
+  <div class="hb r"><span class="hl">EN İYİ</span><span class="hv" id="best">0</span></div>
+</div>
 
-  <div id="controls">
-    <div id="speedbar">
-      <span id="speedlabel">HIZ:</span>
-    </div>
-    <div id="ctrlrow">
-      <div id="dpad">
-        <div class="dr"><div class="sp"></div><button class="dp" id="up">▲</button><div class="sp"></div></div>
-        <div class="dr"><button class="dp" id="left">◀</button><div class="sp"></div><button class="dp" id="right">▶</button></div>
-        <div class="dr"><div class="sp"></div><button class="dp" id="down">▼</button><div class="sp"></div></div>
-      </div>
-      <div id="rightcol">
-        <button id="startbtn">&#9654;</button>
-        <div id="botbtns">
-          <select id="thsel">
-            <option value="dark">🌙 Karanlık</option>
-            <option value="light">☀️ Aydınlık</option>
-            <option value="nokia">📱 Nokia</option>
-          </select>
-          <button id="sndbtn">🔊</button>
-        </div>
-      </div>
+<div id="actionbar">
+  <button id="startbtn">&#9654;</button>
+  <select id="thsel">
+    <option value="dark">🌙 Karanlık</option>
+    <option value="light">☀️ Aydınlık</option>
+    <option value="nokia">📱 Nokia</option>
+  </select>
+  <button id="sndbtn">🔊 Ses</button>
+</div>
+
+<div id="speedrow">
+  <span id="speedlbl">HIZ</span>
+</div>
+
+<div id="sborder">
+  <div id="sscreen">
+    <canvas id="c"></canvas>
+    <div id="overlay">
+      <div id="otitle">SNAKE</div>
+      <div id="osub">Yeşil tuşa bas</div>
     </div>
   </div>
+</div>
+
+<div id="controls">
+  <button id="ccw">*</button>
+  <div id="dpad">
+    <button class="dp" id="up">▲</button>
+    <button class="dp" id="left">◀</button>
+    <button class="dp" id="right">▶</button>
+    <button class="dp" id="down">▼</button>
+  </div>
+  <button id="cw">#</button>
 </div>
 
 <div id="modal">
@@ -105,309 +173,334 @@ canvas{display:block;width:100%;height:auto;}
 </div>
 
 <script>
-// --- CANVAS SETUP ---
-var COLS = 20, ROWS = 20;
-var cv = document.getElementById('c');
-var ctx = cv.getContext('2d');
-
-// Set canvas internal resolution based on screen width
-var maxW = Math.min(window.innerWidth - 28, 400);
-var CELL = Math.floor(maxW / COLS);
-var W = COLS * CELL;
-var H = ROWS * CELL;
-cv.width = W;
-cv.height = H;
-
-// 10 speed levels: level 1 = slowest, level 10 = fastest
-// Speed in ms per step
-var LEVEL_SPEEDS = [220, 195, 170, 148, 128, 110, 93, 78, 65, 54];
-// Snake length thresholds to advance level (body segments)
-var LEVEL_THRESHOLDS = [0, 3, 7, 12, 18, 25, 33, 42, 52, 63];
-
-var themes = {
-  dark:  {bg:'#0d1117',gr:'#161b22',sn:'#3fb950',sh:'#56d364',fd:'#f85149',tx:'#eee',ey:'#0d1117'},
-  light: {bg:'#f0f0eb',gr:'#ddddd8',sn:'#2d8a2d',sh:'#38b038',fd:'#cc2222',tx:'#111',ey:'#f0f0eb'},
-  nokia: {bg:'#9dab7a',gr:'#8fa06a',sn:'#1a2a0a',sh:'#2a3a14',fd:'#1a2a0a',tx:'#0a1a00',ey:'#9dab7a'}
-};
-var t = themes.dark;
-
-var snake = [];
-var dir = {x:1,y:0};
-var ndir = {x:1,y:0};
-var food = {x:5,y:5};
-var score = 0;
-var best = 0;
-var level = 1;
-var state = 'idle';
-var loop = null;
-var soundOn = true;
-
-// Build speed dots
-var sdBar = document.getElementById('speedbar');
-for (var di = 0; di < 10; di++) {
-  var dot = document.createElement('div');
-  dot.className = 'sdot';
-  dot.id = 'dot' + di;
-  sdBar.appendChild(dot);
-}
-
-function updateSpeedDots() {
-  for (var i = 0; i < 10; i++) {
-    var d = document.getElementById('dot' + i);
-    if (d) d.className = (i < level) ? 'sdot on' : 'sdot';
+// ── THEMES ───────────────────────────────────────────────────
+var THEMES = {
+  dark:{
+    body:'#111',text:'#eee',textDim:'#aaa',
+    btnBg:'#2a2a2a',btnBorder:'#555',btnText:'#ddd',
+    selBg:'#222',selBorder:'#444',selText:'#aaa',
+    lvlBorder:'#3a3a3a',canBorder:'#333',
+    mBg:'#1e1e1e',mBorder:'#444',mText:'#eee',
+    dotOn:'#3fb950',dotOff:'#222',dotOffB:'#333',
+    bg:'#0d1117',gr:'#161b22',sn:'#3fb950',sh:'#56d364',fd:'#f85149',tx:'#eee',ey:'#0d1117'
+  },
+  light:{
+    body:'#e8e8e3',text:'#111',textDim:'#555',
+    btnBg:'#d5d5d0',btnBorder:'#bbb',btnText:'#222',
+    selBg:'#e8e8e3',selBorder:'#ccc',selText:'#333',
+    lvlBorder:'#bbb',canBorder:'#bbb',
+    mBg:'#f0f0eb',mBorder:'#ccc',mText:'#111',
+    dotOn:'#2d8a2d',dotOff:'#ccc',dotOffB:'#bbb',
+    bg:'#f0f0eb',gr:'#ddddd8',sn:'#2d8a2d',sh:'#38b038',fd:'#cc2222',tx:'#111',ey:'#f0f0eb'
+  },
+  nokia:{
+    body:'#6a7a55',text:'#0a1a00',textDim:'#2a3a10',
+    btnBg:'#7a8a65',btnBorder:'#5a6a45',btnText:'#0a1a00',
+    selBg:'#7a8a65',selBorder:'#5a6a45',selText:'#0a1a00',
+    lvlBorder:'#5a6a45',canBorder:'#5a6a45',
+    mBg:'#8a9a75',mBorder:'#5a6a45',mText:'#0a1a00',
+    dotOn:'#1a2a0a',dotOff:'#7a8a65',dotOffB:'#5a6a45',
+    bg:'#9dab7a',gr:'#8fa06a',sn:'#1a2a0a',sh:'#2a3a14',fd:'#1a2a0a',tx:'#0a1a00',ey:'#9dab7a'
   }
-  document.getElementById('lvlnum').textContent = String(level);
+};
+var t = THEMES.dark;
+
+function applyTheme(name) {
+  t = THEMES[name];
+  document.body.style.background = t.body;
+  document.body.style.color = t.text;
+  var lvl = document.getElementById('lvlbadge');
+  lvl.style.borderColor = t.lvlBorder;
+  var thsel = document.getElementById('thsel');
+  thsel.style.background = t.selBg; thsel.style.borderColor = t.selBorder; thsel.style.color = t.selText;
+  var sndbtn = document.getElementById('sndbtn');
+  sndbtn.style.background = t.btnBg; sndbtn.style.borderColor = t.btnBorder; sndbtn.style.color = t.btnText;
+  document.getElementById('sborder').style.borderColor = t.canBorder;
+  document.getElementById('sborder').style.background = t.bg;
+  var dps = document.querySelectorAll('.dp');
+  for (var i=0;i<dps.length;i++){dps[i].style.background=t.btnBg;dps[i].style.borderColor=t.btnBorder;dps[i].style.color=t.btnText;}
+  document.getElementById('ccw').style.background=t.btnBg;
+  document.getElementById('ccw').style.borderColor=t.btnBorder;
+  document.getElementById('ccw').style.color=t.btnText;
+  document.getElementById('cw').style.background=t.btnBg;
+  document.getElementById('cw').style.borderColor=t.btnBorder;
+  document.getElementById('cw').style.color=t.btnText;
+  var mbox=document.getElementById('mbox');
+  mbox.style.background=t.mBg;mbox.style.borderColor=t.mBorder;mbox.style.color=t.mText;
+  var mbts=document.querySelectorAll('.mbt:not(.ok)');
+  for(var i=0;i<mbts.length;i++){mbts[i].style.color=t.mText;mbts[i].style.borderColor=t.mBorder;}
+  document.getElementById('speedlbl').style.color=t.textDim;
+  updateDots();
+  redrawState();
 }
 
-// --- AUDIO ---
-var AC = window.AudioContext || window.webkitAudioContext;
-var ac = null;
-function beep(freq, dur, tp) {
-  if (!soundOn) return;
-  if (!tp) tp = 'square';
-  try {
-    if (!ac) ac = new AC();
-    var o = ac.createOscillator();
-    var g = ac.createGain();
-    o.connect(g); g.connect(ac.destination);
-    o.type = tp; o.frequency.value = freq;
-    g.gain.setValueAtTime(0.07, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
-    o.start(); o.stop(ac.currentTime + dur);
-  } catch(e) {}
+// ── CANVAS SETUP ─────────────────────────────────────────────
+var COLS=20,ROWS=20;
+var cv=document.getElementById('c');
+var ctx=cv.getContext('2d');
+
+// Reserve space: topbar(48)+actionbar(60)+speedrow(20)+padding(16)+controls(200)+gaps(36) = 380
+function calcCell() {
+  var bodyH = window.innerHeight;
+  var bodyW = window.innerWidth;
+  var reserved = 380;
+  var availH = bodyH - reserved;
+  var availW = bodyW - 28;
+  var cellW = Math.floor(availW / COLS);
+  var cellH = Math.floor(availH / ROWS);
+  return Math.max(8, Math.min(cellW, cellH));
 }
-function eatS() { beep(880, 0.07); }
-function lvlS() { beep(660, 0.05); setTimeout(function(){ beep(880, 0.08); }, 80); }
-function dieS() {
-  setTimeout(function(){ beep(200, 0.12); }, 0);
-  setTimeout(function(){ beep(150, 0.12); }, 120);
-  setTimeout(function(){ beep(100, 0.12); }, 240);
+var CELL = calcCell();
+var W = COLS*CELL, H = ROWS*CELL;
+cv.width = W; cv.height = H;
+
+// ── SPEED LEVELS ─────────────────────────────────────────────
+var LEVEL_SPEEDS    = [220,195,170,148,128,110,93,78,65,54];
+var LEVEL_THRESHOLDS= [0,3,7,12,18,25,33,42,52,63];
+var level = 1;
+
+var sdRow = document.getElementById('speedrow');
+for (var di=0;di<10;di++){
+  var dot=document.createElement('div');
+  dot.className='sdot'; dot.id='dot'+di;
+  sdRow.appendChild(dot);
+}
+function updateDots(){
+  for(var i=0;i<10;i++){
+    var d=document.getElementById('dot'+i);
+    if(!d) continue;
+    d.style.background = (i<level)?t.dotOn:t.dotOff;
+    d.style.borderColor = (i<level)?t.dotOn:t.dotOffB;
+    d.style.border = '1px solid '+(i<level?t.dotOn:t.dotOffB);
+  }
+  document.getElementById('lvlnum').textContent=String(level);
 }
 
-// --- ROUNDED RECT (Safari safe) ---
-function rr(x, y, w, h, r) {
-  if (!r) r = 0;
-  if (r > w/2) r = w/2;
-  if (r > h/2) r = h/2;
+// ── AUDIO ─────────────────────────────────────────────────────
+var AC=window.AudioContext||window.webkitAudioContext;
+var ac=null;
+function beep(freq,dur,tp){
+  if(!soundOn) return;
+  if(!tp) tp='square';
+  try{
+    if(!ac) ac=new AC();
+    var o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type=tp;o.frequency.value=freq;
+    g.gain.setValueAtTime(0.07,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+dur);
+    o.start();o.stop(ac.currentTime+dur);
+  }catch(e){}
+}
+function eatS(){beep(880,0.07);}
+function lvlS(){beep(660,0.05);setTimeout(function(){beep(880,0.08);},80);}
+function dieS(){
+  setTimeout(function(){beep(200,0.12);},0);
+  setTimeout(function(){beep(150,0.12);},120);
+  setTimeout(function(){beep(100,0.12);},240);
+}
+
+// ── DRAW HELPERS ─────────────────────────────────────────────
+function rr(x,y,w,h,r){
+  if(!r)r=0;if(r>w/2)r=w/2;if(r>h/2)r=h/2;
   ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y);
-  ctx.arcTo(x+w, y, x+w, y+r, r);
-  ctx.lineTo(x+w, y+h-r);
-  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
-  ctx.lineTo(x+r, y+h);
-  ctx.arcTo(x, y+h, x, y+h-r, r);
-  ctx.lineTo(x, y+r);
-  ctx.arcTo(x, y, x+r, y, r);
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);
   ctx.closePath();
 }
 
-// --- GAME LOGIC ---
-function getLevelForLength(len) {
-  var lv = 1;
-  for (var i = 0; i < LEVEL_THRESHOLDS.length; i++) {
-    if (len >= LEVEL_THRESHOLDS[i]) lv = i + 1;
-  }
-  return Math.min(lv, 10);
+// ── GAME STATE ────────────────────────────────────────────────
+var snake=[],dir={x:1,y:0},ndir={x:1,y:0},food={x:5,y:5};
+var score=0,best=0;
+var state='idle',loop=null,soundOn=true;
+
+var DIRS=[{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}];
+function dirIdx(d){for(var i=0;i<DIRS.length;i++)if(DIRS[i].x===d.x&&DIRS[i].y===d.y)return i;return 1;}
+function rotateCW(){ndir=DIRS[(dirIdx(dir)+1)%4];}
+function rotateCCW(){ndir=DIRS[(dirIdx(dir)+3)%4];}
+
+function getLvl(len){
+  var lv=1;
+  for(var i=0;i<LEVEL_THRESHOLDS.length;i++)if(len>=LEVEL_THRESHOLDS[i])lv=i+1;
+  return Math.min(lv,10);
 }
 
-function init() {
-  var mx = Math.floor(COLS/2), my = Math.floor(ROWS/2);
-  snake = [{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];
-  dir = {x:1,y:0}; ndir = {x:1,y:0};
-  score = 0; level = 1;
-  document.getElementById('score').textContent = '0';
-  updateSpeedDots();
-  placeFood();
-  hide();
+function init(){
+  var mx=Math.floor(COLS/2),my=Math.floor(ROWS/2);
+  snake=[{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];
+  dir={x:1,y:0};ndir={x:1,y:0};
+  score=0;level=1;
+  document.getElementById('score').textContent='0';
+  updateDots();placeFood();hide();
 }
 
-function placeFood() {
-  var p, ok, i;
-  do {
-    p = {x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS)};
-    ok = true;
-    for (i = 0; i < snake.length; i++) {
-      if (snake[i].x === p.x && snake[i].y === p.y) { ok = false; break; }
-    }
-  } while (!ok);
-  food = p;
+function placeFood(){
+  var p,ok,i;
+  do{
+    p={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};
+    ok=true;
+    for(i=0;i<snake.length;i++)if(snake[i].x===p.x&&snake[i].y===p.y){ok=false;break;}
+  }while(!ok);
+  food=p;
 }
 
-function step() {
-  dir = {x:ndir.x, y:ndir.y};
-  var h = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
-  var hit = false;
-  if (h.x < 0 || h.x >= COLS || h.y < 0 || h.y >= ROWS) hit = true;
-  if (!hit) {
-    for (var i = 0; i < snake.length; i++) {
-      if (snake[i].x === h.x && snake[i].y === h.y) { hit = true; break; }
-    }
-  }
-  if (hit) { gameOver(); return; }
+function step(){
+  dir={x:ndir.x,y:ndir.y};
+  var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  var hit=false;
+  if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS)hit=true;
+  if(!hit)for(var i=0;i<snake.length;i++)if(snake[i].x===h.x&&snake[i].y===h.y){hit=true;break;}
+  if(hit){gameOver();return;}
   snake.unshift(h);
-  if (h.x === food.x && h.y === food.y) {
+  if(h.x===food.x&&h.y===food.y){
     score++;
-    document.getElementById('score').textContent = String(score);
-    if (score > best) { best = score; document.getElementById('best').textContent = String(best); }
-    eatS();
-    placeFood();
-    // Check level up
-    var newLevel = getLevelForLength(snake.length);
-    if (newLevel > level) {
-      level = newLevel;
-      lvlS();
-      updateSpeedDots();
-      if (loop) clearInterval(loop);
-      loop = setInterval(step, LEVEL_SPEEDS[level - 1]);
-    }
-  } else {
-    snake.pop();
-  }
+    document.getElementById('score').textContent=String(score);
+    if(score>best){best=score;document.getElementById('best').textContent=String(best);}
+    eatS();placeFood();
+    var nl=getLvl(snake.length);
+    if(nl>level){level=nl;lvlS();updateDots();if(loop)clearInterval(loop);loop=setInterval(step,LEVEL_SPEEDS[level-1]);}
+  }else{snake.pop();}
   draw();
 }
 
-function gameOver() {
-  state = 'dead';
-  if (loop) { clearInterval(loop); loop = null; }
-  dieS(); upBtn();
-  show('OYUN BİTTİ', 'Tekrar için yeşil tuşa bas');
+function gameOver(){
+  state='dead';if(loop){clearInterval(loop);loop=null;}
+  dieS();upBtn();show('OYUN BİTTİ','Tekrar için yeşil tuşa bas');
 }
 
-function draw() {
-  var i, s, px, py, sz, e;
-  ctx.fillStyle = t.bg; ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = t.gr; ctx.lineWidth = 0.5;
-  for (i = 0; i <= W; i += CELL) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.stroke(); }
-  for (i = 0; i <= H; i += CELL) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(W,i); ctx.stroke(); }
-  for (i = 0; i < snake.length; i++) {
-    s = snake[i];
-    ctx.fillStyle = (i === 0) ? t.sh : t.sn;
-    px = s.x*CELL+1; py = s.y*CELL+1; sz = CELL-2;
-    rr(px, py, sz, sz, (i === 0) ? Math.floor(CELL*0.3) : Math.floor(CELL*0.2));
-    ctx.fill();
-    if (i === 0) {
-      ctx.fillStyle = t.ey;
-      e = eyePos(px, py, sz);
-      ctx.beginPath(); ctx.arc(e[0], e[1], Math.max(1, CELL*0.08), 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(e[2], e[3], Math.max(1, CELL*0.08), 0, Math.PI*2); ctx.fill();
+function draw(){
+  var i,s,px,py,sz,e;
+  ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=t.gr;ctx.lineWidth=0.5;
+  for(i=0;i<=W;i+=CELL){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke();}
+  for(i=0;i<=H;i+=CELL){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i);ctx.stroke();}
+  for(i=0;i<snake.length;i++){
+    s=snake[i];ctx.fillStyle=(i===0)?t.sh:t.sn;
+    px=s.x*CELL+1;py=s.y*CELL+1;sz=CELL-2;
+    rr(px,py,sz,sz,(i===0)?Math.floor(CELL*0.3):Math.floor(CELL*0.2));ctx.fill();
+    if(i===0){
+      ctx.fillStyle=t.ey;
+      e=eyePos(px,py,sz);
+      ctx.beginPath();ctx.arc(e[0],e[1],Math.max(1,CELL*0.08),0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(e[2],e[3],Math.max(1,CELL*0.08),0,Math.PI*2);ctx.fill();
     }
   }
-  ctx.fillStyle = t.fd;
-  var fx = food.x*CELL + CELL/2, fy = food.y*CELL + CELL/2, fr = CELL/2 - 2;
-  ctx.beginPath(); ctx.arc(fx, fy, fr, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(fx, fy-fr); ctx.lineTo(fx-3, fy-fr-4); ctx.lineTo(fx+3, fy-fr-4); ctx.closePath(); ctx.fill();
+  ctx.fillStyle=t.fd;
+  var fx=food.x*CELL+CELL/2,fy=food.y*CELL+CELL/2,fr=CELL/2-2;
+  ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.moveTo(fx,fy-fr);ctx.lineTo(fx-3,fy-fr-4);ctx.lineTo(fx+3,fy-fr-4);ctx.closePath();ctx.fill();
 }
 
-function eyePos(px, py, sz) {
-  if (dir.x === 1)  return [px+sz-5, py+4,    px+sz-5, py+sz-7];
-  if (dir.x === -1) return [px+3,    py+4,    px+3,    py+sz-7];
-  if (dir.y === 1)  return [px+4,    py+sz-5, px+sz-7, py+sz-5];
-  return [px+4, py+3, px+sz-7, py+3];
+function eyePos(px,py,sz){
+  if(dir.x===1) return[px+sz-5,py+4,px+sz-5,py+sz-7];
+  if(dir.x===-1)return[px+3,py+4,px+3,py+sz-7];
+  if(dir.y===1) return[px+4,py+sz-5,px+sz-7,py+sz-5];
+  return[px+4,py+3,px+sz-7,py+3];
 }
 
-function hide() { document.getElementById('overlay').style.display = 'none'; }
-function show(title, sub) {
-  var ov = document.getElementById('overlay');
-  ov.style.display = 'flex';
-  ov.style.background = 'rgba(0,0,0,0.52)';
-  document.getElementById('otitle').textContent = title;
-  document.getElementById('otitle').style.color = t.tx;
-  document.getElementById('osub').textContent = sub;
-  document.getElementById('osub').style.color = t.tx;
-  if (snake && snake.length > 0) draw();
-  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(0,0,W,H);
+function hide(){document.getElementById('overlay').style.display='none';}
+function show(title,sub){
+  var ov=document.getElementById('overlay');
+  ov.style.display='flex';ov.style.background='rgba(0,0,0,0.50)';
+  document.getElementById('otitle').textContent=title;document.getElementById('otitle').style.color=t.tx;
+  document.getElementById('osub').textContent=sub;document.getElementById('osub').style.color=t.tx;
+  if(snake&&snake.length>0)draw();
+  ctx.fillStyle='rgba(0,0,0,0.30)';ctx.fillRect(0,0,W,H);
+}
+function redrawState(){
+  if(state==='idle')show('SNAKE','Yeşil tuşa bas');
+  else if(state==='playing')draw();
+  else if(state==='paused')show('DURAKLATILDI','Devam için yeşil tuşa bas');
+  else if(state==='dead')show('OYUN BİTTİ','Tekrar için yeşil tuşa bas');
+  else{ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);}
 }
 
-function upBtn() {
-  var b = document.getElementById('startbtn');
-  if (state === 'playing') { b.innerHTML = '⏸'; b.className = 'pau'; }
-  else { b.innerHTML = '&#9654;'; b.className = ''; }
+function upBtn(){
+  var b=document.getElementById('startbtn');
+  if(state==='playing'){b.innerHTML='⏸';b.className='pau';}
+  else{b.innerHTML='&#9654;';b.className='';}
 }
 
-function startGame() {
-  if (loop) { clearInterval(loop); loop = null; }
-  state = 'playing'; init();
-  loop = setInterval(step, LEVEL_SPEEDS[0]);
-  draw(); upBtn();
+function startGame(){
+  if(loop){clearInterval(loop);loop=null;}
+  state='playing';init();loop=setInterval(step,LEVEL_SPEEDS[0]);draw();upBtn();
 }
-function pauseGame() {
-  state = 'paused';
-  if (loop) { clearInterval(loop); loop = null; }
-  upBtn(); show('DURAKLATILDI', 'Devam için yeşil tuşa bas');
+function pauseGame(){
+  state='paused';if(loop){clearInterval(loop);loop=null;}
+  upBtn();show('DURAKLATILDI','Devam için yeşil tuşa bas');
 }
-function resumeGame() {
-  state = 'playing'; hide();
-  loop = setInterval(step, LEVEL_SPEEDS[level - 1]);
-  upBtn();
+function resumeGame(){
+  state='playing';hide();loop=setInterval(step,LEVEL_SPEEDS[level-1]);upBtn();
 }
-function handleStart() {
-  if (state === 'idle' || state === 'dead') { startGame(); return; }
-  if (state === 'paused') { resumeGame(); return; }
-  if (state === 'playing') { pauseGame(); showModal(); }
+function handleStart(){
+  if(state==='idle'||state==='dead'){startGame();return;}
+  if(state==='paused'){resumeGame();return;}
+  if(state==='playing'){pauseGame();showModal();}
 }
-function showModal() { document.getElementById('modal').className = 'show'; }
-function hideModal() { document.getElementById('modal').className = ''; }
+function showModal(){document.getElementById('modal').className='show';}
+function hideModal(){document.getElementById('modal').className='';}
 
-// --- EVENTS ---
-document.getElementById('startbtn').onclick = handleStart;
-document.getElementById('mno').onclick = function() { hideModal(); resumeGame(); };
-document.getElementById('myes').onclick = function() { hideModal(); startGame(); };
-
-document.getElementById('thsel').onchange = function() {
-  t = themes[this.value];
-  if (state === 'idle') show('SNAKE','Yeşil tuşa bas');
-  else if (state === 'playing') draw();
-  else if (state === 'paused') show('DURAKLATILDI','Devam için yeşil tuşa bas');
-  else show('OYUN BİTTİ','Tekrar için yeşil tuşa bas');
+// ── EVENTS ────────────────────────────────────────────────────
+document.getElementById('startbtn').onclick=handleStart;
+document.getElementById('mno').onclick=function(){hideModal();resumeGame();};
+document.getElementById('myes').onclick=function(){hideModal();startGame();};
+document.getElementById('thsel').onchange=function(){applyTheme(this.value);};
+document.getElementById('sndbtn').onclick=function(){
+  soundOn=!soundOn;this.innerHTML=soundOn?'🔊 Ses':'🔇 Ses';
 };
+document.getElementById('up').onclick=function(){if(dir.y!==1)ndir={x:0,y:-1};};
+document.getElementById('down').onclick=function(){if(dir.y!==-1)ndir={x:0,y:1};};
+document.getElementById('left').onclick=function(){if(dir.x!==1)ndir={x:-1,y:0};};
+document.getElementById('right').onclick=function(){if(dir.x!==-1)ndir={x:1,y:0};};
+document.getElementById('ccw').onclick=function(){rotateCCW();};  // * = sol = CCW
+document.getElementById('cw').onclick=function(){rotateCW();};    // # = sağ = CW
 
-document.getElementById('sndbtn').onclick = function() {
-  soundOn = !soundOn;
-  this.innerHTML = soundOn ? '🔊' : '🔇';
-};
-
-document.getElementById('up').onclick    = function() { if (dir.y !==  1) ndir = {x:0,  y:-1}; };
-document.getElementById('down').onclick  = function() { if (dir.y !== -1) ndir = {x:0,  y:1};  };
-document.getElementById('left').onclick  = function() { if (dir.x !==  1) ndir = {x:-1, y:0};  };
-document.getElementById('right').onclick = function() { if (dir.x !== -1) ndir = {x:1,  y:0};  };
-
-document.addEventListener('keydown', function(e) {
-  var k = e.key;
-  if (k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight'||k===' '||k==='Enter') e.preventDefault();
-  if      (k==='ArrowUp'    && dir.y !==  1) ndir = {x:0,  y:-1};
-  else if (k==='ArrowDown'  && dir.y !== -1) ndir = {x:0,  y:1};
-  else if (k==='ArrowLeft'  && dir.x !==  1) ndir = {x:-1, y:0};
-  else if (k==='ArrowRight' && dir.x !== -1) ndir = {x:1,  y:0};
-  else if (k===' ' || k==='Enter') handleStart();
+document.addEventListener('keydown',function(e){
+  var k=e.key;
+  if(k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight'||k===' '||k==='Enter')e.preventDefault();
+  if(k==='ArrowUp'&&dir.y!==1)ndir={x:0,y:-1};
+  else if(k==='ArrowDown'&&dir.y!==-1)ndir={x:0,y:1};
+  else if(k==='ArrowLeft'&&dir.x!==1)ndir={x:-1,y:0};
+  else if(k==='ArrowRight'&&dir.x!==-1)ndir={x:1,y:0};
+  else if(k==='*')rotateCCW();
+  else if(k==='#')rotateCW();
+  else if(k===' '||k==='Enter')handleStart();
 });
 
-var tx = 0, ty = 0;
-cv.addEventListener('touchstart', function(e) {
-  tx = e.touches[0].clientX; ty = e.touches[0].clientY; e.preventDefault();
-}, {passive:false});
-cv.addEventListener('touchend', function(e) {
-  var dx = e.changedTouches[0].clientX - tx;
-  var dy = e.changedTouches[0].clientY - ty;
-  if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { handleStart(); return; }
-  if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 0 && dir.x !== -1) ndir = {x:1, y:0};
-    else if (dx < 0 && dir.x !== 1) ndir = {x:-1, y:0};
-  } else {
-    if (dy > 0 && dir.y !== -1) ndir = {x:0, y:1};
-    else if (dy < 0 && dir.y !== 1) ndir = {x:0, y:-1};
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden&&state==='playing')pauseGame();
+});
+
+// ── SWIPE ON CANVAS ──────────────────────────────────────────
+var swTx=0,swTy=0;
+var cvEl=document.getElementById('c');
+cvEl.addEventListener('touchstart',function(e){
+  swTx=e.touches[0].clientX;
+  swTy=e.touches[0].clientY;
+  e.preventDefault();
+},{passive:false});
+cvEl.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-swTx;
+  var dy=e.changedTouches[0].clientY-swTy;
+  var adx=Math.abs(dx), ady=Math.abs(dy);
+  if(adx<8&&ady<8) return; // tap — do nothing
+  if(adx>ady){
+    if(dx>0&&dir.x!==-1) ndir={x:1,y:0};
+    else if(dx<0&&dir.x!==1) ndir={x:-1,y:0};
+  }else{
+    if(dy>0&&dir.y!==-1) ndir={x:0,y:1};
+    else if(dy<0&&dir.y!==1) ndir={x:0,y:-1};
   }
   e.preventDefault();
-}, {passive:false});
+},{passive:false});
 
-document.addEventListener('visibilitychange', function() {
-  if (document.hidden && state === 'playing') pauseGame();
-});
-
-// --- INIT DRAW ---
-updateSpeedDots();
-ctx.fillStyle = t.bg; ctx.fillRect(0,0,W,H);
-show('SNAKE', 'Yeşil tuşa bas');
+// ── BOOT ─────────────────────────────────────────────────────
+applyTheme('dark');
+updateDots();
+ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);
+show('SNAKE','Yeşil tuşa bas');
 </script>
 </body>
 </html>
