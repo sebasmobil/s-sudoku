@@ -6,996 +6,654 @@
 <title>Numara Kaçışı</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c26;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --text: #f0f0f8;
-    --muted: rgba(240,240,248,0.45);
-    --dim: rgba(240,240,248,0.2);
-    --accent: #7c6cfa;
-    --accent2: #fa6c8a;
-    --green: #3dffc0;
-    --amber: #ffb84d;
-    --red: #ff5a5a;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 0;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 600px 400px at 20% 10%, rgba(124,108,250,0.08) 0%, transparent 70%),
-      radial-gradient(ellipse 400px 500px at 80% 80%, rgba(250,108,138,0.06) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  #wrapper {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 700px;
-    padding: 24px 16px 40px;
-  }
-
-  /* — HEADER — */
-  #header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 28px;
-  }
-
-  #logo {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-
-  #logo span {
-    color: var(--accent);
-  }
-
-  #version {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--dim);
-  }
-
-  /* — SCREEN: INTRO — */
-  #screen-intro {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 20px 0 10px;
-  }
-
-  .big-title {
-    font-size: clamp(42px, 10vw, 72px);
-    font-weight: 800;
-    letter-spacing: -2px;
-    line-height: 1;
-    margin-bottom: 12px;
-  }
-
-  .big-title .hl { color: var(--accent); }
-  .big-title .hl2 { color: var(--accent2); }
-
-  .intro-sub {
-    font-size: 15px;
-    color: var(--muted);
-    max-width: 420px;
-    line-height: 1.7;
-    margin-bottom: 36px;
-  }
-
-  .how-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    width: 100%;
-    margin-bottom: 36px;
-  }
-
-  .how-card {
-    background: var(--surface);
-    border: 0.5px solid var(--border2);
-    border-radius: 14px;
-    padding: 16px 14px;
-    text-align: left;
-  }
-
-  .how-icon {
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
-
-  .how-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .how-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  .btn-start {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 16px 48px;
-    font-family: 'Syne', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: transform 0.1s, opacity 0.1s;
-    margin-bottom: 12px;
-  }
-
-  .btn-start:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-start:active { transform: scale(0.97); }
-
-  /* — HUD — */
-  #screen-game { display: none; }
-
-  #hud {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .hb {
-    background: var(--surface);
-    border: 0.5px solid var(--border2);
-    border-radius: 12px;
-    padding: 10px 8px;
-    text-align: center;
-  }
-
-  .hl-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 4px;
-  }
-
-  .hv {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: -0.5px;
-  }
-
-  .hv.green { color: var(--green); }
-  .hv.amber { color: var(--amber); }
-  .hv.red { color: var(--red); }
-
-  /* — COMBO BAR — */
-  #combo-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-
-  #combo-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    min-width: 42px;
-  }
-
-  #combo-bar {
-    flex: 1;
-    height: 4px;
-    background: var(--border2);
-    border-radius: 4px;
-  }
-
-  #combo-fill {
-    height: 4px;
-    border-radius: 4px;
-    background: var(--green);
-    width: 0%;
-    transition: width 0.15s, background 0.3s;
-  }
-
-  #combo-txt {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    min-width: 28px;
-    text-align: right;
-  }
-
-  /* — POWER UPS — */
-  #powerups {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-  }
-
-  .pu-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 0.5px solid var(--border2);
-    background: var(--surface);
-    color: var(--text);
-    transition: opacity 0.2s, transform 0.1s;
-  }
-
-  .pu-btn:hover:not(:disabled) { background: var(--surface2); transform: translateY(-1px); }
-  .pu-btn:active:not(:disabled) { transform: scale(0.96); }
-  .pu-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  .pu-count {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-weight: 400;
-  }
-
-  .pu-count.blue { background: rgba(124,108,250,0.2); color: var(--accent); }
-  .pu-count.teal { background: rgba(61,255,192,0.15); color: var(--green); }
-  .pu-count.rose { background: rgba(250,108,138,0.2); color: var(--accent2); }
-
-  /* — NEXT BAR — */
-  #next-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    background: var(--surface);
-    border: 0.5px solid var(--border2);
-    border-radius: 10px;
-  }
-
-  #next-hint {
-    font-size: 13px;
-    color: var(--muted);
-  }
-
-  #next-hint strong {
-    color: var(--green);
-    font-size: 18px;
-    margin-left: 4px;
-  }
-
-  #streak-txt {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--dim);
-  }
-
-  #streak-txt span { color: var(--amber); }
-
-  /* — ARENA — */
-  #arena {
-    position: relative;
-    width: 100%;
-    height: 400px;
-    background: var(--surface);
-    border-radius: 16px;
-    border: 0.5px solid var(--border2);
-    overflow: hidden;
-    cursor: crosshair;
-    margin-bottom: 8px;
-  }
-
-  #arena-bg {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-  }
-
-  #freeze-overlay {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(124,108,250,0.07);
-    border-radius: 16px;
-    pointer-events: none;
-    border: 1.5px solid var(--accent);
-  }
-
-  .num-token {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.07s;
-    z-index: 2;
-  }
-
-  .num-token:hover { transform: scale(1.12); }
-
-  .num-token.target-glow {
-    box-shadow: 0 0 0 3px rgba(61,255,192,0.4), 0 0 12px rgba(61,255,192,0.25);
-  }
-
-  .num-token.bomb {
-    border-style: dashed !important;
-    animation: bombPulse 1.2s ease-in-out infinite;
-  }
-
-  @keyframes bombPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,90,90,0.3); }
-    50% { box-shadow: 0 0 0 5px rgba(255,90,90,0); }
-  }
-
-  .pop-anim {
-    position: absolute;
-    pointer-events: none;
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    animation: popUp 0.65s ease-out forwards;
-    z-index: 10;
-  }
-
-  @keyframes popUp {
-    0% { opacity: 1; transform: translateY(0) scale(1.1); }
-    100% { opacity: 0; transform: translateY(-38px) scale(0.8); }
-  }
-
-  /* — MSG — */
-  #msg {
-    text-align: center;
-    font-size: 13px;
-    color: var(--muted);
-    min-height: 18px;
-    font-family: 'Space Mono', monospace;
-    letter-spacing: 0.02em;
-  }
-
-  /* — RESULT SCREEN — */
-  #screen-result {
-    display: none;
-    text-align: center;
-    padding: 20px 0;
-  }
-
-  #res-emoji {
-    font-size: 52px;
-    margin-bottom: 12px;
-    line-height: 1;
-  }
-
-  #res-title {
-    font-size: 36px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 8px;
-  }
-
-  #res-sub {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 28px;
-  }
-
-  #res-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 28px;
-  }
-
-  .rs {
-    background: var(--surface);
-    border: 0.5px solid var(--border2);
-    border-radius: 12px;
-    padding: 14px 10px;
-  }
-
-  .rs-l {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
-
-  .rs-v {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text);
-  }
-
-  #res-btn-row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn-secondary {
-    background: transparent;
-    border: 0.5px solid var(--border2);
-    border-radius: 10px;
-    padding: 12px 24px;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    color: var(--muted);
-    transition: background 0.15s, color 0.15s, transform 0.1s;
-  }
-
-  .btn-secondary:hover { background: var(--surface2); color: var(--text); }
-  .btn-secondary:active { transform: scale(0.97); }
-
-  /* — FREEZE COUNTDOWN — */
-  #freeze-timer {
-    position: absolute;
-    top: 10px; left: 50%; transform: translateX(-50%);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--accent);
-    background: rgba(124,108,250,0.15);
-    border-radius: 8px;
-    padding: 3px 10px;
-    display: none;
-    z-index: 20;
-  }
-
-  /* — LEVEL FLASH — */
-  #level-flash {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 30;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  #level-flash-txt {
-    font-size: 36px;
-    font-weight: 800;
-    color: var(--amber);
-    text-shadow: 0 0 30px rgba(255,184,77,0.6);
-    letter-spacing: -1px;
-  }
-
-  /* responsive */
-  @media (max-width: 480px) {
-    #hud { grid-template-columns: repeat(2, 1fr); }
-    #arena { height: 340px; }
-    .big-title { letter-spacing: -1px; }
-  }
+:root {
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0f0f8;--muted:rgba(240,240,248,0.45);--dim:rgba(240,240,248,0.22);
+  --accent:#7c6cfa;--accent2:#fa6c8a;--green:#3dffc0;--amber:#ffb84d;--red:#ff5a5a;
+  --shadow:rgba(0,0,0,0.4);--grid:rgba(255,255,255,0.015);
+  --glow1:rgba(124,108,250,0.08);--glow2:rgba(250,108,138,0.06);
+}
+body.light {
+  --bg:#eeeef6;--surface:#ffffff;--surface2:#e2e2ee;
+  --border:rgba(0,0,0,0.06);--border2:rgba(0,0,0,0.12);
+  --text:#0d0d1a;--muted:rgba(13,13,26,0.5);--dim:rgba(13,13,26,0.3);
+  --accent:#5040e8;--accent2:#d93060;--green:#0aaa78;--amber:#c47800;--red:#d42828;
+  --shadow:rgba(0,0,0,0.1);--grid:rgba(0,0,0,0.04);
+  --glow1:rgba(80,64,232,0.07);--glow2:rgba(217,48,96,0.05);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;transition:background 0.3s,color 0.3s;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 600px 400px at 20% 10%,var(--glow1) 0%,transparent 70%),
+             radial-gradient(ellipse 400px 500px at 80% 80%,var(--glow2) 0%,transparent 70%);
+  transition:background 0.3s;
+}
+#wrapper{position:relative;z-index:1;width:100%;max-width:680px;padding:20px 16px 40px;}
+
+/* HEADER */
+#header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+#logo{font-size:21px;font-weight:800;letter-spacing:-0.5px;}
+#logo span{color:var(--accent);}
+#header-controls{display:flex;gap:7px;}
+.icon-btn{
+  width:36px;height:36px;border-radius:10px;border:0.5px solid var(--border2);
+  background:var(--surface);color:var(--text);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,transform 0.1s;box-shadow:0 1px 4px var(--shadow);
+}
+.icon-btn:hover{background:var(--surface2);transform:scale(1.06);}
+.icon-btn:active{transform:scale(0.94);}
+.icon-btn.active{background:var(--surface2);}
+
+/* SETTINGS */
+#settings-panel{
+  background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;
+  padding:16px;margin-bottom:14px;box-shadow:0 4px 24px var(--shadow);
+  display:none;animation:slideDown 0.18s ease-out;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.s-title{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;}
+.s-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
+.s-row:last-child{border-bottom:none;}
+.s-label{font-size:13px;font-weight:600;color:var(--text);}
+.s-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.t-track{position:absolute;inset:0;background:var(--border2);border-radius:24px;transition:background 0.2s;}
+.toggle input:checked+.t-track{background:var(--accent);}
+.t-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.toggle input:checked~.t-thumb{transform:translateX(20px);}
+.s-slider{-webkit-appearance:none;width:110px;height:4px;border-radius:4px;background:var(--border2);outline:none;}
+.s-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;}
+
+/* INTRO */
+#screen-intro{display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 0;}
+.big-title{font-size:clamp(36px,9vw,66px);font-weight:800;letter-spacing:-2px;line-height:1.05;margin-bottom:12px;}
+.big-title .hl{color:var(--accent);}
+.big-title .hl2{color:var(--accent2);}
+.intro-sub{font-size:14px;color:var(--muted);max-width:400px;line-height:1.7;margin-bottom:22px;}
+#hs-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,184,77,0.12);border:0.5px solid rgba(255,184,77,0.3);
+  border-radius:8px;padding:4px 12px;font-family:'Space Mono',monospace;
+  font-size:11px;color:var(--amber);margin-bottom:20px;
+}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:9px;width:100%;margin-bottom:24px;}
+.how-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:13px;padding:13px 12px;text-align:left;}
+.how-icon{font-size:19px;margin-bottom:6px;}
+.how-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.how-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.btn-start{
+  background:var(--accent);color:#fff;border:none;border-radius:14px;
+  padding:14px 46px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:0.3px;margin-bottom:10px;
+  transition:transform 0.1s,opacity 0.1s,box-shadow 0.2s;
+  box-shadow:0 4px 20px rgba(124,108,250,0.35);
+}
+.btn-start:hover{opacity:0.9;transform:translateY(-2px);box-shadow:0 6px 28px rgba(124,108,250,0.5);}
+.btn-start:active{transform:scale(0.97);}
+
+/* HUD */
+#screen-game{display:none;}
+#hud{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px;}
+.hb{background:var(--surface);border:0.5px solid var(--border2);border-radius:12px;padding:9px 6px;text-align:center;box-shadow:0 1px 3px var(--shadow);}
+.hl-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;}
+.hv{font-size:20px;font-weight:800;letter-spacing:-0.5px;transition:color 0.3s;}
+.hv.green{color:var(--green);}
+.hv.amber{color:var(--amber);}
+
+/* COMBO BAR */
+#combo-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+#combo-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;min-width:38px;}
+#combo-bar{flex:1;height:5px;background:var(--border2);border-radius:4px;overflow:hidden;}
+#combo-fill{height:5px;border-radius:4px;background:var(--green);width:0%;transition:width 0.15s,background 0.3s;}
+#combo-txt{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);min-width:28px;text-align:right;}
+
+/* POWERUPS */
+#powerups{display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap;}
+.pu-btn{
+  display:flex;align-items:center;gap:5px;padding:7px 11px;
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  border-radius:9px;cursor:pointer;border:0.5px solid var(--border2);
+  background:var(--surface);color:var(--text);
+  transition:opacity 0.2s,transform 0.1s,background 0.15s;
+  box-shadow:0 1px 3px var(--shadow);
+}
+.pu-btn:hover:not(:disabled){background:var(--surface2);transform:translateY(-1px);}
+.pu-btn:active:not(:disabled){transform:scale(0.95);}
+.pu-btn:disabled{opacity:0.28;cursor:not-allowed;}
+.pu-count{font-family:'Space Mono',monospace;font-size:10px;padding:1px 6px;border-radius:4px;}
+.pu-count.blue{background:rgba(124,108,250,0.18);color:var(--accent);}
+.pu-count.teal{background:rgba(61,255,192,0.15);color:var(--green);}
+.pu-count.rose{background:rgba(250,108,138,0.18);color:var(--accent2);}
+
+/* NEXT BAR */
+#next-bar{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  padding:8px 12px;background:var(--surface);border:0.5px solid var(--border2);
+  border-radius:10px;box-shadow:0 1px 3px var(--shadow);
+}
+#next-hint{font-size:13px;color:var(--muted);}
+#next-hint strong{color:var(--green);font-size:17px;margin-left:4px;}
+#streak-txt{font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);}
+#streak-txt span{color:var(--amber);}
+
+/* ARENA */
+#arena{
+  position:relative;width:100%;height:400px;background:var(--surface);
+  border-radius:16px;border:0.5px solid var(--border2);overflow:hidden;
+  cursor:crosshair;margin-bottom:7px;box-shadow:0 2px 12px var(--shadow);
+  transition:background 0.3s;
+}
+#arena-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+#freeze-overlay{
+  display:none;position:absolute;inset:0;border-radius:16px;
+  background:rgba(124,108,250,0.07);border:1.5px solid var(--accent);pointer-events:none;
+}
+.num-token{
+  position:absolute;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;font-family:'Space Mono',monospace;font-weight:700;
+  cursor:pointer;border:2.5px solid transparent;transition:transform 0.07s;
+  z-index:2;user-select:none;-webkit-user-select:none;
+}
+.num-token:hover{transform:scale(1.13);}
+.num-token.target-glow{box-shadow:0 0 0 3px rgba(61,255,192,0.45),0 0 14px rgba(61,255,192,0.3);}
+.num-token.bomb{border-style:dashed!important;animation:bombPulse 1.1s ease-in-out infinite;}
+@keyframes bombPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,90,90,0.35);}50%{box-shadow:0 0 0 6px rgba(255,90,90,0);}}
+.pop-anim{
+  position:absolute;pointer-events:none;font-family:'Space Mono',monospace;
+  font-size:13px;font-weight:700;animation:popUp 0.65s ease-out forwards;z-index:10;white-space:nowrap;
+}
+@keyframes popUp{0%{opacity:1;transform:translateY(0) scale(1.1);}100%{opacity:0;transform:translateY(-40px) scale(0.8);}}
+#freeze-timer{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;z-index:20;
+  font-family:'Space Mono',monospace;font-size:12px;color:var(--accent);
+  background:rgba(124,108,250,0.18);border-radius:8px;padding:3px 10px;
+}
+#level-flash{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:30;opacity:0;transition:opacity 0.18s;
+}
+#level-flash-txt{
+  font-size:34px;font-weight:800;color:var(--amber);
+  text-shadow:0 0 30px rgba(255,184,77,0.7);letter-spacing:-1px;
+}
+#msg{text-align:center;font-size:12px;color:var(--muted);min-height:18px;font-family:'Space Mono',monospace;}
+
+/* RESULT */
+#screen-result{display:none;text-align:center;padding:16px 0;}
+#res-emoji{font-size:50px;margin-bottom:10px;line-height:1;}
+#res-title{font-size:34px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;}
+#res-sub{font-size:14px;color:var(--muted);margin-bottom:8px;}
+#new-record{display:none;margin-bottom:16px;}
+.record-badge{
+  background:rgba(255,184,77,0.14);border:0.5px solid rgba(255,184,77,0.4);
+  border-radius:8px;padding:5px 14px;font-size:12px;color:var(--amber);
+  font-family:'Space Mono',monospace;
+}
+#res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px;margin-top:12px;}
+.rs{background:var(--surface);border:0.5px solid var(--border2);border-radius:12px;padding:12px 8px;}
+.rs-l{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;}
+.rs-v{font-size:22px;font-weight:800;}
+#res-btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-secondary{
+  background:transparent;border:0.5px solid var(--border2);border-radius:10px;
+  padding:11px 22px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:background 0.15s,color 0.15s,transform 0.1s;
+}
+.btn-secondary:hover{background:var(--surface2);color:var(--text);}
+.btn-secondary:active{transform:scale(0.97);}
+
+@media(max-width:480px){
+  #hud{grid-template-columns:repeat(2,1fr);}
+  #arena{height:340px;}
+  .big-title{letter-spacing:-1px;}
+  .how-grid{grid-template-columns:repeat(2,1fr);}
+}
 </style>
 </head>
 <body>
 <div id="wrapper">
 
-  <div id="header">
-    <div id="logo">numara<span>kaçışı</span></div>
-    <div id="version">v2.0</div>
+<div id="header">
+  <div id="logo">numara<span>kaçışı</span></div>
+  <div id="header-controls">
+    <button class="icon-btn" id="sound-btn" onclick="toggleSound()" title="Ses">🔊</button>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Tema">🌙</button>
+    <button class="icon-btn" id="settings-btn" onclick="toggleSettings()" title="Ayarlar">⚙️</button>
   </div>
-
-  <!-- INTRO -->
-  <div id="screen-intro">
-    <div class="big-title">
-      Sayıları<br><span class="hl">Yakala</span><br><span class="hl2">Kaçmadan</span>
-    </div>
-    <p class="intro-sub">
-      Sayılar ekranda uçuşuyor. Sırayla yakala: 1, 2, 3... Hızlı basarsan combo patlar. Yanlış basarsan combo uçar. 60 saniyede ne kadar skora ulaşabilirsin?
-    </p>
-    <div class="how-grid">
-      <div class="how-card">
-        <div class="how-icon">🎯</div>
-        <div class="how-title">Sırayla dokun</div>
-        <div class="how-desc">Sayılar 1'den başlar. Sıra dışı basarsan combo sıfırlanır.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-icon">⚡</div>
-        <div class="how-title">Combo kır</div>
-        <div class="how-desc">Arka arkaya doğru basışlar combonu katlar. x8'e ulaşabilir misin?</div>
-      </div>
-      <div class="how-card">
-        <div class="how-icon">💣</div>
-        <div class="how-title">Bombalardan kaç</div>
-        <div class="how-desc">Kesik kenarlı sayılar bombadır. Basarsan her şeyi kaybedersin.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-icon">🧊</div>
-        <div class="how-title">Güç-upları kullan</div>
-        <div class="how-desc">Dondur, işaretle veya bomba patlat — doğru anda kullan.</div>
-      </div>
-    </div>
-    <button class="btn-start" onclick="showGame()">Oynamaya Başla</button>
-  </div>
-
-  <!-- GAME -->
-  <div id="screen-game">
-    <div id="hud">
-      <div class="hb"><div class="hl-label">Skor</div><div class="hv green" id="score">0</div></div>
-      <div class="hb"><div class="hl-label">Süre</div><div class="hv" id="tval">60</div></div>
-      <div class="hb"><div class="hl-label">Combo</div><div class="hv amber" id="combo">x1</div></div>
-      <div class="hb"><div class="hl-label">Seviye</div><div class="hv" id="lvl">1</div></div>
-    </div>
-
-    <div id="combo-row">
-      <span id="combo-label">combo</span>
-      <div id="combo-bar"><div id="combo-fill"></div></div>
-      <span id="combo-txt">0/7</span>
-    </div>
-
-    <div id="powerups">
-      <button class="pu-btn" id="pu-freeze" onclick="usePower('freeze')">
-        🧊 Dondur <span class="pu-count blue" id="pu-freeze-c">2</span>
-      </button>
-      <button class="pu-btn" id="pu-reveal" onclick="usePower('reveal')">
-        ★ İşaretle <span class="pu-count teal" id="pu-reveal-c">2</span>
-      </button>
-      <button class="pu-btn" id="pu-bomb" onclick="usePower('bomb')">
-        💥 Bomba Patlat <span class="pu-count rose" id="pu-bomb-c">1</span>
-      </button>
-    </div>
-
-    <div id="next-bar">
-      <div id="next-hint">Sıradaki: <strong id="next-num">1</strong></div>
-      <div id="streak-txt">Streak: <span id="streak">0</span></div>
-    </div>
-
-    <div id="arena">
-      <div id="arena-bg"></div>
-      <div id="freeze-overlay"></div>
-      <div id="freeze-timer"></div>
-      <div id="level-flash"><div id="level-flash-txt"></div></div>
-    </div>
-
-    <div id="msg"></div>
-  </div>
-
-  <!-- RESULT -->
-  <div id="screen-result">
-    <div id="res-emoji"></div>
-    <div id="res-title"></div>
-    <div id="res-sub"></div>
-    <div id="res-stats">
-      <div class="rs"><div class="rs-l">Toplam Skor</div><div class="rs-v green" id="r-score"></div></div>
-      <div class="rs"><div class="rs-l">En Yüksek Combo</div><div class="rs-v amber" id="r-combo"></div></div>
-      <div class="rs"><div class="rs-l">En Uzun Streak</div><div class="rs-v" id="r-streak"></div></div>
-    </div>
-    <div id="res-btn-row">
-      <button class="btn-start" onclick="startGame()">Tekrar Oyna</button>
-      <button class="btn-secondary" onclick="goIntro()">Ana Menü</button>
-    </div>
-  </div>
-
 </div>
 
+<div id="settings-panel">
+  <div class="s-title">Ayarlar</div>
+  <div class="s-row">
+    <div><div class="s-label">Ses Efektleri</div><div class="s-sub">Tıklama ve combo sesleri</div></div>
+    <label class="toggle"><input type="checkbox" id="snd-toggle" checked onchange="syncSoundToggle()"><div class="t-track"></div><div class="t-thumb"></div></label>
+  </div>
+  <div class="s-row">
+    <div><div class="s-label">Ses Seviyesi</div></div>
+    <input type="range" class="s-slider" id="vol-slider" min="0" max="100" value="70" oninput="masterVolume=this.value/100">
+  </div>
+  <div class="s-row">
+    <div><div class="s-label">Titreşim</div><div class="s-sub">Yanlış tıklamada titret</div></div>
+    <label class="toggle"><input type="checkbox" id="vib-toggle" checked><div class="t-track"></div><div class="t-thumb"></div></label>
+  </div>
+  <div class="s-row">
+    <div><div class="s-label">Oyun Süresi</div><div class="s-sub" id="dur-label">60 saniye</div></div>
+    <input type="range" class="s-slider" id="dur-slider" min="30" max="120" step="15" value="60" oninput="gameDuration=parseInt(this.value);$id('dur-label').textContent=this.value+' saniye'">
+  </div>
+</div>
+
+<div id="screen-intro">
+  <div class="big-title">Sayıları<br><span class="hl">Yakala</span><br><span class="hl2">Kaçmadan</span></div>
+  <p class="intro-sub">Sayılar ekranda uçuşuyor. Sırayla yakala: 1, 2, 3... Hızlı basarsan combo patlar. Yanlış basarsan combo uçar.</p>
+  <div id="hs-badge">🏆 Rekor: <span id="hs-intro">0</span></div>
+  <div class="how-grid">
+    <div class="how-card"><div class="how-icon">🎯</div><div class="how-title">Sırayla dokun</div><div class="how-desc">1'den başla, sırayı bozma.</div></div>
+    <div class="how-card"><div class="how-icon">⚡</div><div class="how-title">Combo kır</div><div class="how-desc">Arka arkaya doğru basışlar combonu katlar.</div></div>
+    <div class="how-card"><div class="how-icon">💣</div><div class="how-title">Bombadan kaç</div><div class="how-desc">Kesik kenarlı = bomba. Basarsan combo biter.</div></div>
+    <div class="how-card"><div class="how-icon">🧊</div><div class="how-title">Güç-up kullan</div><div class="how-desc">Dondur, işaretle veya patlat.</div></div>
+  </div>
+  <button class="btn-start" onclick="showGame()">Oynamaya Başla</button>
+</div>
+
+<div id="screen-game">
+  <div id="hud">
+    <div class="hb"><div class="hl-label">Skor</div><div class="hv green" id="score">0</div></div>
+    <div class="hb"><div class="hl-label">Süre</div><div class="hv" id="tval">60</div></div>
+    <div class="hb"><div class="hl-label">Combo</div><div class="hv amber" id="combo">x1</div></div>
+    <div class="hb"><div class="hl-label">Seviye</div><div class="hv" id="lvl">1</div></div>
+  </div>
+  <div id="combo-row">
+    <span id="combo-label">combo</span>
+    <div id="combo-bar"><div id="combo-fill"></div></div>
+    <span id="combo-txt">0/7</span>
+  </div>
+  <div id="powerups">
+    <button class="pu-btn" id="pu-freeze" onclick="usePower('freeze')">🧊 Dondur <span class="pu-count blue" id="pu-freeze-c">2</span></button>
+    <button class="pu-btn" id="pu-reveal" onclick="usePower('reveal')">★ İşaretle <span class="pu-count teal" id="pu-reveal-c">2</span></button>
+    <button class="pu-btn" id="pu-bomb" onclick="usePower('bomb')">💥 Patlat <span class="pu-count rose" id="pu-bomb-c">1</span></button>
+  </div>
+  <div id="next-bar">
+    <div id="next-hint">Sıradaki: <strong id="next-num">1</strong></div>
+    <div id="streak-txt">Streak: <span id="streak">0</span></div>
+  </div>
+  <div id="arena">
+    <div id="arena-bg"></div>
+    <div id="freeze-overlay"></div>
+    <div id="freeze-timer"></div>
+    <div id="level-flash"><div id="level-flash-txt"></div></div>
+  </div>
+  <div id="msg"></div>
+</div>
+
+<div id="screen-result">
+  <div id="res-emoji"></div>
+  <div id="res-title"></div>
+  <div id="res-sub"></div>
+  <div id="new-record"><span class="record-badge">🏆 YENİ REKOR!</span></div>
+  <div id="res-stats">
+    <div class="rs"><div class="rs-l">Toplam Skor</div><div class="rs-v green" id="r-score"></div></div>
+    <div class="rs"><div class="rs-l">En Yüksek Combo</div><div class="rs-v amber" id="r-combo"></div></div>
+    <div class="rs"><div class="rs-l">En Uzun Streak</div><div class="rs-v" id="r-streak"></div></div>
+  </div>
+  <div id="res-btn-row">
+    <button class="btn-start" onclick="startGame()">Tekrar Oyna</button>
+    <button class="btn-secondary" onclick="goIntro()">Ana Menü</button>
+  </div>
+</div>
+
+</div>
 <script>
-const COLORS = [
-  {bg:'rgba(124,108,250,0.18)',bd:'rgba(124,108,250,0.7)',tx:'#c5beff'},
-  {bg:'rgba(61,255,192,0.12)',bd:'rgba(61,255,192,0.5)',tx:'#3dffc0'},
-  {bg:'rgba(250,108,138,0.15)',bd:'rgba(250,108,138,0.6)',tx:'#ffa0b8'},
-  {bg:'rgba(255,184,77,0.13)',bd:'rgba(255,184,77,0.55)',tx:'#ffd080'},
-  {bg:'rgba(100,200,255,0.13)',bd:'rgba(100,200,255,0.5)',tx:'#90d8ff'},
-  {bg:'rgba(255,120,80,0.13)',bd:'rgba(255,120,80,0.5)',tx:'#ffaa88'},
-  {bg:'rgba(180,120,255,0.13)',bd:'rgba(180,120,255,0.5)',tx:'#d4aaff'},
-];
+/* ===== GLOBALS ===== */
+let soundEnabled=true, masterVolume=0.7, gameDuration=60, darkMode=true, settingsOpen=false;
+let highScore=parseInt(localStorage.getItem('nk_hs')||'0');
+let audioCtx=null;
 
-let tokens, pos, vx, vy, nextTarget, score, combo, comboDecay, timeLeft, mainTimer, gameActive, level, totalSpawned, streak, maxStreak, maxCombo, powers, frozen, revealTimer, freezeCountdown;
-const TNUM = 14;
+function $id(id){return document.getElementById(id);}
+function rnd(a,b){return a+Math.random()*(b-a);}
 
-function $id(id) { return document.getElementById(id); }
-function rnd(a, b) { return a + Math.random() * (b - a); }
+/* ===== AUDIO ===== */
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function tone(freq,type,dur,vol,delay=0){
+  if(!soundEnabled)return;
+  try{
+    const ctx=getCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.connect(g);g.connect(ctx.destination);
+    osc.type=type;osc.frequency.setValueAtTime(freq,ctx.currentTime+delay);
+    g.gain.setValueAtTime(vol*masterVolume,ctx.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur);
+  }catch(e){}
+}
+function sfxHit(c){
+  const f=280+c*55;
+  tone(f,'sine',0.1,0.18);
+  if(c>=3)tone(f*1.5,'sine',0.08,0.1,0.05);
+  if(c>=6){[800,1000,1200].forEach((x,i)=>tone(x,'sine',0.1,0.14,i*0.055));}
+}
+function sfxMiss(){tone(180,'sawtooth',0.14,0.12);tone(140,'sawtooth',0.1,0.08,0.07);}
+function sfxBomb(){tone(110,'sawtooth',0.18,0.15);tone(75,'square',0.15,0.12,0.09);}
+function sfxFreeze(){[580,700,820].forEach((f,i)=>tone(f,'sine',0.11,0.1,i*0.06));}
+function sfxLevel(){[440,550,700,880].forEach((f,i)=>tone(f,'triangle',0.13,0.11,i*0.07));}
+function sfxWin(){[500,650,800,1000,800,1000,1200].forEach((f,i)=>tone(f,'sine',0.12,0.13,i*0.06));}
 
-function showGame() {
-  $id('screen-intro').style.display = 'none';
-  $id('screen-game').style.display = 'block';
-  $id('screen-result').style.display = 'none';
+/* ===== SETTINGS ===== */
+function toggleTheme(){
+  darkMode=!darkMode;
+  document.body.classList.toggle('light',!darkMode);
+  $id('theme-btn').textContent=darkMode?'🌙':'☀️';
+  localStorage.setItem('nk_theme',darkMode?'dark':'light');
+}
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  $id('sound-btn').textContent=soundEnabled?'🔊':'🔇';
+  $id('snd-toggle').checked=soundEnabled;
+}
+function syncSoundToggle(){
+  soundEnabled=$id('snd-toggle').checked;
+  $id('sound-btn').textContent=soundEnabled?'🔊':'🔇';
+}
+function toggleSettings(){
+  settingsOpen=!settingsOpen;
+  $id('settings-panel').style.display=settingsOpen?'block':'none';
+  $id('settings-btn').classList.toggle('active',settingsOpen);
+}
+
+/* ===== SCREENS ===== */
+function showGame(){
+  $id('screen-intro').style.display='none';
+  $id('screen-game').style.display='block';
+  $id('screen-result').style.display='none';
+  if(settingsOpen)toggleSettings();
   startGame();
 }
-
-function goIntro() {
-  $id('screen-intro').style.display = 'flex';
-  $id('screen-game').style.display = 'none';
-  $id('screen-result').style.display = 'none';
-  clearInterval(mainTimer);
-  cancelAnimationFrame(window._raf);
+function goIntro(){
+  $id('screen-intro').style.display='flex';
+  $id('screen-game').style.display='none';
+  $id('screen-result').style.display='none';
+  $id('hs-intro').textContent=highScore;
+  clearInterval(mainTimer);clearInterval(freezeCountdown);
+  cancelAnimationFrame(window._raf);gameActive=false;
 }
 
-function startGame() {
-  clearInterval(mainTimer);
+/* ===== GAME STATE ===== */
+let tokens,pos,vx,vy,nextTarget,score,combo,comboDecay,timeLeft,mainTimer,gameActive,level,totalSpawned,streak,maxStreak,maxCombo,powers,frozen,revealTimer,freezeCountdown;
+const TNUM=13;
+
+const DARK_C=[
+  {bg:'rgba(124,108,250,0.18)',bd:'rgba(124,108,250,0.75)',tx:'#c5beff'},
+  {bg:'rgba(61,255,192,0.12)',bd:'rgba(61,255,192,0.55)',tx:'#3dffc0'},
+  {bg:'rgba(250,108,138,0.15)',bd:'rgba(250,108,138,0.65)',tx:'#ffa0b8'},
+  {bg:'rgba(255,184,77,0.14)',bd:'rgba(255,184,77,0.6)',tx:'#ffd080'},
+  {bg:'rgba(100,200,255,0.13)',bd:'rgba(100,200,255,0.55)',tx:'#90d8ff'},
+  {bg:'rgba(255,120,80,0.13)',bd:'rgba(255,120,80,0.55)',tx:'#ffaa88'},
+  {bg:'rgba(180,120,255,0.13)',bd:'rgba(180,120,255,0.55)',tx:'#d4aaff'},
+];
+const LIGHT_C=[
+  {bg:'rgba(80,64,232,0.1)',bd:'rgba(80,64,232,0.5)',tx:'#3528c4'},
+  {bg:'rgba(10,170,120,0.1)',bd:'rgba(10,170,120,0.5)',tx:'#076644'},
+  {bg:'rgba(217,48,96,0.1)',bd:'rgba(217,48,96,0.5)',tx:'#a01038'},
+  {bg:'rgba(196,120,0,0.1)',bd:'rgba(196,120,0,0.5)',tx:'#7a4a00'},
+  {bg:'rgba(0,130,210,0.1)',bd:'rgba(0,130,210,0.5)',tx:'#00508a'},
+  {bg:'rgba(210,75,20,0.1)',bd:'rgba(210,75,20,0.5)',tx:'#802808'},
+  {bg:'rgba(130,55,210,0.1)',bd:'rgba(130,55,210,0.5)',tx:'#551898'},
+];
+
+function C(){return darkMode?DARK_C:LIGHT_C;}
+
+/* ===== GAME ===== */
+function startGame(){
+  clearInterval(mainTimer);clearInterval(freezeCountdown);
   cancelAnimationFrame(window._raf);
-  $id('screen-game').style.display = 'block';
-  $id('screen-result').style.display = 'none';
+  $id('screen-game').style.display='block';
+  $id('screen-result').style.display='none';
 
-  const arena = $id('arena');
-  [...arena.querySelectorAll('.num-token, .pop-anim')].forEach(e => e.remove());
+  const arena=$id('arena');
+  [...arena.querySelectorAll('.num-token,.pop-anim')].forEach(e=>e.remove());
 
-  tokens = []; pos = []; vx = []; vy = [];
-  nextTarget = 1; score = 0; combo = 1; streak = 0; maxStreak = 0; maxCombo = 1;
-  timeLeft = 60; level = 1; totalSpawned = 0; gameActive = true; frozen = false;
-  powers = { freeze: 2, reveal: 2, bomb: 1 };
+  tokens=[];pos=[];vx=[];vy=[];
+  nextTarget=1;score=0;combo=1;streak=0;maxStreak=0;maxCombo=1;
+  timeLeft=gameDuration;level=1;totalSpawned=0;gameActive=true;frozen=false;
+  powers={freeze:2,reveal:2,bomb:1};
 
-  updatePowerUI();
-  $id('score').textContent = '0';
-  $id('tval').textContent = '60';
-  $id('combo').textContent = 'x1';
-  $id('lvl').textContent = '1';
-  $id('next-num').textContent = '1';
-  $id('streak').textContent = '0';
-  $id('combo-fill').style.width = '0%';
-  $id('combo-fill').style.background = '#3dffc0';
-  $id('combo-txt').textContent = '0/7';
-  $id('msg').textContent = '';
-  $id('freeze-overlay').style.display = 'none';
-  $id('freeze-timer').style.display = 'none';
+  updatePU();
+  $id('score').textContent='0';
+  $id('tval').textContent=gameDuration;$id('tval').style.color='';
+  $id('combo').textContent='x1';$id('lvl').textContent='1';
+  $id('next-num').textContent='1';$id('streak').textContent='0';
+  $id('combo-fill').style.width='0%';$id('combo-fill').style.background='var(--green)';
+  $id('combo-txt').textContent='0/7';$id('msg').textContent='';
+  $id('freeze-overlay').style.display='none';$id('freeze-timer').style.display='none';
 
   spawnBatch(TNUM);
 
-  mainTimer = setInterval(() => {
+  const lvlInt=Math.max(10,Math.floor(gameDuration/5));
+  mainTimer=setInterval(()=>{
     timeLeft--;
-    $id('tval').textContent = timeLeft;
-    if (timeLeft <= 10) $id('tval').style.color = '#ff5a5a';
-    else $id('tval').style.color = '';
-    if (timeLeft <= 0) endGame();
-    if (timeLeft % 12 === 0 && timeLeft > 0) {
-      level++;
-      $id('lvl').textContent = level;
-      tokens.forEach((_, i) => { vx[i] *= 1.14; vy[i] *= 1.14; });
-      flashLevel('SEVİYE ' + level);
+    $id('tval').textContent=timeLeft;
+    if(timeLeft<=10)$id('tval').style.color='var(--red)';
+    else if(timeLeft<=20)$id('tval').style.color='var(--amber)';
+    else $id('tval').style.color='';
+    if(timeLeft<=0){endGame();return;}
+    if(timeLeft%lvlInt===0&&timeLeft>0){
+      level++;$id('lvl').textContent=level;
+      tokens.forEach((_,i)=>{vx[i]*=1.13;vy[i]*=1.13;});
+      flashLevel('SEVİYE '+level);sfxLevel();
     }
-    if (timeLeft % 18 === 0 && timeLeft > 0) spawnBombs(2);
-  }, 1000);
+    if(timeLeft%18===0&&timeLeft>0)spawnBombs(2);
+  },1000);
 
   animate();
 }
 
-function spawnBatch(count) {
-  const arena = $id('arena');
-  const aW = arena.offsetWidth, aH = arena.offsetHeight;
-  for (let i = 0; i < count; i++) {
-    const num = totalSpawned + 1;
-    totalSpawned++;
-    spawnToken(num, aW, aH);
-  }
-  ensureNextTargetExists();
-  highlightTarget();
+function spawnBatch(n){
+  const a=$id('arena'),aW=a.offsetWidth,aH=a.offsetHeight;
+  for(let i=0;i<n;i++){spawnToken(totalSpawned+1,aW,aH);totalSpawned++;}
+  ensureTarget();highlightTarget();
 }
 
-function ensureNextTargetExists() {
-  const exists = tokens.find(t => parseInt(t.dataset.num) === nextTarget);
-  if (!exists) {
-    const arena = $id('arena');
-    if (nextTarget > totalSpawned) totalSpawned = nextTarget;
-    spawnToken(nextTarget, arena.offsetWidth, arena.offsetHeight);
+function ensureTarget(){
+  const exists=tokens.find(t=>parseInt(t.dataset.num)===nextTarget);
+  if(!exists){
+    const a=$id('arena');
+    if(nextTarget>totalSpawned)totalSpawned=nextTarget;
+    spawnToken(nextTarget,a.offsetWidth,a.offsetHeight);
   }
 }
 
-function spawnToken(num, aW, aH) {
-  const sz = Math.floor(rnd(44, 62));
-  const x = rnd(sz, aW - sz * 2);
-  const y = rnd(sz, aH - sz * 2);
-  const c = COLORS[num % COLORS.length];
-  const el = document.createElement('div');
-  el.className = 'num-token';
-  el.textContent = num;
-  el.style.cssText = `width:${sz}px;height:${sz}px;font-size:${Math.floor(sz * 0.34)}px;background:${c.bg};border-color:${c.bd};color:${c.tx};left:${x}px;top:${y}px;`;
-  el.dataset.num = num;
-  el.addEventListener('click', () => handleClick(num, el));
-  $id('arena').appendChild(el);
-  tokens.push(el);
-  pos.push({ x, y, sz });
-  const spd = 0.6 + level * 0.1;
-  const angle = Math.random() * Math.PI * 2;
-  vx.push(Math.cos(angle) * spd);
-  vy.push(Math.sin(angle) * spd);
+function spawnToken(num,aW,aH){
+  const sz=Math.floor(rnd(44,62));
+  const x=rnd(4,aW-sz-4),y=rnd(4,aH-sz-4);
+  const cc=C()[num%C().length];
+  const el=document.createElement('div');
+  el.className='num-token';el.textContent=num;
+  el.style.cssText=`width:${sz}px;height:${sz}px;font-size:${Math.floor(sz*0.34)}px;background:${cc.bg};border-color:${cc.bd};color:${cc.tx};left:${x}px;top:${y}px;`;
+  el.dataset.num=num;
+  el.addEventListener('click',()=>handleClick(num,el));
+  $id('arena').appendChild(el);tokens.push(el);pos.push({x,y,sz});
+  const spd=0.55+level*0.1,angle=Math.random()*Math.PI*2;
+  vx.push(Math.cos(angle)*spd);vy.push(Math.sin(angle)*spd);
 }
 
-function spawnBombs(count) {
-  // Sadece nextTarget'tan en az 3 fazla olan sayılara bomba koy
-  const candidates = tokens.filter(t => {
-    const n = parseInt(t.dataset.num);
-    return n > nextTarget + 2 && t.dataset.bomb !== '1';
-  });
-  for (let i = 0; i < count && candidates.length; i++) {
-    const pick = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
-    pick.classList.add('bomb');
-    pick.dataset.bomb = '1';
+function spawnBombs(n){
+  const cands=tokens.filter(t=>{const x=parseInt(t.dataset.num);return x>nextTarget+2&&t.dataset.bomb!=='1';});
+  for(let i=0;i<n&&cands.length;i++){
+    const p=cands.splice(Math.floor(Math.random()*cands.length),1)[0];
+    p.classList.add('bomb');p.dataset.bomb='1';
   }
 }
 
-function highlightTarget() {
-  tokens.forEach(t => {
+function highlightTarget(){
+  tokens.forEach(t=>{
     t.classList.remove('target-glow');
-    if (parseInt(t.dataset.num) === nextTarget) {
-      // Sıradaki sayı yanlışlıkla bomba işaretlendiyse kaldır
-      if (t.dataset.bomb === '1') {
-        t.classList.remove('bomb');
-        t.dataset.bomb = '';
-      }
+    if(parseInt(t.dataset.num)===nextTarget){
+      if(t.dataset.bomb==='1'){t.classList.remove('bomb');t.dataset.bomb='';}
       t.classList.add('target-glow');
     }
   });
 }
 
-function handleClick(num, el) {
-  if (!gameActive) return;
+function handleClick(num,el){
+  if(!gameActive)return;
+  // Sıradaki bomba ise temizle
+  if(parseInt(el.dataset.num)===nextTarget&&el.dataset.bomb==='1'){el.classList.remove('bomb');el.dataset.bomb='';}
 
-  // Sıradaki sayı bomba işaretliyse bombayı kaldır, normal davran
-  if (parseInt(el.dataset.num) === nextTarget && el.dataset.bomb === '1') {
-    el.classList.remove('bomb');
-    el.dataset.bomb = '';
+  if(el.dataset.bomb==='1'){
+    resetCombo();
+    setMsg('💣 BOOM! Combo sıfırlandı!');
+    el.style.boxShadow='0 0 0 5px rgba(255,90,90,0.55)';
+    setTimeout(()=>{if(el.parentNode)el.style.boxShadow='';},450);
+    sfxBomb();vib([30,20,30]);return;
   }
 
-  if (el.dataset.bomb === '1') {
-    combo = 1; streak = 0;
-    $id('combo').textContent = 'x1';
-    $id('combo-fill').style.width = '0%';
-    $id('combo-fill').style.background = '#3dffc0';
-    $id('combo-txt').textContent = '0/7';
-    $id('streak').textContent = '0';
-    setMsg('💣 BOOM! Bombaya bastın! Combo sıfırlandı!');
-    el.style.boxShadow = '0 0 0 4px rgba(255,90,90,0.6)';
-    setTimeout(() => { if (el.parentNode) el.style.boxShadow = ''; }, 500);
+  if(num===nextTarget){
+    const pts=10*combo;score+=pts;
+    combo=Math.min(combo+1,8);maxCombo=Math.max(maxCombo,combo);
+    streak++;maxStreak=Math.max(maxStreak,streak);
+    $id('score').textContent=score;$id('combo').textContent='x'+combo;$id('streak').textContent=streak;
+    const pct=Math.min((combo-1)/7*100,100);
+    $id('combo-fill').style.width=pct+'%';
+    $id('combo-fill').style.background=combo>=6?'var(--accent2)':combo>=4?'var(--amber)':'var(--green)';
+    $id('combo-txt').textContent=(combo-1)+'/7';
+    if(combo>=8)setMsg('🔥 ULTRA MAX x8!! +'+pts);
+    else if(combo>=6)setMsg('🔥 ULTRA x'+combo+'!! +'+pts);
+    else if(combo>=3)setMsg('⚡ x'+combo+' combo! +'+pts);
+    else setMsg('+'+pts);
+    showPop(el,'+'+pts,combo>=4?'var(--amber)':'var(--green)');
+    sfxHit(combo);
     clearTimeout(comboDecay);
-    return;
-  }
-
-  if (num === nextTarget) {
-    const pts = 10 * combo;
-    score += pts;
-    combo = Math.min(combo + 1, 8);
-    maxCombo = Math.max(maxCombo, combo);
-    streak++;
-    maxStreak = Math.max(maxStreak, streak);
-
-    $id('score').textContent = score;
-    $id('combo').textContent = 'x' + combo;
-    $id('streak').textContent = streak;
-
-    const pct = Math.min((combo - 1) / 7 * 100, 100);
-    $id('combo-fill').style.width = pct + '%';
-    if (combo >= 6) $id('combo-fill').style.background = '#fa6c8a';
-    else if (combo >= 4) $id('combo-fill').style.background = '#ffb84d';
-    else $id('combo-fill').style.background = '#3dffc0';
-    $id('combo-txt').textContent = (combo - 1) + '/7';
-
-    if (combo >= 6) setMsg('🔥 ULTRA x' + combo + '!! +' + pts);
-    else if (combo >= 3) setMsg('⚡ x' + combo + ' combo! +' + pts);
-    else setMsg('+' + pts);
-
-    showPop(el, '+' + pts, combo >= 4 ? '#ffb84d' : '#3dffc0');
-
-    clearTimeout(comboDecay);
-    comboDecay = setTimeout(() => {
-      combo = 1;
-      $id('combo').textContent = 'x1';
-      $id('combo-fill').style.width = '0%';
-      $id('combo-fill').style.background = '#3dffc0';
-      $id('combo-txt').textContent = '0/7';
-    }, 2000);
-
-    removeToken(el);
-    nextTarget++;
-    $id('next-num').textContent = nextTarget;
-    if (nextTarget > totalSpawned) {
-      spawnBatch(TNUM);
-    } else {
-      ensureNextTargetExists();
-      highlightTarget();
-    }
-
+    comboDecay=setTimeout(resetCombo,2000);
+    removeToken(el);nextTarget++;$id('next-num').textContent=nextTarget;
+    if(nextTarget>totalSpawned)spawnBatch(TNUM);
+    else{ensureTarget();highlightTarget();}
   } else {
-    combo = 1; streak = 0;
-    $id('combo').textContent = 'x1';
-    $id('combo-fill').style.width = '0%';
-    $id('combo-fill').style.background = '#3dffc0';
-    $id('combo-txt').textContent = '0/7';
-    $id('streak').textContent = '0';
-    setMsg('✗ Yanlış! Sıradaki: ' + nextTarget);
-    el.style.transform = 'scale(0.78)';
-    setTimeout(() => { if (el.parentNode) el.style.transform = ''; }, 180);
-    clearTimeout(comboDecay);
+    resetCombo();
+    setMsg('✗ Yanlış! Sıradaki: '+nextTarget);
+    el.style.transform='scale(0.78)';
+    setTimeout(()=>{if(el.parentNode)el.style.transform='';},180);
+    sfxMiss();vib([40]);
   }
 }
 
-function removeToken(el) {
-  const i = tokens.indexOf(el);
-  if (i === -1) return;
-  tokens.splice(i, 1); pos.splice(i, 1); vx.splice(i, 1); vy.splice(i, 1);
-  el.remove();
+function resetCombo(){
+  combo=1;$id('combo').textContent='x1';
+  $id('combo-fill').style.width='0%';$id('combo-fill').style.background='var(--green)';
+  $id('combo-txt').textContent='0/7';$id('streak').textContent='0';streak=0;
 }
 
-function showPop(ref, txt, color) {
-  const arena = $id('arena');
-  const p = document.createElement('div');
-  p.className = 'pop-anim';
-  p.textContent = txt;
-  p.style.color = color;
-  const r = ref.getBoundingClientRect();
-  const ar = arena.getBoundingClientRect();
-  p.style.left = (r.left - ar.left + r.width / 2 - 20) + 'px';
-  p.style.top = (r.top - ar.top - 8) + 'px';
-  arena.appendChild(p);
-  setTimeout(() => p.remove(), 700);
+function vib(p){if($id('vib-toggle').checked&&navigator.vibrate)navigator.vibrate(p);}
+
+function removeToken(el){
+  const i=tokens.indexOf(el);if(i===-1)return;
+  tokens.splice(i,1);pos.splice(i,1);vx.splice(i,1);vy.splice(i,1);el.remove();
 }
 
-function usePower(type) {
-  if (!gameActive || powers[type] <= 0) return;
-  powers[type]--;
-  updatePowerUI();
+function showPop(ref,txt,color){
+  const arena=$id('arena'),p=document.createElement('div');
+  p.className='pop-anim';p.textContent=txt;p.style.color=color;
+  const r=ref.getBoundingClientRect(),ar=arena.getBoundingClientRect();
+  p.style.left=(r.left-ar.left+r.width/2-20)+'px';
+  p.style.top=(r.top-ar.top-8)+'px';
+  arena.appendChild(p);setTimeout(()=>p.remove(),700);
+}
 
-  if (type === 'freeze') {
-    frozen = true;
-    $id('freeze-overlay').style.display = 'block';
-    $id('freeze-timer').style.display = 'block';
-    let t = 3;
-    $id('freeze-timer').textContent = '❄ ' + t + 's';
-    clearInterval(freezeCountdown);
-    freezeCountdown = setInterval(() => {
+function usePower(type){
+  if(!gameActive||powers[type]<=0)return;
+  powers[type]--;updatePU();
+  if(type==='freeze'){
+    frozen=true;$id('freeze-overlay').style.display='block';$id('freeze-timer').style.display='block';
+    let t=3;$id('freeze-timer').textContent='❄ '+t+'s';
+    clearInterval(freezeCountdown);sfxFreeze();
+    freezeCountdown=setInterval(()=>{
       t--;
-      if (t <= 0) {
-        clearInterval(freezeCountdown);
-        frozen = false;
-        $id('freeze-overlay').style.display = 'none';
-        $id('freeze-timer').style.display = 'none';
-        setMsg('');
-      } else {
-        $id('freeze-timer').textContent = '❄ ' + t + 's';
-      }
-    }, 1000);
+      if(t<=0){clearInterval(freezeCountdown);frozen=false;$id('freeze-overlay').style.display='none';$id('freeze-timer').style.display='none';setMsg('');}
+      else $id('freeze-timer').textContent='❄ '+t+'s';
+    },1000);
     setMsg('🧊 Donduruldu! 3 saniye!');
-
-  } else if (type === 'reveal') {
+  } else if(type==='reveal'){
     clearTimeout(revealTimer);
-    tokens.forEach(t => {
-      t.style.boxShadow = '';
-      if (parseInt(t.dataset.num) === nextTarget) {
-        t.style.boxShadow = '0 0 0 4px rgba(61,255,192,0.6), 0 0 18px rgba(61,255,192,0.35)';
-        revealTimer = setTimeout(() => { if (t.parentNode) t.style.boxShadow = ''; }, 3000);
+    tokens.forEach(t=>{
+      t.style.boxShadow='';
+      if(parseInt(t.dataset.num)===nextTarget){
+        t.style.boxShadow='0 0 0 5px rgba(61,255,192,0.6),0 0 20px rgba(61,255,192,0.4)';
+        revealTimer=setTimeout(()=>{if(t.parentNode)t.style.boxShadow='';},3000);
       }
     });
-    setMsg('★ Sıradaki işaretlendi!');
-
-  } else if (type === 'bomb') {
-    let removed = 0;
-    [...tokens].forEach(t => {
-      const n = parseInt(t.dataset.num);
-      if (n > nextTarget + 1 && t.dataset.bomb !== '1' && removed < 3) {
-        showPop(t, 'PAT!', '#fa6c8a');
-        removeToken(t);
-        removed++;
-      }
+    tone(700,'sine',0.14,0.14);setMsg('★ Sıradaki işaretlendi!');
+  } else if(type==='bomb'){
+    let removed=0;
+    [...tokens].forEach(t=>{
+      const n=parseInt(t.dataset.num);
+      if(n>nextTarget+1&&t.dataset.bomb!=='1'&&removed<3){showPop(t,'PAT!','var(--accent2)');removeToken(t);removed++;}
     });
-    setMsg('💥 ' + removed + ' yanlış sayı patlatıldı!');
+    tone(240,'sawtooth',0.18,0.16);setTimeout(()=>tone(170,'square',0.14,0.12),85);
+    setMsg('💥 '+removed+' sayı patlatıldı!');
   }
 }
 
-function updatePowerUI() {
-  ['freeze', 'reveal', 'bomb'].forEach(p => {
-    $id('pu-' + p).disabled = powers[p] <= 0;
-    $id('pu-' + p + '-c').textContent = powers[p];
+function updatePU(){
+  ['freeze','reveal','bomb'].forEach(p=>{
+    $id('pu-'+p).disabled=powers[p]<=0;$id('pu-'+p+'-c').textContent=powers[p];
   });
 }
 
-function flashLevel(txt) {
-  const el = $id('level-flash');
-  $id('level-flash-txt').textContent = txt;
-  el.style.opacity = '1';
-  setTimeout(() => { el.style.opacity = '0'; }, 900);
+function flashLevel(txt){
+  const el=$id('level-flash');$id('level-flash-txt').textContent=txt;
+  el.style.opacity='1';setTimeout(()=>el.style.opacity='0',900);
 }
 
-function animate() {
-  if (!gameActive) return;
-  if (!frozen) {
-    const arena = $id('arena');
-    const aW = arena.offsetWidth, aH = arena.offsetHeight;
-    for (let i = 0; i < tokens.length; i++) {
-      const sz = pos[i].sz;
-      pos[i].x += vx[i];
-      pos[i].y += vy[i];
-      if (pos[i].x <= 0 || pos[i].x >= aW - sz) vx[i] *= -1;
-      if (pos[i].y <= 0 || pos[i].y >= aH - sz) vy[i] *= -1;
-      pos[i].x = Math.max(0, Math.min(aW - sz, pos[i].x));
-      pos[i].y = Math.max(0, Math.min(aH - sz, pos[i].y));
-      tokens[i].style.left = Math.round(pos[i].x) + 'px';
-      tokens[i].style.top = Math.round(pos[i].y) + 'px';
+function animate(){
+  if(!gameActive)return;
+  if(!frozen){
+    const a=$id('arena'),aW=a.offsetWidth,aH=a.offsetHeight;
+    for(let i=0;i<tokens.length;i++){
+      const sz=pos[i].sz;
+      pos[i].x+=vx[i];pos[i].y+=vy[i];
+      if(pos[i].x<=0||pos[i].x>=aW-sz){vx[i]*=-1;pos[i].x=Math.max(0,Math.min(aW-sz,pos[i].x));}
+      if(pos[i].y<=0||pos[i].y>=aH-sz){vy[i]*=-1;pos[i].y=Math.max(0,Math.min(aH-sz,pos[i].y));}
+      tokens[i].style.left=Math.round(pos[i].x)+'px';
+      tokens[i].style.top=Math.round(pos[i].y)+'px';
     }
   }
-  window._raf = requestAnimationFrame(animate);
+  window._raf=requestAnimationFrame(animate);
 }
 
-function setMsg(t) { $id('msg').textContent = t; }
+function setMsg(t){$id('msg').textContent=t;}
 
-function endGame() {
-  clearInterval(mainTimer);
-  clearInterval(freezeCountdown);
-  cancelAnimationFrame(window._raf);
-  gameActive = false;
-
-  $id('screen-game').style.display = 'none';
-  $id('screen-result').style.display = 'block';
-
-  const title = $id('res-title');
-  const emoji = $id('res-emoji');
-  const sub = $id('res-sub');
-
-  if (score >= 700) {
-    emoji.textContent = '🏆';
-    title.style.color = '#ffb84d';
-    title.textContent = 'Efsane!';
-    sub.textContent = 'Sen gerçek bir numara avcısısın.';
-  } else if (score >= 400) {
-    emoji.textContent = '🔥';
-    title.style.color = '#3dffc0';
-    title.textContent = 'Harika!';
-    sub.textContent = 'Çok iyi! Tekrar denersen rekoru kırarısın.';
-  } else if (score >= 180) {
-    emoji.textContent = '⚡';
-    title.style.color = '#c5beff';
-    title.textContent = 'İyi İş!';
-    sub.textContent = 'Isiniyorsun. Comboya odaklan!';
-  } else {
-    emoji.textContent = '💀';
-    title.style.color = '#ff5a5a';
-    title.textContent = 'Bitti!';
-    sub.textContent = 'Herkes bir yerden başlar. Tekrar dene!';
-  }
-
-  $id('r-score').textContent = score;
-  $id('r-combo').textContent = 'x' + maxCombo;
-  $id('r-streak').textContent = maxStreak;
+function endGame(){
+  clearInterval(mainTimer);clearInterval(freezeCountdown);
+  cancelAnimationFrame(window._raf);gameActive=false;
+  const newRec=score>highScore;
+  if(newRec){highScore=score;localStorage.setItem('nk_hs',highScore);}
+  $id('screen-game').style.display='none';
+  $id('screen-result').style.display='block';
+  $id('new-record').style.display=newRec?'block':'none';
+  const T=$id('res-title'),E=$id('res-emoji'),S=$id('res-sub');
+  if(score>=700){E.textContent='🏆';T.style.color='var(--amber)';T.textContent='Efsane!';S.textContent='Gerçek bir numara avcısısın!';sfxWin();}
+  else if(score>=400){E.textContent='🔥';T.style.color='var(--green)';T.textContent='Harika!';S.textContent='Çok iyi! Tekrar denersen rekoru kırarsın.';[600,750,900].forEach((f,i)=>tone(f,'sine',0.14,0.12,i*0.09));}
+  else if(score>=180){E.textContent='⚡';T.style.color='var(--accent)';T.textContent='İyi İş!';S.textContent='Isinıyorsun. Comboya odaklan!';[400,550].forEach((f,i)=>tone(f,'sine',0.12,0.1,i*0.1));}
+  else{E.textContent='💀';T.style.color='var(--red)';T.textContent='Bitti!';S.textContent='Herkes bir yerden başlar. Tekrar dene!';tone(190,'sawtooth',0.18,0.12);}
+  $id('r-score').textContent=score;$id('r-combo').textContent='x'+maxCombo;$id('r-streak').textContent=maxStreak;
 }
+
+/* ===== INIT ===== */
+(function init(){
+  const t=localStorage.getItem('nk_theme');
+  if(t==='light'){darkMode=false;document.body.classList.add('light');$id('theme-btn').textContent='☀️';}
+  $id('hs-intro').textContent=highScore;
+})();
 </script>
 </body>
 </html>
