@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" id="themeColorMeta" content="#1a1a2e">
 <title>Hafıza Oyunu</title>
 <style>
 /* ══ DARK (default) ══ */
@@ -490,6 +491,7 @@ function toggleMode(){
   document.documentElement.setAttribute('data-mode',isDark?'dark':'light');
   document.getElementById('knob').textContent        = isDark?'🌙':'☀️';
   document.getElementById('toggleLabel').textContent = isDark?'Aydınlık':'Karanlık';
+  document.getElementById('themeColorMeta').setAttribute('content', isDark?'#1a1a2e':'#e0f0ff');
 }
 
 /* ── OVERLAYS ── */
