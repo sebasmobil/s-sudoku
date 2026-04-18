@@ -379,7 +379,8 @@ function renderGame(){
           const fin=pending[ui]?pending[ui].finish:false;
           const finAmt=pending[ui]?pending[ui].finishAmt:101;
           h+=`<td><div class="inp-cell">
-            <input class="sc-inp" type="number" inputmode="numeric" pattern="[0-9]*" data-ui="${ui}" value="${pv}" placeholder="puan"/>
+            <input class="sc-inp" type="number" inputmode="numeric" pattern="[0-9]*" data-ui="${ui}" value="${pv}" placeholder="puan" style="display:${fin?'none':'block'}"/>
+            ${fin?`<span style="font-size:18px;font-weight:700;color:var(--green);font-family:'Syne',sans-serif">-${finAmt}</span>`:''}
             <div class="finish-row" style="display:flex;align-items:center;gap:5px;margin-top:3px;padding:4px 7px;border-radius:7px;border:1px dashed ${fin?'var(--green)':'var(--border)'};background:${fin?'rgba(63,160,104,.1)':'transparent'}">
               <input type="checkbox" class="fin-chk" data-ui="${ui}" ${fin?'checked':''} style="width:14px;height:14px;accent-color:var(--green);cursor:pointer"/>
               <span style="font-size:11px;color:${fin?'var(--green)':'var(--text3)'}">Bitirdi</span>
@@ -403,7 +404,7 @@ function renderGame(){
         } else if(filled){
           const pen=sc.penalties.reduce((a,p)=>a+p.amount,0);
           const finBadge=sc.finish?`<span class="finish-badge">-${sc.finishAmt||101}</span>`:'';
-          h+=`<td><div class="sc-wrap"><span class="sc-val">${sc.val}</span>${finBadge}${sc.penalties.length?`<span class="ceza-badge">+${pen}</span>`:''}</div></td>`;
+          h+=`<td><div class="sc-wrap">${sc.finish?'':` <span class="sc-val">${sc.val}</span>`}${finBadge}${sc.penalties.length?`<span class="ceza-badge">+${pen}</span>`:''}</div></td>`;
         } else {
           h+=`<td><span style="color:var(--text3)">—</span></td>`;
         }
@@ -473,9 +474,13 @@ function renderGame(){
     const saveBtn=document.getElementById('saveRound');
     if(saveBtn)saveBtn.onclick=()=>{
       let ok=true;
-      scoreUnits.forEach((_,ui)=>{if(!pending[ui]||pending[ui].val==='')ok=false});
+      scoreUnits.forEach((_,ui)=>{if(!pending[ui].finish&&(pending[ui].val===''||pending[ui].val===null||pending[ui].val===undefined))ok=false});
       if(!ok){alert('Tüm '+( mode==='esli'?'çiftler':'oyuncular')+' için puan girin!');return}
-      scoreUnits.forEach((_,ui)=>{scores[ui][editingRound]={val:+pending[ui].val,penalties:[...pending[ui].penalties],finish:pending[ui].finish||false,finishAmt:pending[ui].finishAmt||101}});
+      scoreUnits.forEach((_,ui)=>{
+        const fin=pending[ui].finish||false;
+        const finAmt=pending[ui].finishAmt||101;
+        scores[ui][editingRound]={val:fin?0:+pending[ui].val,penalties:[...pending[ui].penalties],finish:fin,finishAmt:finAmt};
+      });
       editingRound=null;pending={};S.current.scores=scores;save(S);rerender();
     };
     const cancelBtn=document.getElementById('cancelRound');
