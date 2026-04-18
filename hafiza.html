@@ -330,7 +330,12 @@ body{
 
 <div class="page">
   <div class="topbar">
-    <div style="width:60px"></div>
+    <div class="toggle-wrap">
+      <button class="toggle-btn" id="soundToggle" onclick="toggleSound()">
+        <div class="toggle-knob" id="soundKnob" style="background:linear-gradient(135deg,#6bcb77,#4caf50);">🔊</div>
+      </button>
+      <span class="toggle-label" id="soundLabel">Ses Açık</span>
+    </div>
     <div class="title">✨ Hafıza Oyunu ✨</div>
     <div class="toggle-wrap">
       <button class="toggle-btn" id="modeToggle" onclick="toggleMode()">
@@ -602,6 +607,9 @@ function startTicker(){
     const bar=document.getElementById('tbar');
     bar.style.width=(frac*100)+'%';
     bar.style.background=frac>.5?'#6bcb77':frac>.25?'#ffd93d':'#ff6b6b';
+    /* son 10 saniye tik sesi */
+    const remaining=limit-elapsed;
+    if(remaining>0 && remaining<=10) SFX.tick();
   },1000);
 }
 
@@ -609,6 +617,7 @@ function onFlip(card){
   if(locked)return;
   if(card.classList.contains('flipped')||card.classList.contains('matched'))return;
   startTicker();
+  SFX.flip();
   card.style.transition='';card.style.opacity='';card.style.transform='';
   card.classList.add('flipped');flipped.push(card);
   if(flipped.length===2){moves++;document.getElementById('hMoves').textContent=moves;locked=true;checkPair();}
@@ -617,6 +626,7 @@ function onFlip(card){
 function checkPair(){
   const [a,b]=flipped;
   if(a.dataset.emoji===b.dataset.emoji){
+    SFX.match();
     setTimeout(()=>{
       a.classList.add('matched');b.classList.add('matched');
       matched++;document.getElementById('hMatch').textContent=matched;
@@ -624,6 +634,7 @@ function checkPair(){
       if(matched===CFG[diff].pairs) setTimeout(showWin,500);
     },200);
   } else {
+    SFX.wrong();
     setTimeout(()=>{
       a.classList.add('wrong');b.classList.add('wrong');
       setTimeout(()=>{a.classList.remove('flipped','wrong');b.classList.remove('flipped','wrong');flipped=[];locked=false;},500);
@@ -639,6 +650,7 @@ function calcStars(){
 
 function showWin(){
   clearInterval(ticker);
+  SFX.win();
   const stars=calcStars();
   const map={'⭐⭐⭐':['🏆','Mükemmel!'],'⭐⭐':['🌟','Harika!'],'⭐':['👏','Tamamladın!']};
   const [icon,title]=map[stars];
@@ -664,6 +676,102 @@ function confetti(){
 }
 
 MQ560.addEventListener('change',()=>{if(diff==='medium')restartGame();});
+
+/* ══════════════════════════════
+   SES SİSTEMİ (Web Audio API)
+══════════════════════════════ */
+let audioCtx = null;
+let soundOn = true;
+
+/* localStorage'dan ses durumunu oku */
+try { soundOn = localStorage.getItem('soundOn') !== '0'; } catch(e){}
+
+function getCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol=0.18, fadeOut=true){
+  if(!soundOn) return;
+  try{
+    const ctx=getCtx();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type=type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    if(fadeOut) gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+duration);
+  } catch(e){}
+}
+
+function playNoise(duration, vol=0.08){
+  if(!soundOn) return;
+  try{
+    const ctx=getCtx();
+    const buf=ctx.createBuffer(1, ctx.sampleRate*duration, ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    const src=ctx.createBufferSource();
+    src.buffer=buf;
+    const gain=ctx.createGain();
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+duration);
+    src.connect(gain); gain.connect(ctx.destination);
+    src.start(); src.stop(ctx.currentTime+duration);
+  } catch(e){}
+}
+
+const SFX = {
+  flip(){
+    playTone(520,'sine',.08,.12);
+  },
+  match(){
+    /* iki ton üst üste — başarı akkoru */
+    playTone(523,'sine',.18,.15);
+    setTimeout(()=>playTone(784,'sine',.22,.15),80);
+    setTimeout(()=>playTone(1047,'sine',.28,.12),160);
+  },
+  wrong(){
+    playTone(220,'sawtooth',.12,.12);
+    setTimeout(()=>playTone(180,'sawtooth',.15,.10),80);
+  },
+  win(){
+    const notes=[523,659,784,1047,1319];
+    notes.forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.35,.14),i*90));
+  },
+  tick(){
+    playTone(880,'sine',.05,.06,true);
+  },
+  click(){
+    playTone(400,'sine',.06,.08);
+  }
+};
+
+function toggleSound(){
+  soundOn=!soundOn;
+  try{localStorage.setItem('soundOn',soundOn?'1':'0');}catch(e){}
+  applySoundUI();
+  if(soundOn) SFX.click();
+}
+
+function applySoundUI(){
+  const knob=document.getElementById('soundKnob');
+  const lbl =document.getElementById('soundLabel');
+  if(soundOn){
+    knob.textContent='🔊';
+    knob.style.background='linear-gradient(135deg,#6bcb77,#4caf50)';
+    lbl.textContent='Ses Açık';
+  } else {
+    knob.textContent='🔇';
+    knob.style.background='linear-gradient(135deg,#888,#555)';
+    lbl.textContent='Ses Kapalı';
+  }
+}
+
+applySoundUI();
+
 restartGame();
 </script>
 </body>
