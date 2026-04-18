@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Satranç v1.1</title>
+<title>Satranç v1.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 [data-theme="dark"]{--bg:#0f0e0c;--sur:#1a1916;--sur2:#231f1a;--brd:rgba(255,255,255,.09);--brd2:rgba(255,255,255,.18);--gold:#c9a84c;--gold2:#e8c97a;--tx:#e8dcc8;--tx2:#7a7060;--tx3:#3a342a;--bb:#1f1c18;--ob:rgba(0,0,0,.82);}
@@ -146,7 +146,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- HEADER -->
 <div class="hdr">
-  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.1</span></div>
+  <div class="logo">♔ Satranç <span style="font-size:11px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--tx3);letter-spacing:.06em;vertical-align:middle;">v1.2</span></div>
   <div class="hdr-r">
     <button class="icn" id="btn-sound" title="Ses">🔊</button>
     <button class="icn" id="btn-theme" title="Tema">☀</button>
@@ -224,7 +224,7 @@ footer{margin-top:16px;font-size:11px;color:var(--tx3);letter-spacing:.06em;text
 
 <!-- MOVE LOG -->
 <div id="log"></div>
-<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.1</footer>
+<footer>Rok · En passant · Terfi · Tüm kurallar geçerli · v1.2</footer>
 
 <!-- CONFIRM DIALOG -->
 <div id="conf">
@@ -403,263 +403,23 @@ function doMv(r,f,m,sim=false){
 }
 
 /* ───── AI VIA WEB WORKER ───── */
-const WORKER_CODE = `
-// ── Piece values + piece-square tables ──
-const PV={P:100,N:320,B:330,R:500,Q:900,K:20000};
-const PST={
-  P:[[ 0, 0, 0, 0, 0, 0, 0, 0],
-     [50,50,50,50,50,50,50,50],
-     [10,10,20,30,30,20,10,10],
-     [ 5, 5,10,25,25,10, 5, 5],
-     [ 0, 0, 0,20,20, 0, 0, 0],
-     [ 5,-5,-10, 0, 0,-10,-5, 5],
-     [ 5,10,10,-20,-20,10,10, 5],
-     [ 0, 0, 0, 0, 0, 0, 0, 0]],
-  N:[[-50,-40,-30,-30,-30,-30,-40,-50],
-     [-40,-20,  0,  0,  0,  0,-20,-40],
-     [-30,  0, 10, 15, 15, 10,  0,-30],
-     [-30,  5, 15, 20, 20, 15,  5,-30],
-     [-30,  0, 15, 20, 20, 15,  0,-30],
-     [-30,  5, 10, 15, 15, 10,  5,-30],
-     [-40,-20,  0,  5,  5,  0,-20,-40],
-     [-50,-40,-30,-30,-30,-30,-40,-50]],
-  B:[[-20,-10,-10,-10,-10,-10,-10,-20],
-     [-10,  0,  0,  0,  0,  0,  0,-10],
-     [-10,  0,  5, 10, 10,  5,  0,-10],
-     [-10,  5,  5, 10, 10,  5,  5,-10],
-     [-10,  0, 10, 10, 10, 10,  0,-10],
-     [-10, 10, 10, 10, 10, 10, 10,-10],
-     [-10,  5,  0,  0,  0,  0,  5,-10],
-     [-20,-10,-10,-10,-10,-10,-10,-20]],
-  R:[[ 0, 0, 0, 0, 0, 0, 0, 0],
-     [ 5,10,10,10,10,10,10, 5],
-     [-5, 0, 0, 0, 0, 0, 0,-5],
-     [-5, 0, 0, 0, 0, 0, 0,-5],
-     [-5, 0, 0, 0, 0, 0, 0,-5],
-     [-5, 0, 0, 0, 0, 0, 0,-5],
-     [-5, 0, 0, 0, 0, 0, 0,-5],
-     [ 0, 0, 0, 5, 5, 0, 0, 0]],
-  Q:[[-20,-10,-10,-5,-5,-10,-10,-20],
-     [-10,  0,  0, 0, 0,  0,  0,-10],
-     [-10,  0,  5, 5, 5,  5,  0,-10],
-     [ -5,  0,  5, 5, 5,  5,  0, -5],
-     [  0,  0,  5, 5, 5,  5,  0, -5],
-     [-10,  5,  5, 5, 5,  5,  0,-10],
-     [-10,  0,  5, 0, 0,  0,  0,-10],
-     [-20,-10,-10,-5,-5,-10,-10,-20]],
-  K:[[-30,-40,-40,-50,-50,-40,-40,-30],
-     [-30,-40,-40,-50,-50,-40,-40,-30],
-     [-30,-40,-40,-50,-50,-40,-40,-30],
-     [-30,-40,-40,-50,-50,-40,-40,-30],
-     [-20,-30,-30,-40,-40,-30,-30,-20],
-     [-10,-20,-20,-20,-20,-20,-20,-10],
-     [ 20, 20,  0,  0,  0,  0, 20, 20],
-     [ 20, 30, 10,  0,  0, 10, 30, 20]]
-};
-
-const at=(b,r,f)=>(r>=0&&r<8&&f>=0&&f<8)?b[r][f]:null;
-const col=p=>p?p[0]:null;
-
-// ── Generate pseudo-legal moves (fast, no check validation) ──
-function genMoves(board,c,ep,cast){
-  const mv=[];
-  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
-    const p=at(board,r,f);if(!p||p[0]!==c)continue;
-    const t=p[1];
-    if(t==='P'){
-      const d=c==='w'?-1:1,sr=c==='w'?6:1;
-      if(!at(board,r+d,f)){mv.push({r,f,nr:r+d,nf:f});if(r===sr&&!at(board,r+2*d,f))mv.push({r,f,nr:r+2*d,nf:f,dp:1});}
-      for(const df of[-1,1]){if(f+df<0||f+df>7)continue;const tp=at(board,r+d,f+df);if(tp&&tp[0]!==c)mv.push({r,f,nr:r+d,nf:f+df,cap:tp});else if(ep&&ep[0]===r+d&&ep[1]===f+df)mv.push({r,f,nr:r+d,nf:f+df,ep:1});}
-    }else if(t==='N'){
-      for(const[a,b]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){const nr=r+a,nf=f+b;if(nr<0||nr>7||nf<0||nf>7)continue;const tp=at(board,nr,nf);if(!tp||tp[0]!==c)mv.push({r,f,nr,nf,cap:tp||null});}
-    }else if(t==='K'){
-      for(const[a,b]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const nr=r+a,nf=f+b;if(nr<0||nr>7||nf<0||nf>7)continue;const tp=at(board,nr,nf);if(!tp||tp[0]!==c)mv.push({r,f,nr,nf,cap:tp||null});}
-      const row=c==='w'?7:0;
-      if(r===row&&f===4){
-        if(cast[c+'K']&&!at(board,row,5)&&!at(board,row,6))mv.push({r,f,nr:row,nf:6,cas:'K'});
-        if(cast[c+'Q']&&!at(board,row,3)&&!at(board,row,2)&&!at(board,row,1))mv.push({r,f,nr:row,nf:2,cas:'Q'});
-      }
-    }else{
-      const dirs=t==='R'?[[0,1],[0,-1],[1,0],[-1,0]]:t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
-      for(const[a,b]of dirs){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const tp=at(board,nr,nf);if(!tp){mv.push({r,f,nr,nf});}else{if(tp[0]!==c)mv.push({r,f,nr,nf,cap:tp});break;}nr+=a;nf+=b;}}
-    }
-  }
-  return mv;
+const WORKER_B64 = "Y29uc3QgUFY9e1A6MTAwLE46MzIwLEI6MzMwLFI6NTAwLFE6OTAwLEs6MjAwMDB9Owpjb25zdCBQU1Q9ewogIFA6W1swLDAsMCwwLDAsMCwwLDBdLFs1MCw1MCw1MCw1MCw1MCw1MCw1MCw1MF0sWzEwLDEwLDIwLDMwLDMwLDIwLDEwLDEwXSxbNSw1LDEwLDI1LDI1LDEwLDUsNV0sWzAsMCwwLDIwLDIwLDAsMCwwXSxbNSwtNSwtMTAsMCwwLC0xMCwtNSw1XSxbNSwxMCwxMCwtMjAsLTIwLDEwLDEwLDVdLFswLDAsMCwwLDAsMCwwLDBdXSwKICBOOltbLTUwLC00MCwtMzAsLTMwLC0zMCwtMzAsLTQwLC01MF0sWy00MCwtMjAsMCwwLDAsMCwtMjAsLTQwXSxbLTMwLDAsMTAsMTUsMTUsMTAsMCwtMzBdLFstMzAsNSwxNSwyMCwyMCwxNSw1LC0zMF0sWy0zMCwwLDE1LDIwLDIwLDE1LDAsLTMwXSxbLTMwLDUsMTAsMTUsMTUsMTAsNSwtMzBdLFstNDAsLTIwLDAsNSw1LDAsLTIwLC00MF0sWy01MCwtNDAsLTMwLC0zMCwtMzAsLTMwLC00MCwtNTBdXSwKICBCOltbLTIwLC0xMCwtMTAsLTEwLC0xMCwtMTAsLTEwLC0yMF0sWy0xMCwwLDAsMCwwLDAsMCwtMTBdLFstMTAsMCw1LDEwLDEwLDUsMCwtMTBdLFstMTAsNSw1LDEwLDEwLDUsNSwtMTBdLFstMTAsMCwxMCwxMCwxMCwxMCwwLC0xMF0sWy0xMCwxMCwxMCwxMCwxMCwxMCwxMCwtMTBdLFstMTAsNSwwLDAsMCwwLDUsLTEwXSxbLTIwLC0xMCwtMTAsLTEwLC0xMCwtMTAsLTEwLC0yMF1dLAogIFI6W1swLDAsMCwwLDAsMCwwLDBdLFs1LDEwLDEwLDEwLDEwLDEwLDEwLDVdLFstNSwwLDAsMCwwLDAsMCwtNV0sWy01LDAsMCwwLDAsMCwwLC01XSxbLTUsMCwwLDAsMCwwLDAsLTVdLFstNSwwLDAsMCwwLDAsMCwtNV0sWy01LDAsMCwwLDAsMCwwLC01XSxbMCwwLDAsNSw1LDAsMCwwXV0sCiAgUTpbWy0yMCwtMTAsLTEwLC01LC01LC0xMCwtMTAsLTIwXSxbLTEwLDAsMCwwLDAsMCwwLC0xMF0sWy0xMCwwLDUsNSw1LDUsMCwtMTBdLFstNSwwLDUsNSw1LDUsMCwtNV0sWzAsMCw1LDUsNSw1LDAsLTVdLFstMTAsNSw1LDUsNSw1LDAsLTEwXSxbLTEwLDAsNSwwLDAsMCwwLC0xMF0sWy0yMCwtMTAsLTEwLC01LC01LC0xMCwtMTAsLTIwXV0sCiAgSzpbWy0zMCwtNDAsLTQwLC01MCwtNTAsLTQwLC00MCwtMzBdLFstMzAsLTQwLC00MCwtNTAsLTUwLC00MCwtNDAsLTMwXSxbLTMwLC00MCwtNDAsLTUwLC01MCwtNDAsLTQwLC0zMF0sWy0zMCwtNDAsLTQwLC01MCwtNTAsLTQwLC00MCwtMzBdLFstMjAsLTMwLC0zMCwtNDAsLTQwLC0zMCwtMzAsLTIwXSxbLTEwLC0yMCwtMjAsLTIwLC0yMCwtMjAsLTIwLC0xMF0sWzIwLDIwLDAsMCwwLDAsMjAsMjBdLFsyMCwzMCwxMCwwLDAsMTAsMzAsMjBdXQp9Owp2YXIgYXQ9ZnVuY3Rpb24oYixyLGYpe3JldHVybihyPj0wJiZyPDgmJmY+PTAmJmY8OCk/YltyXVtmXTpudWxsO307CnZhciBjb2w9ZnVuY3Rpb24ocCl7cmV0dXJuIHA/cFswXTpudWxsO307CmZ1bmN0aW9uIGdlbk1vdmVzKGJvYXJkLGMsZXAsY2FzdCl7CiAgdmFyIG12PVtdOwogIGZvcih2YXIgcj0wO3I8ODtyKyspZm9yKHZhciBmPTA7Zjw4O2YrKyl7CiAgICB2YXIgcD1hdChib2FyZCxyLGYpO2lmKCFwfHxwWzBdIT09Yyljb250aW51ZTsKICAgIHZhciB0PXBbMV07CiAgICBpZih0PT09J1AnKXsKICAgICAgdmFyIGQ9Yz09PSd3Jz8tMToxLHNyPWM9PT0ndyc/NjoxOwogICAgICBpZighYXQoYm9hcmQscitkLGYpKXttdi5wdXNoKHtyOnIsZjpmLG5yOnIrZCxuZjpmfSk7aWYocj09PXNyJiYhYXQoYm9hcmQscisyKmQsZikpbXYucHVzaCh7cjpyLGY6ZixucjpyKzIqZCxuZjpmLGRwOjF9KTt9CiAgICAgIGZvcih2YXIgZGk9MDtkaTwyO2RpKyspe3ZhciBkZj1kaT09PTA/LTE6MTtpZihmK2RmPDB8fGYrZGY+Nyljb250aW51ZTt2YXIgdHA9YXQoYm9hcmQscitkLGYrZGYpO2lmKHRwJiZ0cFswXSE9PWMpbXYucHVzaCh7cjpyLGY6ZixucjpyK2QsbmY6ZitkZixjYXA6dHB9KTtlbHNlIGlmKGVwJiZlcFswXT09PXIrZCYmZXBbMV09PT1mK2RmKW12LnB1c2goe3I6cixmOmYsbnI6citkLG5mOmYrZGYsZXA6MX0pO30KICAgIH1lbHNlIGlmKHQ9PT0nTicpewogICAgICB2YXIga2R4PVtbLTIsLTFdLFstMiwxXSxbLTEsLTJdLFstMSwyXSxbMSwtMl0sWzEsMl0sWzIsLTFdLFsyLDFdXTsKICAgICAgZm9yKHZhciBraT0wO2tpPDg7a2krKyl7dmFyIG5yPXIra2R4W2tpXVswXSxuZj1mK2tkeFtraV1bMV07aWYobnI8MHx8bnI+N3x8bmY8MHx8bmY+Nyljb250aW51ZTt2YXIgdHA9YXQoYm9hcmQsbnIsbmYpO2lmKCF0cHx8dHBbMF0hPT1jKW12LnB1c2goe3I6cixmOmYsbnI6bnIsbmY6bmYsY2FwOnRwfHxudWxsfSk7fQogICAgfWVsc2UgaWYodD09PSdLJyl7CiAgICAgIHZhciBrZHgyPVtbLTEsLTFdLFstMSwwXSxbLTEsMV0sWzAsLTFdLFswLDFdLFsxLC0xXSxbMSwwXSxbMSwxXV07CiAgICAgIGZvcih2YXIga2k9MDtraTw4O2tpKyspe3ZhciBucj1yK2tkeDJba2ldWzBdLG5mPWYra2R4MltraV1bMV07aWYobnI8MHx8bnI+N3x8bmY8MHx8bmY+Nyljb250aW51ZTt2YXIgdHA9YXQoYm9hcmQsbnIsbmYpO2lmKCF0cHx8dHBbMF0hPT1jKW12LnB1c2goe3I6cixmOmYsbnI6bnIsbmY6bmYsY2FwOnRwfHxudWxsfSk7fQogICAgICB2YXIgcm93PWM9PT0ndyc/NzowOwogICAgICBpZihyPT09cm93JiZmPT09NCl7CiAgICAgICAgaWYoY2FzdFtjKydLJ10mJiFhdChib2FyZCxyb3csNSkmJiFhdChib2FyZCxyb3csNikpbXYucHVzaCh7cjpyLGY6Zixucjpyb3csbmY6NixjYXM6J0snfSk7CiAgICAgICAgaWYoY2FzdFtjKydRJ10mJiFhdChib2FyZCxyb3csMykmJiFhdChib2FyZCxyb3csMikmJiFhdChib2FyZCxyb3csMSkpbXYucHVzaCh7cjpyLGY6Zixucjpyb3csbmY6MixjYXM6J1EnfSk7CiAgICAgIH0KICAgIH1lbHNlewogICAgICB2YXIgZGlycz10PT09J1InP1tbMCwxXSxbMCwtMV0sWzEsMF0sWy0xLDBdXTp0PT09J0InP1tbMSwxXSxbMSwtMV0sWy0xLDFdLFstMSwtMV1dOltbMCwxXSxbMCwtMV0sWzEsMF0sWy0xLDBdLFsxLDFdLFsxLC0xXSxbLTEsMV0sWy0xLC0xXV07CiAgICAgIGZvcih2YXIgZGkyPTA7ZGkyPGRpcnMubGVuZ3RoO2RpMisrKXt2YXIgbnI9citkaXJzW2RpMl1bMF0sbmY9ZitkaXJzW2RpMl1bMV07d2hpbGUobnI+PTAmJm5yPDgmJm5mPj0wJiZuZjw4KXt2YXIgdHA9YXQoYm9hcmQsbnIsbmYpO2lmKCF0cCl7bXYucHVzaCh7cjpyLGY6ZixucjpucixuZjpuZn0pO31lbHNle2lmKHRwWzBdIT09Yyltdi5wdXNoKHtyOnIsZjpmLG5yOm5yLG5mOm5mLGNhcDp0cH0pO2JyZWFrO31ucis9ZGlyc1tkaTJdWzBdO25mKz1kaXJzW2RpMl1bMV07fX0KICAgIH0KICB9CiAgcmV0dXJuIG12Owp9CmZ1bmN0aW9uIGFwcGx5TXYoYm9hcmQsbSxjYXN0KXsKICB2YXIgcD1ib2FyZFttLnJdW20uZl0sYz1wWzBdOwogIHZhciB1bmRvPXtyOm0ucixmOm0uZixucjptLm5yLG5mOm0ubmYscDpwLGNhcHR1cmVkOmJvYXJkW20ubnJdW20ubmZdLGNhc3RPbGQ6e3dLOmNhc3Qud0ssd1E6Y2FzdC53USxiSzpjYXN0LmJLLGJROmNhc3QuYlF9LHByb21vdGVkOmZhbHNlLGVwUGF3bjpudWxsLGNhczptLmNhc3x8bnVsbH07CiAgaWYobS5lcCl7Ym9hcmRbbS5yXVttLm5mXT1udWxsO3VuZG8uZXBQYXduPVttLnIsbS5uZl07fQogIGlmKG0uY2FzPT09J0snKXtib2FyZFttLm5yXVs1XT1ib2FyZFttLm5yXVs3XTtib2FyZFttLm5yXVs3XT1udWxsO30KICBpZihtLmNhcz09PSdRJyl7Ym9hcmRbbS5ucl1bM109Ym9hcmRbbS5ucl1bMF07Ym9hcmRbbS5ucl1bMF09bnVsbDt9CiAgYm9hcmRbbS5ucl1bbS5uZl09cDtib2FyZFttLnJdW20uZl09bnVsbDsKICBpZihwWzFdPT09J0snKXtjYXN0W2MrJ0snXT0wO2Nhc3RbYysnUSddPTA7fQogIGlmKHA9PT0nd1InJiZtLnI9PT03KXtpZihtLmY9PT0wKWNhc3Qud1E9MDtpZihtLmY9PT03KWNhc3Qud0s9MDt9CiAgaWYocD09PSdiUicmJm0ucj09PTApe2lmKG0uZj09PTApY2FzdC5iUT0wO2lmKG0uZj09PTcpY2FzdC5iSz0wO30KICBpZihwWzFdPT09J1AnJiYobS5ucj09PTB8fG0ubnI9PT03KSl7Ym9hcmRbbS5ucl1bbS5uZl09YysnUSc7dW5kby5wcm9tb3RlZD10cnVlO30KICByZXR1cm4gdW5kbzsKfQpmdW5jdGlvbiB1bmRvTXYoYm9hcmQsdW5kbyxjYXN0KXsKICBib2FyZFt1bmRvLnJdW3VuZG8uZl09dW5kby5wO2JvYXJkW3VuZG8ubnJdW3VuZG8ubmZdPXVuZG8uY2FwdHVyZWQ7CiAgaWYodW5kby5lcFBhd24pYm9hcmRbdW5kby5lcFBhd25bMF1dW3VuZG8uZXBQYXduWzFdXT0odW5kby5wWzBdPT09J3cnPydiJzondycpKydQJzsKICBjYXN0LndLPXVuZG8uY2FzdE9sZC53SztjYXN0LndRPXVuZG8uY2FzdE9sZC53UTtjYXN0LmJLPXVuZG8uY2FzdE9sZC5iSztjYXN0LmJRPXVuZG8uY2FzdE9sZC5iUTsKICBpZih1bmRvLmNhcz09PSdLJyl7dmFyIHJvdz11bmRvLnBbMF09PT0ndyc/NzowO2JvYXJkW3Jvd11bN109Ym9hcmRbcm93XVs1XTtib2FyZFtyb3ddWzVdPW51bGw7fQogIGlmKHVuZG8uY2FzPT09J1EnKXt2YXIgcm93PXVuZG8ucFswXT09PSd3Jz83OjA7Ym9hcmRbcm93XVswXT1ib2FyZFtyb3ddWzNdO2JvYXJkW3Jvd11bM109bnVsbDt9Cn0KZnVuY3Rpb24gc3FBdGsoYm9hcmQscixmLGJ5KXsKICB2YXIgbz1ieT09PSd3Jz8nYic6J3cnLGQ9Ynk9PT0ndyc/MTotMTsKICB2YXIgcDsKICBpZigocD1hdChib2FyZCxyK2QsZi0xKSkmJnA9PT1vKydQJylyZXR1cm4gdHJ1ZTsKICBpZigocD1hdChib2FyZCxyK2QsZisxKSkmJnA9PT1vKydQJylyZXR1cm4gdHJ1ZTsKICB2YXIga249W1stMiwtMV0sWy0yLDFdLFstMSwtMl0sWy0xLDJdLFsxLC0yXSxbMSwyXSxbMiwtMV0sWzIsMV1dOwogIGZvcih2YXIgaT0wO2k8ODtpKyspe2lmKChwPWF0KGJvYXJkLHIra25baV1bMF0sZitrbltpXVsxXSkpJiZwPT09bysnTicpcmV0dXJuIHRydWU7fQogIHZhciBrZz1bWy0xLC0xXSxbLTEsMF0sWy0xLDFdLFswLC0xXSxbMCwxXSxbMSwtMV0sWzEsMF0sWzEsMV1dOwogIGZvcih2YXIgaT0wO2k8ODtpKyspe2lmKChwPWF0KGJvYXJkLHIra2dbaV1bMF0sZitrZ1tpXVsxXSkpJiZwPT09bysnSycpcmV0dXJuIHRydWU7fQogIHZhciByZD1bWzAsMV0sWzAsLTFdLFsxLDBdLFstMSwwXV07CiAgZm9yKHZhciBpPTA7aTw0O2krKyl7dmFyIG5yPXIrcmRbaV1bMF0sbmY9ZityZFtpXVsxXTt3aGlsZShucj49MCYmbnI8OCYmbmY+PTAmJm5mPDgpe3ZhciB0cD1hdChib2FyZCxucixuZik7aWYodHApe2lmKHRwPT09bysnUid8fHRwPT09bysnUScpcmV0dXJuIHRydWU7YnJlYWs7fW5yKz1yZFtpXVswXTtuZis9cmRbaV1bMV07fX0KICB2YXIgYmQ9W1sxLDFdLFsxLC0xXSxbLTEsMV0sWy0xLC0xXV07CiAgZm9yKHZhciBpPTA7aTw0O2krKyl7dmFyIG5yPXIrYmRbaV1bMF0sbmY9ZitiZFtpXVsxXTt3aGlsZShucj49MCYmbnI8OCYmbmY+PTAmJm5mPDgpe3ZhciB0cD1hdChib2FyZCxucixuZik7aWYodHApe2lmKHRwPT09bysnQid8fHRwPT09bysnUScpcmV0dXJuIHRydWU7YnJlYWs7fW5yKz1iZFtpXVswXTtuZis9YmRbaV1bMV07fX0KICByZXR1cm4gZmFsc2U7Cn0KZnVuY3Rpb24ga2luZ0luQ2hlY2soYm9hcmQsYyl7CiAgZm9yKHZhciByPTA7cjw4O3IrKylmb3IodmFyIGY9MDtmPDg7ZisrKXtpZihib2FyZFtyXVtmXT09PWMrJ0snKXJldHVybiBzcUF0ayhib2FyZCxyLGYsYyk7fQogIHJldHVybiBmYWxzZTsKfQpmdW5jdGlvbiBsZWdhbE1vdmVzKGJvYXJkLGMsZXAsY2FzdCl7CiAgdmFyIHBzZXVkbz1nZW5Nb3Zlcyhib2FyZCxjLGVwLGNhc3QpLGxlZ2FsPVtdOwogIGZvcih2YXIgaT0wO2k8cHNldWRvLmxlbmd0aDtpKyspewogICAgdmFyIG09cHNldWRvW2ldOwogICAgdmFyIHVuZG89YXBwbHlNdihib2FyZCxtLGNhc3QpOwogICAgdmFyIG9rPSFraW5nSW5DaGVjayhib2FyZCxjKTsKICAgIGlmKG9rJiZtLmNhcyl7dmFyIHJvdz1jPT09J3cnPzc6MCxtaWQ9bS5jYXM9PT0nSyc/NTozO2lmKHNxQXRrKGJvYXJkLHJvdyw0LGMpfHxzcUF0ayhib2FyZCxyb3csbWlkLGMpKW9rPWZhbHNlO30KICAgIHVuZG9Ndihib2FyZCx1bmRvLGNhc3QpOwogICAgaWYob2spbGVnYWwucHVzaChtKTsKICB9CiAgcmV0dXJuIGxlZ2FsOwp9CmZ1bmN0aW9uIGV2YWx1YXRlKGJvYXJkKXsKICB2YXIgcz0wOwogIGZvcih2YXIgcj0wO3I8ODtyKyspZm9yKHZhciBmPTA7Zjw4O2YrKyl7CiAgICB2YXIgcD1ib2FyZFtyXVtmXTtpZighcCljb250aW51ZTsKICAgIHZhciBjPXBbMF0sdD1wWzFdLHJvdz1jPT09J3cnP3I6Ny1yOwogICAgdmFyIHBzPVBTVFt0XT9QU1RbdF1bcm93XVtmXTowOwogICAgcys9KGM9PT0ndyc/MTotMSkqKChQVlt0XXx8MCkrcHMpOwogIH0KICByZXR1cm4gczsKfQpmdW5jdGlvbiBtdlNjb3JlKG0sYm9hcmQpewogIHZhciBzPTA7CiAgaWYobS5jYXApe3ZhciBhdj1QVlttLmNhcFsxXV18fDAscHY9UFZbKGJvYXJkW20ucl0mJmJvYXJkW20ucl1bbS5mXT9ib2FyZFttLnJdW20uZl1bMV06J1AnKV18fDEwMDtzKz0xMCphdi1wdisxMDAwMDt9CiAgaWYobS5jYXMpcys9NTAwOwogIGlmKG0ucHJvbW90ZWQpcys9ODAwMDsKICByZXR1cm4gczsKfQpmdW5jdGlvbiBzb3J0TW92ZXMobXZzLGJvYXJkKXsKICBmb3IodmFyIGk9MDtpPG12cy5sZW5ndGg7aSsrKW12c1tpXS5fcz1tdlNjb3JlKG12c1tpXSxib2FyZCk7CiAgbXZzLnNvcnQoZnVuY3Rpb24oYSxiKXtyZXR1cm4gYi5fcy1hLl9zO30pOwp9CmZ1bmN0aW9uIHF1aWVzY2UoYm9hcmQsYSxiLGMsZXAsY2FzdCxkZXB0aCl7CiAgdmFyIHN0YW5kPWM9PT0nYic/LWV2YWx1YXRlKGJvYXJkKTpldmFsdWF0ZShib2FyZCk7CiAgaWYoZGVwdGg8PTApcmV0dXJuIHN0YW5kOwogIGlmKHN0YW5kPj1iKXJldHVybiBiOwogIGlmKHN0YW5kPmEpYT1zdGFuZDsKICB2YXIgY2Fwcz1nZW5Nb3Zlcyhib2FyZCxjLGVwLGNhc3QpOwogIHZhciBmY2Fwcz1bXTtmb3IodmFyIGk9MDtpPGNhcHMubGVuZ3RoO2krKyl7aWYoY2Fwc1tpXS5jYXB8fGNhcHNbaV0uZXB8fGNhcHNbaV0ucHJvbW90ZWQpZmNhcHMucHVzaChjYXBzW2ldKTt9CiAgc29ydE1vdmVzKGZjYXBzLGJvYXJkKTsKICBmb3IodmFyIGk9MDtpPGZjYXBzLmxlbmd0aDtpKyspewogICAgdmFyIG09ZmNhcHNbaV07CiAgICB2YXIgdW5kbz1hcHBseU12KGJvYXJkLG0sY2FzdCk7CiAgICBpZihraW5nSW5DaGVjayhib2FyZCxjKSl7dW5kb012KGJvYXJkLHVuZG8sY2FzdCk7Y29udGludWU7fQogICAgdmFyIG5lcD1tLmRwP1ttLnIrKGM9PT0ndyc/LTE6MSksbS5mXTpudWxsOwogICAgdmFyIHNjb3JlPS1xdWllc2NlKGJvYXJkLC1iLC1hLGM9PT0ndyc/J2InOid3JyxuZXAsY2FzdCxkZXB0aC0xKTsKICAgIHVuZG9Ndihib2FyZCx1bmRvLGNhc3QpOwogICAgaWYoc2NvcmU+PWIpcmV0dXJuIGI7CiAgICBpZihzY29yZT5hKWE9c2NvcmU7CiAgfQogIHJldHVybiBhOwp9CnZhciBkZWFkbGluZT0wOwpmdW5jdGlvbiBuZWdhbWF4KGJvYXJkLGRlcHRoLGEsYixjLGVwLGNhc3QpewogIGlmKERhdGUubm93KCk+ZGVhZGxpbmUpcmV0dXJuIG51bGw7CiAgdmFyIG12cz1sZWdhbE1vdmVzKGJvYXJkLGMsZXAsY2FzdCk7CiAgaWYoIW12cy5sZW5ndGgpcmV0dXJuIGtpbmdJbkNoZWNrKGJvYXJkLGMpPy0xODAwMC1kZXB0aDowOwogIGlmKGRlcHRoPT09MClyZXR1cm4gcXVpZXNjZShib2FyZCxhLGIsYyxlcCxjYXN0LDIpOwogIHNvcnRNb3ZlcyhtdnMsYm9hcmQpOwogIGZvcih2YXIgaT0wO2k8bXZzLmxlbmd0aDtpKyspewogICAgdmFyIG09bXZzW2ldOwogICAgdmFyIHVuZG89YXBwbHlNdihib2FyZCxtLGNhc3QpOwogICAgdmFyIG5lcD1tLmRwP1ttLnIrKGM9PT0ndyc/LTE6MSksbS5mXTpudWxsOwogICAgdmFyIHJhdz1uZWdhbWF4KGJvYXJkLGRlcHRoLTEsLWIsLWEsYz09PSd3Jz8nYic6J3cnLG5lcCxjYXN0KTsKICAgIHVuZG9Ndihib2FyZCx1bmRvLGNhc3QpOwogICAgaWYocmF3PT09bnVsbClyZXR1cm4gbnVsbDsKICAgIHZhciBzPS1yYXc7CiAgICBpZihzPj1iKXJldHVybiBiOwogICAgaWYocz5hKWE9czsKICB9CiAgcmV0dXJuIGE7Cn0Kc2VsZi5vbm1lc3NhZ2U9ZnVuY3Rpb24oZSl7CiAgdmFyIGRhdGE9ZS5kYXRhLGJvYXJkPWRhdGEuYm9hcmQsZXA9ZGF0YS5lcCxjYXN0PWRhdGEuY2FzdCxkaWZmPWRhdGEuZGlmZjsKICB2YXIgbGltaXRzPVs2MDAsMTIwMCwyNTAwXTsKICBkZWFkbGluZT1EYXRlLm5vdygpK2xpbWl0c1tkaWZmLTFdOwogIHZhciBtYXhEPVsyLDMsNF1bZGlmZi0xXTsKICB2YXIgcm9vdE12cz1sZWdhbE1vdmVzKGJvYXJkLCdiJyxlcCxjYXN0KTsKICBpZighcm9vdE12cy5sZW5ndGgpe3NlbGYucG9zdE1lc3NhZ2UobnVsbCk7cmV0dXJuO30KICBpZihyb290TXZzLmxlbmd0aD09PTEpe3NlbGYucG9zdE1lc3NhZ2Uocm9vdE12c1swXSk7cmV0dXJuO30KICBzb3J0TW92ZXMocm9vdE12cyxib2FyZCk7CiAgdmFyIGJlc3Q9cm9vdE12c1swXTsKICBmb3IodmFyIGRlcHRoPTE7ZGVwdGg8PW1heEQ7ZGVwdGgrKyl7CiAgICBpZihEYXRlLm5vdygpPmRlYWRsaW5lKWJyZWFrOwogICAgdmFyIGliZXN0PW51bGwsaXZhbD0tSW5maW5pdHk7CiAgICBmb3IodmFyIGk9MDtpPHJvb3RNdnMubGVuZ3RoO2krKyl7CiAgICAgIGlmKERhdGUubm93KCk+ZGVhZGxpbmUpYnJlYWs7CiAgICAgIHZhciBtPXJvb3RNdnNbaV07CiAgICAgIHZhciB1bmRvPWFwcGx5TXYoYm9hcmQsbSxjYXN0KTsKICAgICAgdmFyIG5lcD1tLmRwP1ttLnIrMSxtLmZdOm51bGw7CiAgICAgIHZhciByYXc9bmVnYW1heChib2FyZCxkZXB0aC0xLC1JbmZpbml0eSxJbmZpbml0eSwndycsbmVwLGNhc3QpOwogICAgICB1bmRvTXYoYm9hcmQsdW5kbyxjYXN0KTsKICAgICAgaWYocmF3PT09bnVsbCljb250aW51ZTsKICAgICAgdmFyIHM9LXJhdzsKICAgICAgaWYocz5pdmFsKXtpdmFsPXM7aWJlc3Q9bTt9CiAgICB9CiAgICBpZihpYmVzdCliZXN0PWliZXN0OwogIH0KICBzZWxmLnBvc3RNZXNzYWdlKGJlc3QpOwp9Ow==";
+function b64decode(s){
+  try{
+    const bin=atob(s);const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }catch(e){return '';}
 }
-
-// ── Apply move, return undo info ──
-function applyMv(board,m,cast,ep){
-  const p=board[m.r][m.f],c=p[0];
-  const undo={r:m.r,f:m.f,nr:m.nr,nf:m.nf,p,captured:board[m.nr][m.nf],epOld:ep,castOld:{...cast},promoted:false,epPawn:null};
-  if(m.ep){board[m.r][m.nf]=null;undo.epPawn=[m.r,m.nf];}
-  if(m.cas==='K'){board[m.nr][5]=board[m.nr][7];board[m.nr][7]=null;}
-  if(m.cas==='Q'){board[m.nr][3]=board[m.nr][0];board[m.nr][0]=null;}
-  board[m.nr][m.nf]=p;board[m.r][m.f]=null;
-  if(p[1]==='K'){cast[c+'K']=0;cast[c+'Q']=0;}
-  if(p==='wR'&&m.r===7){if(m.f===0)cast.wQ=0;if(m.f===7)cast.wK=0;}
-  if(p==='bR'&&m.r===0){if(m.f===0)cast.bQ=0;if(m.f===7)cast.bK=0;}
-  if(p[1]==='P'&&(m.nr===0||m.nr===7)){board[m.nr][m.nf]=c+'Q';undo.promoted=true;}
-  return undo;
-}
-function undoMv(board,undo,cast){
-  const{r,f,nr,nf,p,captured,epOld,castOld,promoted,epPawn}=undo;
-  board[r][f]=p;board[nr][nf]=captured;
-  if(epPawn)board[epPawn[0]][epPawn[1]]=(p[0]==='w'?'b':'w')+'P';
-  const c=p[0];
-  if(p[1]==='K'||p==='wR'||p==='bR')Object.assign(cast,castOld);
-  if(undo.cas==='K'){const row=c==='w'?7:0;board[row][7]=board[row][5];board[row][5]=null;}
-  if(undo.cas==='Q'){const row=c==='w'?7:0;board[row][0]=board[row][3];board[row][3]=null;}
-}
-
-// ── Is square attacked by opp? ──
-function sqAtk(board,r,f,by){
-  const o=by==='w'?'b':'w';
-  // pawns
-  const d=by==='w'?1:-1;
-  for(const df of[-1,1]){const p=at(board,r+d,f+df);if(p===o+'P')return true;}
-  // knights
-  for(const[a,b]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){const p=at(board,r+a,f+b);if(p===o+'N')return true;}
-  // kings
-  for(const[a,b]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const p=at(board,r+a,f+b);if(p===o+'K')return true;}
-  // rooks/queens
-  for(const[a,b]of[[0,1],[0,-1],[1,0],[-1,0]]){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const p=at(board,nr,nf);if(p){if(p===o+'R'||p===o+'Q')return true;break;}nr+=a;nf+=b;}}
-  // bishops/queens
-  for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]]){let nr=r+a,nf=f+b;while(nr>=0&&nr<8&&nf>=0&&nf<8){const p=at(board,nr,nf);if(p){if(p===o+'B'||p===o+'Q')return true;break;}nr+=a;nf+=b;}}
-  return false;
-}
-function kingAtk(board,c){
-  for(let r=0;r<8;r++)for(let f=0;f<8;f++){if(board[r][f]===c+'K')return sqAtk(board,r,f,c);}
-  return false;
-}
-
-// ── Legal move filter ──
-function legalMoves(board,c,ep,cast){
-  const pseudo=genMoves(board,c,ep,cast);
-  const legal=[];
-  for(const m of pseudo){
-    const undo=applyMv(board,m,cast,ep);
-    // check castling legality (king not passing through attacked square)
-    let ok=!kingAtk(board,c);
-    if(ok&&m.cas){
-      const row=c==='w'?7:0;
-      const mid=m.cas==='K'?5:3;
-      if(sqAtk(board,row,4,c)||sqAtk(board,row,mid,c))ok=false;
-    }
-    undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
-    if(ok)legal.push(m);
-  }
-  return legal;
-}
-
-// ── Evaluation ──
-function evaluate(board){
-  let score=0;
-  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
-    const p=board[r][f];if(!p)continue;
-    const c=p[0],t=p[1];
-    const pv=PV[t]||0;
-    const row=c==='w'?r:7-r;
-    const ps=(PST[t]&&PST[t][row])?PST[t][row][f]:0;
-    score+=(c==='w'?1:-1)*(pv+ps);
-  }
-  return score;
-}
-
-// ── Move ordering score (captures first, then by PST gain) ──
-function mvScore(m,board){
-  let s=0;
-  if(m.cap){const at=PV[m.cap[1]]||0,ag=PV[board[m.r][m.f][1]]||0;s+=10*at-ag+1000;}
-  if(m.cas)s+=50;
-  if(m.dp)s+=10;
-  return s;
-}
-function sortMoves(mvs,board){mvs.sort((a,b)=>mvScore(b,board)-mvScore(a,board));}
-
-// ── Quiescence search (captures only) ──
-function quiesce(board,a,b,c,ep,cast,depth){
-  const stand=c==='w'?evaluate(board):-evaluate(board);
-  if(depth<=0)return stand;
-  if(stand>=b)return b;
-  if(stand>a)a=stand;
-  const caps=genMoves(board,c,ep,cast).filter(m=>m.cap||m.ep||m.promoted);
-  sortMoves(caps,board);
-  for(const m of caps){
-    const undo=applyMv(board,m,cast,ep);
-    if(kingAtk(board,c)){undoMv(board,undo,cast);Object.assign(cast,undo.castOld);continue;}
-    const nep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
-    const score=-quiesce(board,-(b),-( a),c==='w'?'b':'w',nep,cast,depth-1);
-    undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
-    if(score>=b)return b;
-    if(score>a)a=score;
-  }
-  return a;
-}
-
-// ── Negamax with alpha-beta ──
-const DEADLINE=200; // ms per depth iteration
-let startTime;
-function negamax(board,depth,a,b,c,ep,cast){
-  if(Date.now()-startTime>DEADLINE)return null; // timeout
-  const mvs=legalMoves(board,c,ep,cast);
-  if(!mvs.length)return kingAtk(board,c)?-19000+depth:0; // mate or stalemate
-  if(depth===0)return quiesce(board,a,b,c,ep,cast,4);
-  sortMoves(mvs,board);
-  for(const m of mvs){
-    const undo=applyMv(board,m,cast,ep);
-    const nep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
-    const score=negamax(board,depth-1,-b,-a,c==='w'?'b':'w',nep,cast);
-    undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
-    if(score===null)return null;
-    const s=-score;
-    if(s>=b)return b;
-    if(s>a)a=s;
-  }
-  return a;
-}
-
-// ── Iterative deepening root search ──
-self.onmessage=function(e){
-  const{board,ep,cast,diff}=e.data;
-  const c='b';
-  const maxDepth=[2,3,5][diff-1];
-  const timeLimits=[400,800,1500][diff-1];
-  startTime=Date.now();
-  let bestMove=null;
-  const rootMvs=legalMoves(board,c,ep,cast);
-  if(!rootMvs.length){self.postMessage(null);return;}
-  if(rootMvs.length===1){self.postMessage(rootMvs[0]);return;}
-  sortMoves(rootMvs,board);
-
-  for(let depth=1;depth<=maxDepth;depth++){
-    if(Date.now()-startTime>timeLimits)break;
-    let best=null,bv=-Infinity;
-    for(const m of rootMvs){
-      if(Date.now()-startTime>timeLimits)break;
-      const undo=applyMv(board,m,cast,ep);
-      const nep=m.dp?[m.r+(c==='w'?-1:1),m.f]:null;
-      const score=negamax(board,depth-1,-Infinity,Infinity,'w',nep,cast);
-      undoMv(board,undo,cast);Object.assign(cast,undo.castOld);
-      if(score===null)continue;
-      const s=-score;
-      if(s>bv){bv=s;best=m;}
-    }
-    if(best)bestMove=best;
-  }
-  self.postMessage(bestMove||rootMvs[0]);
-};
-`;
-let aiWorker = null;
+let aiWorker=null;
 function getWorker(){
-  if(aiWorker){aiWorker.terminate();}
-  const blob = new Blob([WORKER_CODE], {type:'application/javascript'});
-  aiWorker = new Worker(URL.createObjectURL(blob));
-  return aiWorker;
-}
-let aiWorker = null;
-function getWorker(){
-  if(aiWorker) return aiWorker;
-  const blob = new Blob([WORKER_CODE], {type:'application/javascript'});
-  aiWorker = new Worker(URL.createObjectURL(blob));
+  if(aiWorker)return aiWorker;
+  try{
+    const js=b64decode(WORKER_B64);
+    const blob=new Blob([js],{type:'application/javascript'});
+    const url=URL.createObjectURL(blob);
+    aiWorker=new Worker(url);
+  }catch(e){aiWorker=null;}
   return aiWorker;
 }
 
@@ -682,10 +442,9 @@ function hintMv(){
   let best=null,bv=-Infinity;
   for(const x of mv.sort(()=>Math.random()-.5)){
     const sb=board.map(a=>[...a]),se=ep,sc={...cast};
-    doMv(x.r,x.f,x.m);
-    const v=evlLocal();
+    doMv(x.r,x.f,x.m);const v=evlLocal();
     board=sb;ep=se;Object.assign(cast,sc);
-    if(v>bv){bv=v;best=x;}
+    if(v>bv){bv=v;best={r:x.r,f:x.f};}
   }
   return best;
 }
