@@ -71,16 +71,19 @@ body{
   flex:1 1 auto;
   min-height:0;
   margin:0 10px;
-  border-radius:6px;padding:4px;border:2px solid #333;
+  border-radius:6px;
+  padding:0;
+  border:2px solid #333;
   background:#0d1117;
-  display:flex;align-items:center;justify-content:center;
   overflow:hidden;
+  display:block;
 }
 #sscreen{
   position:relative;
-  /* size set by JS */
+  width:100%;
+  height:100%;
 }
-canvas{display:block;}
+canvas{display:block;width:100%;height:100%;}
 #overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -270,19 +273,23 @@ var COLS=20,ROWS=20;
 var cv=document.getElementById('c');
 var ctx=cv.getContext('2d');
 
-// Size canvas to fit the sborder container after layout
+// Size canvas to exactly fill sborder
 function sizeCanvas() {
   var sb = document.getElementById('sborder');
-  var availW = sb.clientWidth - 8;   // minus padding*2
-  var availH = sb.clientHeight - 8;
+  var availW = sb.clientWidth;
+  var availH = sb.clientHeight;
+  // Use the smaller dimension to keep square cells, fill the full area
   var cellW = Math.floor(availW / COLS);
   var cellH = Math.floor(availH / ROWS);
   CELL = Math.max(8, Math.min(cellW, cellH));
   W = COLS * CELL; H = ROWS * CELL;
   cv.width = W; cv.height = H;
+  // Stretch canvas visually to fill sborder completely
+  cv.style.width = availW + 'px';
+  cv.style.height = availH + 'px';
   var sc = document.getElementById('sscreen');
-  sc.style.width = W + 'px';
-  sc.style.height = H + 'px';
+  sc.style.width = availW + 'px';
+  sc.style.height = availH + 'px';
 }
 var CELL = 14; // will be recalculated
 var W = COLS*CELL, H = ROWS*CELL;
