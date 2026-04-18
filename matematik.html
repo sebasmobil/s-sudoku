@@ -136,16 +136,26 @@
   .diff-card[data-diff="hard"] .diff-name { color: var(--accent3); }
 
   /* ---- OPS ---- */
-  .ops-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 28px; }
+  .ops-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
   .op-btn {
     background: var(--card); border-radius: 16px; padding: 14px 6px;
-    text-align: center; cursor: pointer; border: 3px solid transparent;
-    transition: all 0.22s; box-shadow: 0 3px 12px var(--shadow); font-size: 0.85rem;
-    font-weight: 700; color: var(--text2);
+    text-align: center; cursor: pointer; border: 3px solid var(--card2);
+    box-shadow: 0 3px 12px var(--shadow); font-size: 0.9rem;
+    font-weight: 800; color: var(--text);
   }
-  .op-btn:hover { transform: scale(1.07); }
-  .op-btn.selected { border-color: var(--accent4); background: var(--card2); color: var(--accent4); }
-  .op-btn .op-sym { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+  .op-btn .op-sym {
+    font-family: 'Baloo 2', cursive;
+    font-size: 2rem; font-weight: 800;
+    display: block; margin-bottom: 6px;
+    line-height: 1; color: var(--accent4);
+  }
+  .op-btn.selected .op-sym { color: #ffffff; }
+  .op-btn.selected {
+    border-color: var(--accent4);
+    background: var(--accent4);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(17,138,178,0.45);
+  }
 
   .mixed-btn-wrap { margin-bottom: 16px; }
   .mixed-btn {
@@ -226,14 +236,15 @@
 
   .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .ans-btn {
-    background: var(--card); border: 3px solid var(--card2); border-radius: 20px;
+    background: var(--card); border: 3px solid transparent; border-radius: 20px;
     padding: 18px 12px; font-family: 'Baloo 2', cursive; font-size: 1.6rem;
-    color: var(--text); cursor: pointer; transition: all 0.2s;
+    color: var(--text); cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.15s, color 0.15s;
     box-shadow: 0 4px 15px var(--shadow); position: relative; overflow: hidden;
   }
-  .ans-btn:hover:not(:disabled) { transform: scale(1.04); border-color: var(--accent); color: var(--accent); }
-  .ans-btn.correct { background: var(--correct); border-color: var(--correct); color: white; animation: popIn 0.3s ease; }
-  .ans-btn.wrong { background: var(--wrong); border-color: var(--wrong); color: white; animation: shake 0.4s ease; }
+  .ans-btn:active:not(:disabled) { transform: scale(0.97); }
+  .ans-btn.correct { background: var(--correct); border-color: var(--correct); color: white; animation: popIn 0.3s ease; transition: none; }
+  .ans-btn.wrong { background: var(--wrong); border-color: var(--wrong); color: white; animation: shake 0.4s ease; transition: none; }
   .ans-btn:disabled { cursor: default; }
   @keyframes popIn { 0%{transform:scale(0.9)} 60%{transform:scale(1.08)} 100%{transform:scale(1)} }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
@@ -420,10 +431,10 @@
 
     <div class="section-title">➕ İŞLEM TÜRÜ</div>
     <div class="ops-grid" id="ops-grid">
-      <div class="op-btn selected" data-op="add"><span class="op-sym">➕</span>Toplama</div>
-      <div class="op-btn" data-op="sub"><span class="op-sym">➖</span>Çıkarma</div>
-      <div class="op-btn" data-op="mul"><span class="op-sym">✖️</span>Çarpma</div>
-      <div class="op-btn" data-op="div"><span class="op-sym">➗</span>Bölme</div>
+      <div class="op-btn selected" data-op="add"><span class="op-sym">+</span>Toplama</div>
+      <div class="op-btn" data-op="sub"><span class="op-sym">−</span>Çıkarma</div>
+      <div class="op-btn" data-op="mul"><span class="op-sym">×</span>Çarpma</div>
+      <div class="op-btn" data-op="div"><span class="op-sym">÷</span>Bölme</div>
     </div>
     <div class="mixed-btn-wrap">
       <button class="mixed-btn" id="mixed-btn">🎲 KARIŞIK MOD — Hepsini Karıştır!</button>
@@ -798,17 +809,30 @@ function nextQuestion() {
   document.getElementById('q-op').textContent = parts[1];
   document.getElementById('q-num2').textContent = parts[2];
 
-  // Choices
+  // Choices — önce mevcut butonları anında sıfırla, sonra doldur
   const choices = generateChoices(q.answer, op);
   const grid = document.getElementById('answers-grid');
+
+  // Önce tüm eski butonların stil/sınıfını sıfırla (border flash olmasın)
+  grid.querySelectorAll('.ans-btn').forEach(b => {
+    b.className = 'ans-btn';
+    b.style.cssText = '';
+    b.disabled = false;
+  });
   grid.innerHTML = '';
+
   choices.forEach(choice => {
     const btn = document.createElement('button');
-    btn.className = 'ans-btn';
+    btn.className = 'ans-btn no-hover';
     btn.textContent = choice;
     btn.addEventListener('click', () => handleAnswer(choice, btn));
     grid.appendChild(btn);
   });
+
+  // Kısa süre sonra hover'ı aktif et (parmak/fare üstte kalsa bile anlık turuncu olmasın)
+  setTimeout(() => {
+    grid.querySelectorAll('.ans-btn').forEach(b => b.classList.remove('no-hover'));
+  }, 300);
 
   // Timer
   startTimer(gameState.config.time);
@@ -869,7 +893,14 @@ function handleAnswer(chosen, btn) {
     updateScoreUI();
   }
 
-  setTimeout(() => { nextQuestion(); }, 1200);
+  setTimeout(() => {
+    // Yeni soru gelmeden önce tüm buton sınıf ve stillerini tamamen sıfırla
+    document.querySelectorAll('.ans-btn').forEach(b => {
+      b.className = 'ans-btn';
+      b.style.cssText = '';
+    });
+    nextQuestion();
+  }, 1200);
 }
 
 function updateScoreUI() {
