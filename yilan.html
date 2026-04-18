@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Snake v1.0 -->
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
@@ -6,13 +7,19 @@
 <title>Yilan Oyunu</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;}
-body{background:#111;color:#eee;display:flex;flex-direction:column;align-items:center;}
+html{height:100%;}
+body{
+  width:100%;height:100%;max-height:100vh;
+  overflow:hidden;font-family:Arial,sans-serif;
+  background:#111;color:#eee;
+  display:flex;flex-direction:column;align-items:stretch;
+}
 
 /* ── TOP STATS ── */
 #topbar{
+  flex:0 0 auto;
   display:flex;align-items:center;justify-content:space-between;
-  width:100%;padding:6px 12px 2px;
+  padding:6px 12px 2px;
 }
 .hb{display:flex;flex-direction:column;min-width:50px;}
 .hb.r{align-items:flex-end;}
@@ -21,14 +28,16 @@ body{background:#111;color:#eee;display:flex;flex-direction:column;align-items:c
 #lvlbadge{display:flex;flex-direction:column;align-items:center;border-radius:10px;padding:3px 12px;border:1px solid #3a3a3a;}
 #lvltxt{font-size:9px;letter-spacing:1px;opacity:0.45;}
 #lvlnum{font-size:15px;font-weight:700;color:#3fb950;line-height:1.1;}
+#verlbl{font-size:8px;letter-spacing:1px;opacity:0.35;margin-top:1px;}
 
 /* ── ACTION BAR ── */
 #actionbar{
+  flex:0 0 auto;
   display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:4px 12px;
+  padding:3px 12px;
 }
 #startbtn{
-  width:48px;height:48px;border-radius:24px;
+  width:46px;height:46px;border-radius:23px;
   background:#3fb950;border:3px solid #56d364;
   color:#0d1117;font-size:20px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
@@ -38,65 +47,86 @@ body{background:#111;color:#eee;display:flex;flex-direction:column;align-items:c
 #startbtn:active{opacity:0.8;}
 #startbtn.pau{background:#f0a030;border-color:#f5b942;}
 #thsel{
-  font-size:12px;padding:6px 8px;border-radius:10px;cursor:pointer;
+  font-size:11px;padding:5px 6px;border-radius:10px;cursor:pointer;
   outline:none;border:1px solid #444;background:#222;color:#aaa;
-  flex:1;min-width:0;
+  flex:0 0 auto;width:110px;text-align:center;
 }
 #sndbtn{
-  font-size:13px;padding:6px 10px;border-radius:10px;cursor:pointer;
+  font-size:13px;padding:5px 10px;border-radius:10px;cursor:pointer;
   border:1px solid #444;background:#222;color:#aaa;
   -webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;
 }
 
 /* ── SPEED ROW ── */
 #speedrow{
+  flex:0 0 auto;
   display:flex;align-items:center;gap:3px;
-  width:100%;padding:2px 12px 3px;
+  padding:2px 12px 3px;
 }
 #speedlbl{font-size:9px;color:#555;letter-spacing:1px;margin-right:3px;flex-shrink:0;}
-.sdot{height:6px;flex:1;border-radius:3px;}
+.sdot{height:5px;flex:1;border-radius:3px;}
 
-/* ── CANVAS ── */
+/* ── CANVAS — grows to fill remaining space ── */
 #sborder{
-  width:100%;border-radius:6px;padding:4px;border:2px solid #333;
-  background:#0d1117;flex-shrink:1;min-height:0;
+  flex:1 1 auto;
+  min-height:0;
+  margin:0 10px;
+  border-radius:6px;padding:4px;border:2px solid #333;
+  background:#0d1117;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
 }
-#sscreen{position:relative;width:100%;overflow:hidden;border-radius:2px;}
-canvas{display:block;width:100%;height:auto;}
+#sscreen{
+  position:relative;
+  /* size set by JS */
+}
+canvas{display:block;}
 #overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:5px;pointer-events:none;
 }
-#otitle{font-size:5.5vw;font-weight:800;letter-spacing:2px;text-align:center;}
-#osub{font-size:3vw;text-align:center;opacity:0.65;}
+#otitle{font-size:22px;font-weight:800;letter-spacing:2px;text-align:center;}
+#osub{font-size:12px;text-align:center;opacity:0.65;}
 
-/* ── CONTROLS WRAPPER ── */
+/* ── CONTROLS ── */
 #controls{
+  flex:0 0 auto;
   display:flex;align-items:center;justify-content:center;
-  width:100%;padding:6px 12px 4px;gap:12px;
+  padding:5px 12px 6px;gap:10px;
 }
-#ccw,#cw{
-  width:52px;height:52px;border-radius:12px;
-  font-size:24px;font-weight:700;cursor:pointer;
+#ccw{
+  width:50px;height:50px;border-radius:12px;
+  font-size:22px;font-weight:700;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   -webkit-user-select:none;user-select:none;
   -webkit-tap-highlight-color:transparent;
-  border:1.5px solid #555;background:#2a2a2a;color:#ddd;
-  flex-shrink:0;
+  border:1.5px solid #c0392b;background:#c0392b;color:#fff;
+  flex-shrink:0;margin-right:14px;
+}
+#cw{
+  width:50px;height:50px;border-radius:12px;
+  font-size:22px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  border:1.5px solid #27ae60;background:#27ae60;color:#fff;
+  flex-shrink:0;margin-left:14px;
 }
 #ccw:active,#cw:active{opacity:0.7;}
+
+/* dpad — CSS grid, positions guaranteed */
 #dpad{
   display:grid;
-  grid-template-columns:54px 54px 54px;
-  grid-template-rows:54px 54px 54px;
+  grid-template-columns:50px 50px 50px;
+  grid-template-rows:50px 50px 50px;
   gap:4px;
   flex-shrink:0;
 }
 .dp{
-  width:54px;height:54px;border-radius:12px;
+  width:50px;height:50px;border-radius:12px;
   background:#2a2a2a;border:1.5px solid #555;
-  color:#ddd;font-size:22px;cursor:pointer;
+  color:#ddd;font-size:20px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   -webkit-user-select:none;user-select:none;
   -webkit-tap-highlight-color:transparent;
@@ -122,7 +152,7 @@ canvas{display:block;width:100%;height:auto;}
 
 <div id="topbar">
   <div class="hb"><span class="hl">PUAN</span><span class="hv" id="score">0</span></div>
-  <div id="lvlbadge"><div id="lvltxt">SEVİYE</div><div id="lvlnum">1</div></div>
+  <div id="lvlbadge"><div id="lvltxt">SEVİYE</div><div id="lvlnum">1</div><div id="verlbl">v1.0</div></div>
   <div class="hb r"><span class="hl">EN İYİ</span><span class="hv" id="best">0</span></div>
 </div>
 
@@ -131,7 +161,7 @@ canvas{display:block;width:100%;height:auto;}
   <select id="thsel">
     <option value="dark">🌙 Karanlık</option>
     <option value="light">☀️ Aydınlık</option>
-    <option value="nokia">📱 Nokia</option>
+    <option value="nokia">📱 Yeşil</option>
   </select>
   <button id="sndbtn">🔊 Ses</button>
 </div>
@@ -219,12 +249,13 @@ function applyTheme(name) {
   document.getElementById('sborder').style.background = t.bg;
   var dps = document.querySelectorAll('.dp');
   for (var i=0;i<dps.length;i++){dps[i].style.background=t.btnBg;dps[i].style.borderColor=t.btnBorder;dps[i].style.color=t.btnText;}
-  document.getElementById('ccw').style.background=t.btnBg;
-  document.getElementById('ccw').style.borderColor=t.btnBorder;
-  document.getElementById('ccw').style.color=t.btnText;
-  document.getElementById('cw').style.background=t.btnBg;
-  document.getElementById('cw').style.borderColor=t.btnBorder;
-  document.getElementById('cw').style.color=t.btnText;
+  // * and # keep their fixed colors regardless of theme
+  document.getElementById('ccw').style.background='#c0392b';
+  document.getElementById('ccw').style.borderColor='#c0392b';
+  document.getElementById('ccw').style.color='#fff';
+  document.getElementById('cw').style.background='#27ae60';
+  document.getElementById('cw').style.borderColor='#27ae60';
+  document.getElementById('cw').style.color='#fff';
   var mbox=document.getElementById('mbox');
   mbox.style.background=t.mBg;mbox.style.borderColor=t.mBorder;mbox.style.color=t.mText;
   var mbts=document.querySelectorAll('.mbt:not(.ok)');
@@ -239,18 +270,21 @@ var COLS=20,ROWS=20;
 var cv=document.getElementById('c');
 var ctx=cv.getContext('2d');
 
-// Reserve space: topbar(48)+actionbar(60)+speedrow(20)+padding(16)+controls(200)+gaps(36) = 380
-function calcCell() {
-  var bodyH = window.innerHeight;
-  var bodyW = window.innerWidth;
-  var reserved = 380;
-  var availH = bodyH - reserved;
-  var availW = bodyW - 28;
+// Size canvas to fit the sborder container after layout
+function sizeCanvas() {
+  var sb = document.getElementById('sborder');
+  var availW = sb.clientWidth - 8;   // minus padding*2
+  var availH = sb.clientHeight - 8;
   var cellW = Math.floor(availW / COLS);
   var cellH = Math.floor(availH / ROWS);
-  return Math.max(8, Math.min(cellW, cellH));
+  CELL = Math.max(8, Math.min(cellW, cellH));
+  W = COLS * CELL; H = ROWS * CELL;
+  cv.width = W; cv.height = H;
+  var sc = document.getElementById('sscreen');
+  sc.style.width = W + 'px';
+  sc.style.height = H + 'px';
 }
-var CELL = calcCell();
+var CELL = 14; // will be recalculated
 var W = COLS*CELL, H = ROWS*CELL;
 cv.width = W; cv.height = H;
 
@@ -497,10 +531,14 @@ cvEl.addEventListener('touchend',function(e){
 },{passive:false});
 
 // ── BOOT ─────────────────────────────────────────────────────
-applyTheme('dark');
-updateDots();
-ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);
-show('SNAKE','Yeşil tuşa bas');
+// Wait for layout then size canvas
+window.addEventListener('load', function() {
+  sizeCanvas();
+  applyTheme('dark');
+  updateDots();
+  ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);
+  show('SNAKE','Yeşil tuşa bas');
+});
 </script>
 </body>
 </html>
