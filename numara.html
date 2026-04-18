@@ -708,7 +708,17 @@ function spawnBatch(count) {
     totalSpawned++;
     spawnToken(num, aW, aH);
   }
+  ensureNextTargetExists();
   highlightTarget();
+}
+
+function ensureNextTargetExists() {
+  const exists = tokens.find(t => parseInt(t.dataset.num) === nextTarget);
+  if (!exists) {
+    const arena = $id('arena');
+    if (nextTarget > totalSpawned) totalSpawned = nextTarget;
+    spawnToken(nextTarget, arena.offsetWidth, arena.offsetHeight);
+  }
 }
 
 function spawnToken(num, aW, aH) {
@@ -732,7 +742,11 @@ function spawnToken(num, aW, aH) {
 }
 
 function spawnBombs(count) {
-  const candidates = tokens.filter(t => parseInt(t.dataset.num) !== nextTarget && t.dataset.bomb !== '1');
+  // Sadece nextTarget'tan en az 3 fazla olan sayılara bomba koy
+  const candidates = tokens.filter(t => {
+    const n = parseInt(t.dataset.num);
+    return n > nextTarget + 2 && t.dataset.bomb !== '1';
+  });
   for (let i = 0; i < count && candidates.length; i++) {
     const pick = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
     pick.classList.add('bomb');
@@ -743,23 +757,37 @@ function spawnBombs(count) {
 function highlightTarget() {
   tokens.forEach(t => {
     t.classList.remove('target-glow');
-    if (parseInt(t.dataset.num) === nextTarget) t.classList.add('target-glow');
+    if (parseInt(t.dataset.num) === nextTarget) {
+      // Sıradaki sayı yanlışlıkla bomba işaretlendiyse kaldır
+      if (t.dataset.bomb === '1') {
+        t.classList.remove('bomb');
+        t.dataset.bomb = '';
+      }
+      t.classList.add('target-glow');
+    }
   });
 }
 
 function handleClick(num, el) {
   if (!gameActive) return;
 
+  // Sıradaki sayı bomba işaretliyse bombayı kaldır, normal davran
+  if (parseInt(el.dataset.num) === nextTarget && el.dataset.bomb === '1') {
+    el.classList.remove('bomb');
+    el.dataset.bomb = '';
+  }
+
   if (el.dataset.bomb === '1') {
     combo = 1; streak = 0;
     $id('combo').textContent = 'x1';
     $id('combo-fill').style.width = '0%';
+    $id('combo-fill').style.background = '#3dffc0';
     $id('combo-txt').textContent = '0/7';
     $id('streak').textContent = '0';
-    setMsg('💣 BOOM! Bombaya bastın!');
-    el.style.background = 'rgba(255,90,90,0.35)';
+    setMsg('💣 BOOM! Bombaya bastın! Combo sıfırlandı!');
+    el.style.boxShadow = '0 0 0 4px rgba(255,90,90,0.6)';
+    setTimeout(() => { if (el.parentNode) el.style.boxShadow = ''; }, 500);
     clearTimeout(comboDecay);
-    setTimeout(() => { if (el.parentNode) removeToken(el); }, 320);
     return;
   }
 
@@ -800,8 +828,12 @@ function handleClick(num, el) {
     removeToken(el);
     nextTarget++;
     $id('next-num').textContent = nextTarget;
-    if (nextTarget > totalSpawned) spawnBatch(TNUM);
-    else highlightTarget();
+    if (nextTarget > totalSpawned) {
+      spawnBatch(TNUM);
+    } else {
+      ensureNextTargetExists();
+      highlightTarget();
+    }
 
   } else {
     combo = 1; streak = 0;
@@ -878,7 +910,8 @@ function usePower(type) {
   } else if (type === 'bomb') {
     let removed = 0;
     [...tokens].forEach(t => {
-      if (parseInt(t.dataset.num) !== nextTarget && t.dataset.bomb !== '1' && removed < 3) {
+      const n = parseInt(t.dataset.num);
+      if (n > nextTarget + 1 && t.dataset.bomb !== '1' && removed < 3) {
         showPop(t, 'PAT!', '#fa6c8a');
         removeToken(t);
         removed++;
