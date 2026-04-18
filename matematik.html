@@ -175,6 +175,37 @@
     opacity: 0.35; pointer-events: none;
   }
 
+  /* ---- SORU TÜRÜ ---- */
+  .qtype-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
+  .qtype-btn {
+    background: var(--card); border: 3px solid var(--card2); border-radius: 16px;
+    padding: 12px 6px; text-align: center; cursor: pointer;
+    box-shadow: 0 3px 10px var(--shadow); transition: all 0.2s;
+  }
+  .qtype-btn.selected {
+    border-color: var(--accent3); background: var(--accent3);
+    box-shadow: 0 4px 16px rgba(239,71,111,0.4);
+  }
+  .qtype-sym {
+    display: block; font-family: 'Baloo 2', cursive; font-size: 0.88rem;
+    font-weight: 700; color: var(--text2); margin-bottom: 6px; letter-spacing: -0.5px;
+  }
+  .qtype-sym b { color: var(--accent3); font-size: 1rem; }
+  .qtype-btn.selected .qtype-sym { color: rgba(255,255,255,0.9); }
+  .qtype-btn.selected .qtype-sym b { color: #ffffff; }
+  .qtype-lbl {
+    display: block; font-size: 0.75rem; font-weight: 800;
+    color: var(--text2); letter-spacing: 0.3px;
+  }
+  .qtype-btn.selected .qtype-lbl { color: rgba(255,255,255,0.85); }
+
+  /* eksik sayı sorusunda soru işareti */
+  .q-missing {
+    color: var(--accent3) !important;
+    font-size: 1.1em;
+    font-weight: 900;
+  }
+
   .start-btn {
     display: block; width: 100%; padding: 16px; border-radius: 18px; border: none;
     background: linear-gradient(135deg, var(--accent), #ff9a3c);
@@ -441,6 +472,22 @@
       <button class="mixed-btn" id="mixed-btn">🎲 KARIŞIK MOD — Hepsini Karıştır!</button>
     </div>
 
+    <div class="section-title">🔍 SORU TÜRÜ</div>
+    <div class="qtype-grid">
+      <div class="qtype-btn selected" data-qtype="normal">
+        <span class="qtype-sym">5 + 3 = <b>?</b></span>
+        <span class="qtype-lbl">Sonucu Bul</span>
+      </div>
+      <div class="qtype-btn" data-qtype="missing">
+        <span class="qtype-sym"><b>?</b> + 3 = 8</span>
+        <span class="qtype-lbl">Eksik Sayı</span>
+      </div>
+      <div class="qtype-btn" data-qtype="both">
+        <span class="qtype-sym">5 + <b>?</b> = 8</span>
+        <span class="qtype-lbl">Karışık Tür</span>
+      </div>
+    </div>
+
     <button class="start-btn" id="start-btn">🚀 OYUNU BAŞLAT!</button>
   </div>
 
@@ -453,10 +500,10 @@
     <div class="question-card">
       <div class="op-badge" id="op-badge">TOPLAMA</div>
       <div class="question-text" id="question-text">
-        <span class="num" id="q-num1">5</span>
+        <span id="q-num1">5</span>
         <span class="operator" id="q-op">+</span>
-        <span class="num2" id="q-num2">3</span>
-        <span class="eq">= ?</span>
+        <span id="q-num2">3</span>
+        <span class="eq" id="q-eq">= ?</span>
       </div>
       <div class="timer-ring-wrap">
         <div class="timer-ring">
@@ -617,6 +664,18 @@ document.getElementById('sound-btn').addEventListener('click', () => {
 let selectedDiff = 'medium';
 let selectedOps = new Set(['add']);
 let mixedMode = false;
+let selectedQtype = 'normal'; // 'normal' | 'missing' | 'both'
+
+// Soru türü seçimi
+document.querySelectorAll('.qtype-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.qtype-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedQtype = btn.dataset.qtype;
+    settings.qtype = selectedQtype; saveSettings();
+    playTone(440,'sine',0.08,0.12);
+  });
+});
 
 document.querySelectorAll('.diff-card').forEach(card => {
   card.addEventListener('click', () => {
@@ -696,6 +755,11 @@ function applySelections() {
     });
   }
   updateCharacter();
+  // qtype
+  selectedQtype = settings.qtype || 'normal';
+  document.querySelectorAll('.qtype-btn').forEach(b=>{
+    b.classList.toggle('selected', b.dataset.qtype === selectedQtype);
+  });
 }
 
 // ==================== SCREEN NAV ====================
@@ -782,19 +846,34 @@ function pickOp(ops) {
 
 function generateQuestion(op, config) {
   const max = config.max;
-  let a, b, answer, display;
+  let a, b, answer, op_sym;
   if (op === 'add') {
-    a = rand(1, max); b = rand(1, max); answer = a+b; display = `${a} + ${b}`;
+    a = rand(1, max); b = rand(1, max); answer = a+b; op_sym = '+';
   } else if (op === 'sub') {
-    a = rand(2, max); b = rand(1, a); answer = a-b; display = `${a} − ${b}`;
+    a = rand(2, max); b = rand(1, a); answer = a-b; op_sym = '−';
   } else if (op === 'mul') {
     const mmax = Math.min(max, 12);
-    a = rand(1, mmax); b = rand(1, mmax); answer = a*b; display = `${a} × ${b}`;
-  } else { // div
-    b = rand(1, Math.min(max,12)); answer = rand(1, Math.floor(max/b)||1); a = b*answer;
-    display = `${a} ÷ ${b}`;
+    a = rand(1, mmax); b = rand(1, mmax); answer = a*b; op_sym = '×';
+  } else {
+    b = rand(1, Math.min(max,12)); answer = rand(1, Math.floor(max/b)||1); a = b*answer; op_sym = '÷';
   }
-  return { a, b, answer, display, op };
+
+  // Eksik pozisyon belirle
+  let missing = 'result'; // varsayılan: sonucu bul
+  if (selectedQtype === 'missing') {
+    missing = Math.random() < 0.5 ? 'a' : 'b';
+  } else if (selectedQtype === 'both') {
+    const r = Math.random();
+    missing = r < 0.33 ? 'a' : r < 0.66 ? 'b' : 'result';
+  }
+
+  // Eksik pozisyona göre gerçek cevabı belirle
+  let realAnswer;
+  if (missing === 'result') realAnswer = answer;
+  else if (missing === 'a') realAnswer = a;
+  else realAnswer = b;
+
+  return { a, b, answer, op, op_sym, missing, realAnswer };
 }
 
 function rand(min, max) { return Math.floor(Math.random()*(max-min+1))+min; }
@@ -824,13 +903,33 @@ function nextQuestion() {
 
   // Question display
   document.getElementById('op-badge').textContent = mixedMode ? ('🎲 ' + OP_NAMES[op]) : OP_NAMES[op];
-  const parts = q.display.split(' ');
-  document.getElementById('q-num1').textContent = parts[0];
-  document.getElementById('q-op').textContent = parts[1];
-  document.getElementById('q-num2').textContent = parts[2];
+
+  const { a, b, op_sym, missing, realAnswer } = q;
+  const qMark = '<span class="q-missing">?</span>';
+
+  const n1El = document.getElementById('q-num1');
+  const n2El = document.getElementById('q-num2');
+  const eqEl = document.getElementById('q-eq');
+
+  if (missing === 'result') {
+    n1El.innerHTML = `<span style="color:var(--accent)">${a}</span>`;
+    n2El.innerHTML = `<span style="color:var(--accent4)">${b}</span>`;
+    eqEl.innerHTML = `<span style="color:var(--text2)">= ${qMark}</span>`;
+  } else if (missing === 'a') {
+    n1El.innerHTML = qMark;
+    n2El.innerHTML = `<span style="color:var(--accent4)">${b}</span>`;
+    eqEl.innerHTML = `<span style="color:var(--text2)">= <span style="color:var(--accent)">${q.answer}</span></span>`;
+  } else {
+    n1El.innerHTML = `<span style="color:var(--accent)">${a}</span>`;
+    n2El.innerHTML = qMark;
+    eqEl.innerHTML = `<span style="color:var(--text2)">= <span style="color:var(--accent)">${q.answer}</span></span>`;
+  }
+  document.getElementById('q-op').textContent = op_sym;
+
+  gameState.currentQuestion.realAnswer = realAnswer;
 
   // Choices — önce mevcut butonları anında sıfırla, sonra doldur
-  const choices = generateChoices(q.answer, op);
+  const choices = generateChoices(q.realAnswer, op);
   const grid = document.getElementById('answers-grid');
 
   // Önce tüm eski butonların stil/sınıfını sıfırla (border flash olmasın)
@@ -882,7 +981,7 @@ function startTimer(seconds) {
 
 function handleAnswer(chosen, btn) {
   clearInterval(timerInterval);
-  const correct = gameState.currentQuestion.answer;
+  const correct = gameState.currentQuestion.realAnswer;
   const elapsed = (Date.now() - gameState.questionStart) / 1000;
   gameState.totalTime += elapsed;
 
