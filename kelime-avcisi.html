@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔤 Kelime Avcısı</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── TEMA DEĞİŞKENLERİ ─────────────────────────────────── */
+:root {
+  --bg-a:#B3E5FC; --bg-b:#E8F5E9; --bg-c:#FFF9C4;
+  --card:#ffffff; --card-b:#E3F2FD;
+  --sh:rgba(79,99,240,.13);
+  --txt:#37474F; --txt2:#546E7A;
+  --pill:#ffffff; --pill-t:#37474F;
+  --clue-a:#EDE7F6; --clue-b:#F3E5F5;
+  --clue-t:#4527A0; --clue-m:#9575CD; --clue-br:#7E57C2; --clue-l:#7E57C2;
+  --ll:#1976D2;
+  --ans-a:#E8F5E9; --ans-b:#F1F8E9; --ans-br:#81C784;
+  --slot:#ffffff; --slot-t:#2E7D32; --slot-sh:#A5D6A7; --slot-b:#A5D6A7;
+  --al:#2E7D32; --ah:#81C784;
+  --fw:#ffffff; --ft:#F57F17;
+  --tag-a:#FFF9C4; --tag-b:#FFF176; --tag-br:#FFD54F; --tag-t:#E65100;
+  --empty:#BDBDBD; --prog:#E3F2FD; --prog-l:#546E7A;
+  --h1:#1565C0; --h1sh:#90CAF9; --sub:#37474F;
+  --fb-ok-bg:#E8F5E9; --fb-ok-t:#2E7D32; --fb-ok-b:#A5D6A7;
+  --fb-no-bg:#FFEBEE; --fb-no-t:#C62828; --fb-no-b:#EF9A9A;
+  --fb-sk-bg:#FFF8E1; --fb-sk-t:#E65100; --fb-sk-b:#FFCC80;
+  --set-bg:#F0F4FF; --set-b:#C5CAE9;
+  --tr:.45s;
+}
+body.dark {
+  --bg-a:#0D1B2A; --bg-b:#1B2838; --bg-c:#162032;
+  --card:#1E2D3D; --card-b:#2A3F55;
+  --sh:rgba(0,0,0,.45);
+  --txt:#CFD8DC; --txt2:#90A4AE;
+  --pill:#1E2D3D; --pill-t:#CFD8DC;
+  --clue-a:#2A1F40; --clue-b:#2D1F3A;
+  --clue-t:#CE93D8; --clue-m:#9575CD; --clue-br:#7E57C2; --clue-l:#CE93D8;
+  --ll:#90CAF9;
+  --ans-a:#1A2E1C; --ans-b:#1E3020; --ans-br:#388E3C;
+  --slot:#243828; --slot-t:#A5D6A7; --slot-sh:#2E7D32; --slot-b:#388E3C;
+  --al:#81C784; --ah:#4CAF50;
+  --fw:#1E2D3D; --ft:#FFD54F;
+  --tag-a:#3E2C00; --tag-b:#4A3500; --tag-br:#F9A825; --tag-t:#FFD54F;
+  --empty:#546E7A; --prog:#162032; --prog-l:#90A4AE;
+  --h1:#90CAF9; --h1sh:#1565C0; --sub:#78909C;
+  --fb-ok-bg:#1A2E1C; --fb-ok-t:#A5D6A7; --fb-ok-b:#2E7D32;
+  --fb-no-bg:#2D1515; --fb-no-t:#EF9A9A; --fb-no-b:#C62828;
+  --fb-sk-bg:#2D2010; --fb-sk-t:#FFCC80; --fb-sk-b:#F57C00;
+  --set-bg:#162032; --set-b:#2A3F55;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:linear-gradient(160deg,var(--bg-a) 0%,var(--bg-b) 60%,var(--bg-c) 100%);
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  padding:16px 10px 48px; overflow-x:hidden;
+  transition:background var(--tr), color var(--tr);
+}
+/* BULUTLAR */
+.cloud{position:fixed;opacity:.4;pointer-events:none;font-size:3.5rem;animation:drift linear infinite;z-index:0;}
+.cloud:nth-child(1){top:6%;animation-duration:28s;left:-120px;}
+.cloud:nth-child(2){top:18%;animation-duration:38s;animation-delay:-12s;left:-120px;font-size:2.4rem;}
+.cloud:nth-child(3){top:60%;animation-duration:45s;animation-delay:-20s;left:-120px;font-size:2rem;}
+@keyframes drift{from{transform:translateX(-150px);}to{transform:translateX(110vw);}}
+body.dark .cloud{filter:brightness(.3) saturate(.2);}
+
+#app{position:relative;z-index:1;width:100%;max-width:660px;}
+
+/* ── TOP CONTROLS ─────────────────────────────────────── */
+.top-controls{display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px;}
+.icon-btn{
+  background:var(--card);border:2.5px solid var(--card-b);border-radius:50%;
+  width:46px;height:46px;font-size:1.3rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 10px var(--sh);
+  transition:transform .15s, background var(--tr), border-color var(--tr);
+  position:relative;
+}
+.icon-btn:hover{transform:scale(1.13) rotate(8deg);}
+.icon-btn:active{transform:scale(.92);}
+.tooltip{
+  position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);
+  background:#222;color:#fff;font-size:.68rem;font-weight:800;
+  padding:3px 8px;border-radius:6px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.icon-btn:hover .tooltip{opacity:1;}
+
+/* ── AYARLAR PANELİ ──────────────────────────────────── */
+.settings-panel{
+  background:var(--set-bg);border:2.5px solid var(--set-b);
+  border-radius:22px;padding:0;
+  box-shadow:0 6px 24px var(--sh);
+  margin-bottom:14px;
+  overflow:hidden;
+  max-height:0;
+  transition:max-height .45s cubic-bezier(.4,0,.2,1), padding .3s, border-color var(--tr), background var(--tr);
+}
+.settings-panel.open{max-height:520px;padding:18px 20px 20px;}
+.settings-title{
+  font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--h1);
+  margin-bottom:16px;display:flex;align-items:center;gap:6px;
+}
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:8px;
+}
+.setting-label{font-size:.95rem;font-weight:800;color:var(--txt);}
+.setting-label small{display:block;font-size:.78rem;font-weight:600;color:var(--txt2);margin-top:1px;}
+
+/* Toggle switch */
+.toggle-wrap{display:flex;align-items:center;gap:10px;}
+.toggle{position:relative;width:54px;height:28px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{
+  position:absolute;inset:0;border-radius:999px;
+  background:#ccc;transition:background .3s;
+}
+.toggle input:checked + .toggle-track{background:#43A047;}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:22px;height:22px;
+  background:white;border-radius:50%;
+  box-shadow:0 2px 4px rgba(0,0,0,.2);
+  transition:transform .3s;
+}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(26px);}
+.toggle-emoji{font-size:1.3rem;}
+
+/* Süre seçici */
+.time-options{display:flex;gap:8px;flex-wrap:wrap;}
+.time-btn{
+  border:2.5px solid #C5CAE9;background:var(--card);
+  border-radius:12px;padding:7px 16px;font-size:.9rem;font-weight:800;
+  font-family:'Nunito',sans-serif;cursor:pointer;color:var(--txt);
+  transition:all .2s;
+}
+.time-btn:hover{transform:translateY(-2px);border-color:#7E57C2;}
+.time-btn.active{background:#7E57C2;color:white;border-color:#7E57C2;transform:translateY(-2px);}
+
+/* ── HEADER ──────────────────────────────────────────── */
+header{text-align:center;margin-bottom:18px;}
+header h1{
+  font-family:'Fredoka One',cursive;font-size:2.8rem;
+  color:var(--h1);
+  text-shadow:3px 3px 0 var(--h1sh),5px 5px 0 rgba(0,0,0,.08);
+  letter-spacing:1px;transition:color var(--tr);
+}
+header .subtitle{font-size:1.05rem;color:var(--sub);font-weight:700;margin-top:2px;opacity:.85;transition:color var(--tr);}
+
+/* ── STATS ───────────────────────────────────────────── */
+.stats{display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;}
+.stat-pill{
+  background:var(--pill);border-radius:999px;padding:8px 18px;
+  font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:6px;
+  box-shadow:0 4px 14px var(--sh);color:var(--pill-t);
+  border:2.5px solid transparent;
+  transition:transform .15s, background var(--tr), color var(--tr), border-color var(--tr);
+}
+.stat-pill.score{border-color:#FFD54F;}
+.stat-pill.level{border-color:#66BB6A;}
+.stat-pill.time {border-color:#EF5350;}
+.stat-pill:hover{transform:scale(1.04);}
+.stat-pill .icon{font-size:1.2rem;}
+
+/* ── CARD ────────────────────────────────────────────── */
+.card{
+  background:var(--card);border-radius:28px;
+  padding:24px 20px 20px;box-shadow:0 8px 32px var(--sh);
+  margin-bottom:14px;border:2.5px solid var(--card-b);
+  transition:background var(--tr),border-color var(--tr),box-shadow var(--tr);
+}
+
+/* ── CLUE ────────────────────────────────────────────── */
+.clue-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--clue-l);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.clue-box{background:linear-gradient(135deg,var(--clue-a),var(--clue-b));border-radius:16px;padding:14px 18px;margin-bottom:18px;border-left:5px solid var(--clue-br);transition:background var(--tr),border-color var(--tr);}
+.clue-text{font-size:1.12rem;font-weight:700;color:var(--clue-t);line-height:1.5;transition:color var(--tr);}
+.letter-count{font-size:.88rem;color:var(--clue-m);margin-top:4px;font-weight:700;}
+
+/* ── HARF BUTONLARI ──────────────────────────────────── */
+/*
+  KRİTİK: Fredoka One fontu Türkçe "İ" harfini italik gibi render ediyor.
+  Harf butonlarında Nunito 900 kullanıyoruz — tüm Türkçe özel karakterler doğru görünür.
+*/
+.letters-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--ll);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.letter-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:18px;}
+.letter-btn{
+  width:60px;height:60px;border-radius:16px;border:none;
+  font-family:'Nunito',sans-serif;   /* ← Fredoka One DEĞİL */
+  font-weight:900;
+  font-size:1.55rem;
+  font-style:normal;                 /* italic kalıbını engelle */
+  cursor:pointer;
+  transition:transform .12s, box-shadow .12s, opacity .12s;
+  user-select:none;-webkit-user-select:none;
+  line-height:1;
+}
+.letter-btn:not(.used):active{transform:scale(.88) rotate(-3deg);}
+.letter-btn:not(.used):hover {transform:scale(1.1) rotate(2deg);box-shadow:0 6px 18px rgba(0,0,0,.22);}
+.letter-btn.used{opacity:.22;cursor:not-allowed;transform:scale(.94);}
+
+/* Aydınlık renkler */
+.lc0{background:#FFF176;color:#E65100;box-shadow:0 4px 0 #F9A825;}
+.lc1{background:#A5D6A7;color:#1B5E20;box-shadow:0 4px 0 #388E3C;}
+.lc2{background:#90CAF9;color:#0D47A1;box-shadow:0 4px 0 #1976D2;}
+.lc3{background:#F48FB1;color:#880E4F;box-shadow:0 4px 0 #C2185B;}
+.lc4{background:#CE93D8;color:#4A148C;box-shadow:0 4px 0 #7B1FA2;}
+.lc5{background:#FFCC80;color:#BF360C;box-shadow:0 4px 0 #F57C00;}
+.lc6{background:#80DEEA;color:#006064;box-shadow:0 4px 0 #00838F;}
+.lc7{background:#FFAB91;color:#4E342E;box-shadow:0 4px 0 #E64A19;}
+/* Karanlık renkler */
+body.dark .lc0{background:#5D4E00;color:#FFF176;box-shadow:0 4px 0 #3E3400;}
+body.dark .lc1{background:#1B4D1E;color:#A5D6A7;box-shadow:0 4px 0 #0A2E0C;}
+body.dark .lc2{background:#0D2F50;color:#90CAF9;box-shadow:0 4px 0 #071C30;}
+body.dark .lc3{background:#4A1029;color:#F48FB1;box-shadow:0 4px 0 #2A0616;}
+body.dark .lc4{background:#2E0D4A;color:#CE93D8;box-shadow:0 4px 0 #1A062C;}
+body.dark .lc5{background:#4A2200;color:#FFCC80;box-shadow:0 4px 0 #2C1400;}
+body.dark .lc6{background:#003040;color:#80DEEA;box-shadow:0 4px 0 #001820;}
+body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
+
+/* ── CEVAP ALANI ─────────────────────────────────────── */
+.answer-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--al);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.answer-display{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  min-height:64px;align-items:center;
+  background:linear-gradient(135deg,var(--ans-a),var(--ans-b));
+  border-radius:16px;padding:10px;
+  border:2.5px dashed var(--ans-br);
+  margin-bottom:12px;cursor:pointer;
+  transition:background var(--tr),border-color var(--tr);
+}
+.answer-slot{
+  width:54px;height:54px;border-radius:13px;
+  background:var(--slot);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Nunito',sans-serif; /* Türkçe karakter için */
+  font-weight:900;font-size:1.45rem;font-style:normal;
+  color:var(--slot-t);
+  box-shadow:0 3px 0 var(--slot-sh);
+  border:2.5px solid var(--slot-b);
+  animation:popIn .2s ease;
+  transition:background var(--tr),color var(--tr),border-color var(--tr);
+}
+@keyframes popIn{0%{transform:scale(.5) rotate(-8deg);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.answer-hint{font-size:.82rem;color:var(--ah);font-weight:700;text-align:center;margin-bottom:14px;}
+
+/* ── BUTONLAR ────────────────────────────────────────── */
+.btn-row{display:flex;gap:10px;justify-content:center;}
+.btn{
+  border:none;border-radius:14px;
+  font-family:'Fredoka One',cursive;font-size:1.05rem;
+  cursor:pointer;padding:13px 20px;
+  transition:transform .12s, box-shadow .12s;
+  letter-spacing:.5px;
+}
+.btn:active{transform:scale(.93);}
+.btn-check{background:#43A047;color:white;box-shadow:0 5px 0 #2E7D32;flex:1.6;}
+.btn-check:hover{transform:translateY(-2px);box-shadow:0 7px 0 #2E7D32;}
+.btn-clear{background:#EF5350;color:white;box-shadow:0 5px 0 #C62828;}
+.btn-clear:hover{transform:translateY(-2px);box-shadow:0 7px 0 #C62828;}
+.btn-skip {background:#78909C;color:white;box-shadow:0 5px 0 #455A64;}
+.btn-skip:hover{transform:translateY(-2px);box-shadow:0 7px 0 #455A64;}
+
+/* ── GERİ BİLDİRİM ───────────────────────────────────── */
+.feedback{text-align:center;min-height:44px;margin-top:14px;}
+.feedback-msg{display:inline-block;padding:10px 22px;border-radius:14px;font-family:'Fredoka One',cursive;font-size:1.2rem;animation:bounceIn .35s ease;}
+.feedback-msg.correct{background:var(--fb-ok-bg);color:var(--fb-ok-t);border:2px solid var(--fb-ok-b);}
+.feedback-msg.wrong  {background:var(--fb-no-bg);color:var(--fb-no-t);border:2px solid var(--fb-no-b);}
+.feedback-msg.skip   {background:var(--fb-sk-bg);color:var(--fb-sk-t);border:2px solid var(--fb-sk-b);}
+@keyframes bounceIn{0%{transform:scale(.6);opacity:0;}70%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+
+/* ── İLERLEME ────────────────────────────────────────── */
+.progress-wrap{background:var(--prog);border-radius:999px;height:12px;margin-bottom:8px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.1);transition:background var(--tr);}
+.progress-bar{height:100%;background:linear-gradient(90deg,#42A5F5,#66BB6A);border-radius:999px;transition:width .5s cubic-bezier(.4,2,.6,1);}
+.progress-label{font-size:.83rem;color:var(--prog-l);font-weight:700;text-align:right;margin-bottom:14px;}
+
+/* ── BULUNAN KELİMELER ───────────────────────────────── */
+.found-section{background:var(--fw);border-radius:22px;padding:16px 18px;box-shadow:0 4px 16px var(--sh);margin-bottom:14px;transition:background var(--tr),box-shadow var(--tr);}
+.found-title{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--ft);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.found-words{display:flex;flex-wrap:wrap;gap:8px;}
+.found-tag{background:linear-gradient(135deg,var(--tag-a),var(--tag-b));border:2px solid var(--tag-br);border-radius:10px;padding:5px 13px;font-weight:800;font-size:.9rem;color:var(--tag-t);animation:popIn .25s ease;transition:background var(--tr),color var(--tr),border-color var(--tr);}
+.empty-found{font-size:.9rem;color:var(--empty);font-style:italic;font-weight:600;}
+
+/* ── OYUN BİTTİ ──────────────────────────────────────── */
+#gameover{display:none;text-align:center;padding:30px 20px;}
+#gameover .go-emoji{font-size:5rem;animation:spin .8s ease;}
+@keyframes spin{0%{transform:rotate(-20deg) scale(.5);}100%{transform:rotate(0deg) scale(1);}}
+#gameover h2{font-family:'Fredoka One',cursive;font-size:2.2rem;color:var(--h1);margin:12px 0 6px;}
+#gameover .go-score{font-size:1.4rem;font-weight:800;color:var(--ft);margin-bottom:20px;}
+.btn-restart{background:linear-gradient(135deg,#42A5F5,#7E57C2);color:white;box-shadow:0 5px 0 #1565C0;padding:14px 36px;font-size:1.2rem;}
+
+/* ── SEVİYE ATLADI ───────────────────────────────────── */
+.levelup-banner{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#FFD54F,#FFCA28);border:4px solid #F9A825;border-radius:24px;padding:24px 40px;text-align:center;z-index:999;box-shadow:0 10px 40px rgba(0,0,0,.25);animation:lvlPop .4s ease;}
+@keyframes lvlPop{0%{transform:translate(-50%,-50%) scale(.3);opacity:0;}70%{transform:translate(-50%,-50%) scale(1.1);}100%{transform:translate(-50%,-50%) scale(1);opacity:1;}}
+.levelup-banner h3{font-family:'Fredoka One',cursive;font-size:2rem;color:#E65100;}
+.levelup-banner p{font-weight:700;color:#BF360C;font-size:1rem;margin-top:4px;}
+
+/* ── KONFETİ ─────────────────────────────────────────── */
+.confetti-piece{position:fixed;pointer-events:none;z-index:1000;animation:fall 1.4s ease-in forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(90vh) rotate(540deg);opacity:0;}}
+
+/* ── ZAMANLAYICI TEHLİKE ─────────────────────────────── */
+.stat-pill.time.danger .icon{animation:pulse .5s ease infinite alternate;}
+@keyframes pulse{from{transform:scale(1);}to{transform:scale(1.4);}}
+</style>
+</head>
+<body>
+
+<div class="cloud">☁️</div>
+<div class="cloud">🌤️</div>
+<div class="cloud">☁️</div>
+
+<div id="app">
+
+  <!-- KONTROL SATIRI -->
+  <div class="top-controls">
+    <button class="icon-btn" id="settingsBtn" onclick="toggleSettings()">
+      ⚙️<span class="tooltip">Ayarlar</span>
+    </button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">
+      🌙<span class="tooltip">Tema</span>
+    </button>
+  </div>
+
+  <!-- AYARLAR PANELİ -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-title">⚙️ Ayarlar</div>
+
+    <!-- Ses -->
+    <div class="setting-row">
+      <div class="setting-label">
+        🔊 Ses Efektleri
+        <small>Harf, doğru, yanlış sesleri</small>
+      </div>
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" id="soundToggle" checked onchange="onSoundToggle()">
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+        <span class="toggle-emoji" id="soundEmoji">🔊</span>
+      </div>
+    </div>
+
+    <!-- Süre -->
+    <div class="setting-row">
+      <div class="setting-label">
+        ⏱️ Süre (saniye)
+        <small>Her seviye için başlangıç süresi</small>
+      </div>
+      <div class="time-options" id="timeOptions">
+        <button class="time-btn" onclick="setTime(30)">30s</button>
+        <button class="time-btn" onclick="setTime(60)">60s</button>
+        <button class="time-btn active" onclick="setTime(90)">90s</button>
+        <button class="time-btn" onclick="setTime(120)">120s</button>
+        <button class="time-btn" onclick="setTime(180)">3dk</button>
+        <button class="time-btn" onclick="setTime(0)">∞</button>
+      </div>
+    </div>
+
+    <div style="font-size:.8rem;color:var(--txt2);font-weight:700;margin-top:4px;">
+      💡 Süre değişikliği bir sonraki oyunda geçerli olur.
+      <span id="infiniteNote" style="display:none;color:#43A047;"> ∞ = süresiz mod aktif!</span>
+    </div>
+
+    <!-- Hafıza -->
+    <div style="margin-top:16px;padding-top:14px;border-top:2px dashed var(--set-b);">
+      <div style="font-family:'Fredoka One',cursive;font-size:1rem;color:var(--h1);margin-bottom:8px;">🧠 Kelime Hafızası</div>
+      <div style="font-size:.82rem;color:var(--txt2);font-weight:700;margin-bottom:10px;">
+        Görülen kelimeler hatırlanır, tekrar sorulmaz. Tüm kelimeler bitince seviye sıfırlanır.
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span id="seenBadge" style="font-size:.88rem;font-weight:800;color:var(--ft);">📖 yükleniyor...</span>
+        <button class="time-btn" onclick="resetAllMemory()" style="background:#EF5350;color:white;border-color:#C62828;font-size:.82rem;padding:6px 14px;">
+          🗑️ Hafızayı Sıfırla
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <h1>🔤 Kelime Avcısı</h1>
+    <div class="subtitle">Harfleri birleştir, kelimeyi bul! 🎯</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat-pill score"><span class="icon">⭐</span><span id="scoreDisplay">0</span> puan</div>
+    <div class="stat-pill level"><span class="icon">🏅</span> Seviye <span id="levelDisplay">1</span></div>
+    <div class="stat-pill time" id="timePill"><span class="icon">⏰</span><span id="timerDisplay">90</span>s</div>
+  </div>
+
+  <div id="gameArea">
+    <div class="card">
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">0 / 0 kelime</div>
+
+      <div class="clue-label">💡 İpucu</div>
+      <div class="clue-box">
+        <div class="clue-text" id="clueText">Yükleniyor...</div>
+        <div class="letter-count" id="letterCount"></div>
+      </div>
+
+      <div class="letters-label">🔡 Harfler — tıkla, kelimeyi oluştur!</div>
+      <div class="letter-grid" id="letterGrid"></div>
+
+      <div class="answer-label">✏️ Cevabın</div>
+      <div class="answer-display" id="answerDisplay">
+        <span id="ansPlaceholder" style="color:var(--ah);font-weight:800;">Harflere tıkla...</span>
+      </div>
+      <div class="answer-hint">💡 Cevap kutusuna tıklayarak son harfi silebilirsin!</div>
+
+      <div class="btn-row">
+        <button class="btn btn-check" onclick="checkAnswer()">✅ Kontrol Et</button>
+        <button class="btn btn-clear" onclick="clearAnswer()">🗑️ Temizle</button>
+        <button class="btn btn-skip"  onclick="skipWord()">⏭️ Geç</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="found-section">
+      <div class="found-title">🏆 Bulduğun Kelimeler</div>
+      <div class="found-words" id="foundWords"><span class="empty-found">Henüz kelime bulamadın...</span></div>
+    </div>
+  </div>
+
+  <div id="gameover" class="card">
+    <div class="go-emoji">🎉</div>
+    <h2>Süper Oynadın!</h2>
+    <div class="go-score" id="goScore"></div>
+    <div style="margin-bottom:20px;font-size:1rem;color:var(--txt2);font-weight:700;" id="goWords"></div>
+    <button class="btn btn-restart" onclick="restartGame()">🔄 Tekrar Oyna</button>
+  </div>
+</div>
+
+<div class="levelup-banner" id="levelupBanner">
+  <h3>🚀 Seviye Atladın!</h3>
+  <p id="levelupText">Seviye 2'ye hoş geldin!</p>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   TÜRKÇE KARAKTER — büyük harf dönüşümü
+   JS'de "i".toUpperCase() → "I" döner, oysa Türkçede "İ" olmalı.
+   ═══════════════════════════════════════════════════════ */
+function trUpper(s) {
+  return String(s)
+    .replace(/i/g, 'İ')
+    .replace(/ı/g, 'I')
+    .toUpperCase();
+}
+function trEq(a, b) { return trUpper(a) === trUpper(b); }
+
+/* ═══════════════════════════════════════════════════════
+   AYARLAR
+   ═══════════════════════════════════════════════════════ */
+let settings = {
+  sound: true,
+  baseTime: 90,   // varsayılan
+  infinite: false,
+};
+let settingsOpen = false;
+let isDark = false;
+
+function toggleSettings() {
+  settingsOpen = !settingsOpen;
+  document.getElementById('settingsPanel').classList.toggle('open', settingsOpen);
+  document.getElementById('settingsBtn').style.transform = settingsOpen ? 'rotate(90deg) scale(1.1)' : '';
+  playSound('click');
+}
+
+function onSoundToggle() {
+  settings.sound = document.getElementById('soundToggle').checked;
+  document.getElementById('soundEmoji').textContent = settings.sound ? '🔊' : '🔇';
+  if (settings.sound) playSound('click');
+}
+
+function setTime(val) {
+  settings.baseTime = val;
+  settings.infinite = (val === 0);
+  // buton aktif stili
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('infiniteNote').style.display = settings.infinite ? 'inline' : 'none';
+  playSound('click');
+}
+
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeBtn').innerHTML = (isDark ? '☀️' : '🌙') + '<span class="tooltip">Tema</span>';
+  playSound('click');
+}
+
+/* ═══════════════════════════════════════════════════════
+   SES EFEKTLERİ (Web Audio API)
+   ═══════════════════════════════════════════════════════ */
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, type, dur, vol, delay) {
+  if (!settings.sound) return;
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    g.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + dur + 0.05);
+  } catch(e) {}
+}
+function playSound(type) {
+  if (!settings.sound) return;
+  const t = (f,tp,d,v,dl=0) => tone(f,tp,d,v,dl);
+  switch(type) {
+    case 'pick':    t(540,'sine',.09,.2); break;
+    case 'correct': [523,659,784,1047].forEach((f,i)=>t(f,'triangle',.18,.28,i*.1)); break;
+    case 'wrong':   t(320,'sawtooth',.14,.22); t(210,'sawtooth',.18,.22,.14); break;
+    case 'skip':    t(420,'sine',.11,.16); t(360,'sine',.13,.16,.11); break;
+    case 'levelup': [523,659,784,1047,1319].forEach((f,i)=>t(f,'triangle',.22,.32,i*.09)); break;
+    case 'gameover':[523,440,349,262].forEach((f,i)=>t(f,'sine',.3,.25,i*.15)); break;
+    case 'click':   t(620,'sine',.07,.14); break;
+    case 'clear':   t(300,'sine',.1,.16); break;
+    case 'tick':    t(900,'square',.06,.1); break;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   KELİME VERİTABANI  —  3 seviye × 40 kelime = 120 kelime
+   ═══════════════════════════════════════════════════════ */
+const WORDS = [
+  [ // Seviye 1 — Kolay (2-4 harf)
+    {word:'KAT',  clue:'Binanın bir bölümü, apartmanda yaşanan yer 🏢'},
+    {word:'BAL',  clue:'Arıların yaptığı tatlı şey 🍯'},
+    {word:'TOP',  clue:'Futbolda kullanılan yuvarlak nesne ⚽'},
+    {word:'GÜL',  clue:'Güzel kokan, dikenli çiçek 🌹'},
+    {word:'AY',   clue:'Geceleri gökyüzünde parlayan 🌙'},
+    {word:'YAZ',  clue:'En sıcak mevsim, okulların tatil olduğu zaman ☀️'},
+    {word:'KIŞ',  clue:'Kar yağan, en soğuk mevsim ❄️'},
+    {word:'SU',   clue:'İçtiğimiz, hayat için gerekli sıvı 💧'},
+    {word:'AT',   clue:'Nalları olan, üstüne binilen hayvan 🐎'},
+    {word:'MASA', clue:'Üstüne kitap koyduğumuz mobilya 🪑'},
+    {word:'KUTU', clue:'İçine bir şeyler konan dört köşeli kap 📦'},
+    {word:'GÖZ',  clue:'Görmemizi sağlayan organ 👁️'},
+    {word:'EL',   clue:'Kolumuzu bitiren, beş parmağı olan organ ✋'},
+    {word:'KUŞ',  clue:'Kanatları olan, gökte uçan hayvan 🐦'},
+    {word:'BUZ',  clue:'Donan su, buz pateni yapılan yüzey 🧊'},
+    {word:'GÜN',  clue:'24 saatten oluşan zaman birimi 📅'},
+    {word:'CAM',  clue:'Pencerelerde olan, saydam malzeme 🪟'},
+    {word:'DAĞ',  clue:'Çok yüksek, karlı tepesi olan doğa oluşumu ⛰️'},
+    {word:'YOL',  clue:'Arabalar ve insanların yürüdüğü zemin 🛣️'},
+    {word:'GÖK',  clue:'Bulutların, uçakların ve yıldızların bulunduğu yer 🌌'},
+    {word:'KUZ',  clue:'Kuzey yönünü gösteren kısa kelime 🧭'},
+    {word:'KAFA', clue:'Başımızın üst kısmı, beynin bulunduğu yer 🗣️'},
+    {word:'KAYA', clue:'Dağlarda bulunan sert, büyük taş 🪨'},
+    {word:'BABA', clue:'Ailenin erkeği, babamız 👨'},
+    {word:'ANNE', clue:'Bizi doğuran, en çok seven kişi 👩'},
+    {word:'ÇAY',  clue:'Sıcak içilen, demlenen bitkisel içecek ☕'},
+    {word:'KAR',  clue:'Kış mevsiminde gökten yağan beyaz şey 🌨️'},
+    {word:'TAŞ',  clue:'Yerden toplanan, sert ve katı nesne 🪨'},
+    {word:'EV',   clue:'Yaşadığımız, uyuduğumuz yer 🏠'},
+    {word:'KÖY',  clue:'Şehirden küçük, tarlalar içindeki yerleşim yeri 🌾'},
+    {word:'UÇ',   clue:'Bir şeyin en sivri ya da uzak noktası 📍'},
+    {word:'KUM',  clue:'Sahillerde ve çöllerde bulunan küçük tanecikler 🏖️'},
+    {word:'GEL',  clue:'Bir yere doğru hareket et 🚶'},
+    {word:'BAŞ',  clue:'Vücudumuzun en üst kısmı, kafamız 🙂'},
+    {word:'GİT',  clue:'Bir yerden ayrıl, yola çık 🏃'},
+    {word:'BİL',  clue:'Bir konuda bilgi sahibi ol 🧠'},
+    {word:'YER',  clue:'Üstünde durduğumuz, bastığımız zemin 🌍'},
+    {word:'ÇOK',  clue:'Az\'ın tersi, fazla miktarda 📈'},
+    {word:'AZ',   clue:'Çok\'un tersi, küçük miktarda 📉'},
+    {word:'İYİ',  clue:'Kötünün tersi, güzel olan şey 😊'},
+  ],
+  [ // Seviye 2 — Orta (4-6 harf)
+    {word:'ELMA',    clue:'Kırmızı ya da yeşil, tatlı bir meyve 🍎'},
+    {word:'OKUL',    clue:'Ders öğrendiğimiz, öğretmenlerin çalıştığı yer 🏫'},
+    {word:'KİTAP',   clue:'İçinde yazı ve resim olan, okuduğumuz şey 📚'},
+    {word:'ÇANTA',   clue:'Kitaplarımızı taşıdığımız şey 🎒'},
+    {word:'ARABA',   clue:'Dört tekerlekli, motorlu taşıt 🚗'},
+    {word:'DENİZ',   clue:'Büyük tuzlu su kütlesi, balıkların evi 🌊'},
+    {word:'AĞAÇ',    clue:'Gövdesi, dalları ve yaprakları olan bitki 🌳'},
+    {word:'BULUT',   clue:'Gökyüzünde beyaz ya da gri yüzen şey ☁️'},
+    {word:'KALEM',   clue:'Yazı yazmak için kullandığımız araç ✏️'},
+    {word:'EKMEK',   clue:'Fırında pişen, her öğün yediğimiz yiyecek 🍞'},
+    {word:'KÖPEK',   clue:'İnsanların en sadık hayvan dostu 🐶'},
+    {word:'BALON',   clue:'İçi havayla dolu, uçan renkli şey 🎈'},
+    {word:'KEDİ',    clue:'Miyavlayan, sevimli evcil hayvan 🐱'},
+    {word:'TAVUK',   clue:'Yumurta yiyen, çiftlikte yaşayan hayvan 🐔'},
+    {word:'ÇIÇEK',   clue:'Güzel kokan, renkli bitki 🌸'},
+    {word:'KÖPRÜ',   clue:'İki kıyıyı birbirine bağlayan yapı 🌉'},
+    {word:'BAHÇE',   clue:'Evlerin yanındaki, çiçek ve ağaç olan yer 🌿'},
+    {word:'PENCER',  clue:'Duvarların içindeki cam yüzey 🪟'},
+    {word:'KAPAK',   clue:'Kutu ya da şişenin üstünü kapatan şey 🔒'},
+    {word:'RENK',    clue:'Kırmızı, mavi, sarı gibi gözle görülen özellik 🎨'},
+    {word:'BOYA',    clue:'Duvarları ya da kağıdı renklendiren madde 🖌️'},
+    {word:'KANAT',   clue:'Kuşların ve uçakların uçmasını sağlayan yapı 🪶'},
+    {word:'SABAH',   clue:'Güneşin doğduğu, günün başladığı zaman 🌅'},
+    {word:'AKŞAM',   clue:'Güneşin battığı, gecenin başlamak üzere olduğu zaman 🌇'},
+    {word:'ŞEKER',   clue:'Tatlı, çocukların sevdiği yiyecek 🍬'},
+    {word:'MEYVE',   clue:'Elma, muz, portakal gibi tatlı yiyecekler 🍓'},
+    {word:'ÇORBA',   clue:'Sıcak, içilen ve kaşıkla yenen yemek 🍲'},
+    {word:'HAVUZ',   clue:'İçinde yüzülen, yapay su birikintisi 🏊'},
+    {word:'FENER',   clue:'Karanlıkta ışık veren el lambası 🔦'},
+    {word:'BEYAZ',   clue:'Karın rengi, en açık renk ⬜'},
+    {word:'KIRMIZ',  clue:'Ateşin ve kanın rengi 🔴'},
+    {word:'ÖRDEK',   clue:'Suda yüzen, vak vak diyen hayvan 🦆'},
+    {word:'ASLAN',   clue:'Ormanın kralı, yeleleri olan büyük kedi 🦁'},
+    {word:'TAVŞAN',  clue:'Uzun kulaklı, havuç seven hayvan 🐰'},
+    {word:'FİL',     clue:'Hortumu olan, en büyük kara hayvanı 🐘'},
+    {word:'ZÜRAFA',  clue:'Boynu çok uzun, Afrika\'da yaşayan hayvan 🦒'},
+    {word:'PANDA',   clue:'Siyah beyaz, bambu yiyen sevimli hayvan 🐼'},
+    {word:'KOŞU',    clue:'Hızlı yürüme, spor olarak yapılan hareket 🏃'},
+    {word:'DAĞLAR',  clue:'Birden fazla dağın bir arada bulunduğu yer ⛰️'},
+    {word:'YÜZME',   clue:'Suda hareket etme, havuzda yapılan spor 🏊'},
+    {word:'BULMA',   clue:'Kayıp bir şeyi ortaya çıkarma 🔍'},
+  ],
+  [ // Seviye 3 — Zor (5-9 harf)
+    {word:'MÜZİK',     clue:'Nota ve ritimden oluşan sanat 🎵'},
+    {word:'SINCAP',    clue:'Fındık seven, ağaçta yaşayan küçük hayvan 🐿️'},
+    {word:'KELEBEK',   clue:'Renkli kanatları olan, çiçeklere konan böcek 🦋'},
+    {word:'YILDIZ',    clue:'Geceleri gökyüzünde parlayan küçük ışık ⭐'},
+    {word:'ÇOCUK',     clue:'Büyümekte olan küçük insan 👦'},
+    {word:'HAVUÇ',     clue:'Turuncu, tavşanların sevdiği sebze 🥕'},
+    {word:'GÜNEŞ',     clue:'Gündüz ışık ve ısı veren büyük yıldız ☀️'},
+    {word:'UÇURTMA',   clue:'Rüzgarda göğe yükselen, ipli oyuncak 🪁'},
+    {word:'KARDEŞ',    clue:'Aynı anne ya da babadan olan kişi 👧👦'},
+    {word:'ÖĞRETMEN',  clue:'Bize ders veren, okuldaki büyüğümüz 👩‍🏫'},
+    {word:'ÇİKOLATA',  clue:'Kakaodan yapılan, çocukların sevdiği tatlı 🍫'},
+    {word:'PAYLAŞIM',  clue:'Bir şeyi başkalarıyla bölüşme 🤝'},
+    {word:'ARKADAŞ',   clue:'Birlikte oynanan, güvenilen kişi 🧑‍🤝‍🧑'},
+    {word:'MUTLULUK',  clue:'Sevinç dolu olma hali, mutlu olmak 😄'},
+    {word:'ÖZGÜRLÜK',  clue:'İstediğin gibi yaşayabilme hakkı 🕊️'},
+    {word:'SAYGI',     clue:'Büyüklere ve diğer insanlara gösterilen değer 🙏'},
+    {word:'GÖKYÜZÜ',   clue:'Yukarıya baktığımızda gördüğümüz mavi alan 🌌'},
+    {word:'MEVSİM',    clue:'İlkbahar, yaz, sonbahar, kış gibi dönemler 🍂'},
+    {word:'TATİL',     clue:'Okul ya da işin olmadığı dinlenme günleri 🏖️'},
+    {word:'ÇEVRE',     clue:'Etrafımızdaki doğa ve yaşam alanı 🌿'},
+    {word:'DOĞA',      clue:'Ormanlar, denizler, dağlar — tüm canlı dünya 🌍'},
+    {word:'HAYVAN',    clue:'Canlıların bir grubu, insanlardan farklı varlıklar 🐾'},
+    {word:'BİTKİ',     clue:'Topraktan çıkan, fotosentez yapan canlı 🌱'},
+    {word:'HEYECAN',   clue:'Bir şey olmadan önce duyulan hareketli duygu 😲'},
+    {word:'ŞARKICI',   clue:'Sahneye çıkan, şarkı söyleyen kişi 🎤'},
+    {word:'RESSAM',    clue:'Tablo yapan, boya kullanan sanatçı 🎨'},
+    {word:'KAPTAN',    clue:'Gemi ya da uçağı yöneten kişi 🧑‍✈️'},
+    {word:'DOKTOR',    clue:'Hastaları iyileştiren, beyaz önlük giyen kişi 🩺'},
+    {word:'İTFAİYE',   clue:'Yangınları söndüren, kırmızı araçla gelen ekip 🚒'},
+    {word:'MİMAR',     clue:'Bina tasarlayan kişi 🏛️'},
+    {word:'GARSON',    clue:'Restoranda yemek servisi yapan kişi 🍽️'},
+    {word:'BAHÇIVAN',  clue:'Bahçede çiçek ve bitki yetiştiren kişi 👨‍🌾'},
+    {word:'OYUNCAK',   clue:'Çocukların oynadığı, eğlenmek için kullanılan nesne 🧸'},
+    {word:'MASAL',     clue:'Çocuklara anlatılan, hayali hikâye 📖'},
+    {word:'ŞELALE',    clue:'Yüksekten akan, uğultulu su kütlesi 💦'},
+    {word:'GÖKKUŞAĞI', clue:'Yağmurdan sonra gökyüzünde beliren renkli yay 🌈'},
+    {word:'MAĞARA',    clue:'Dağların içindeki, karanlık doğal boşluk 🕳️'},
+    {word:'VOLKAN',    clue:'Lav püskürten, dağ gibi görünen doğa oluşumu 🌋'},
+    {word:'OKYANUS',   clue:'Dünyanın en büyük su kütlesi 🌊'},
+    {word:'KUYRUK',    clue:'Hayvanların arkasında uzanan kıl ya da deri uzantısı 🐾'},
+  ]
+];
+
+// Hatalı/kısa girişleri temizle ve tekil yap
+const WORDS_CLEAN = WORDS.map(lvl => {
+  const seen = new Set();
+  return lvl.filter(w => {
+    const k = trUpper(w.word);
+    if (!w.word || k.length < 2 || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+});
+
+/* Türkçe harf havuzu (büyük, özel karakterler dahil) */
+const TR_ABC = 'A,B,C,Ç,D,E,F,G,Ğ,H,I,İ,K,L,M,N,O,Ö,P,R,S,Ş,T,U,Ü,V,Y,Z'.split(',');
+
+/* ═══════════════════════════════════════════════════════
+   HAFIZA — localStorage ile görülen kelimeleri sakla
+   Her seviyenin tüm kelimeleri görüldükten sonra sıfırla.
+   ═══════════════════════════════════════════════════════ */
+const MEM_KEY = 'kelimeAvcisi_seen_v1';
+
+function loadSeen() {
+  try { return JSON.parse(localStorage.getItem(MEM_KEY) || '[[],[],[]]'); }
+  catch { return [[],[],[]]; }
+}
+function saveSeen(seen) {
+  try { localStorage.setItem(MEM_KEY, JSON.stringify(seen)); } catch {}
+}
+function resetSeen() {
+  saveSeen([[],[],[]]);
+  updateSeenBadge();
+}
+
+/* Belirli bir seviyeden henüz görülmemiş kelimeleri döndür.
+   Eğer tümü görüldüyse o seviyenin hafızasını sıfırla ve hepsini ver. */
+function getUnseenWords(lvl) {
+  const seen = loadSeen();
+  const pool = WORDS_CLEAN[Math.min(lvl, WORDS_CLEAN.length - 1)];
+  let unseen = pool.filter(w => !seen[lvl].includes(trUpper(w.word)));
+  if (unseen.length === 0) {
+    // Tüm kelimeler görüldü → o seviyeyi sıfırla
+    seen[lvl] = [];
+    saveSeen(seen);
+    unseen = [...pool];
+    showToast('🔄 Bu seviyedeki tüm kelimeler tamamlandı, baştan başlıyoruz!');
+  }
+  return shuffle(unseen);
+}
+
+function markWordSeen(lvl, word) {
+  const seen = loadSeen();
+  const key = trUpper(word);
+  if (!seen[lvl].includes(key)) seen[lvl].push(key);
+  saveSeen(seen);
+  updateSeenBadge();
+}
+
+function updateSeenBadge() {
+  const seen = loadSeen();
+  const total = WORDS_CLEAN.reduce((s,l)=>s+l.length, 0);
+  const done  = seen.reduce((s,l)=>s+l.length, 0);
+  const el = document.getElementById('seenBadge');
+  if (el) el.textContent = `📖 ${done} / ${total} kelime görüldü`;
+}
+
+/* Kısa bildirim toast */
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+      background:#333;color:#fff;padding:10px 22px;border-radius:14px;
+      font-size:.92rem;font-weight:700;z-index:2000;opacity:0;
+      transition:opacity .3s;pointer-events:none;text-align:center;max-width:90vw;`;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(()=>{ t.style.opacity='0'; }, 3000);
+}
+
+/* ═══════════════════════════════════════════════════════
+   OYUN DURUMU
+   ═══════════════════════════════════════════════════════ */
+let G = {
+  level:0, score:0,
+  word:null, letters:[], used:[], answer:[],
+  found:[], timeLeft:90,
+  timer:null, levelWords:[], wordIdx:0, totalFound:0,
+};
+
+function shuffle(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}
+  return b;
+}
+
+/* ── Seviye başlat ──────────────────────────────────── */
+function startLevel(lvl) {
+  G.level = lvl;
+  G.levelWords = getUnseenWords(lvl);   // görülmemiş kelimeler önce
+  G.wordIdx = 0;
+  const base = settings.baseTime || 90;
+  G.timeLeft = settings.infinite ? Infinity : Math.max(20, base - lvl * 10);
+  clearInterval(G.timer);
+  if (!settings.infinite) G.timer = setInterval(tickTimer, 1000);
+  updateTimerDisplay();
+  updateSeenBadge();
+  loadWord();
+  updateStats();
+}
+
+function loadWord() {
+  if (G.wordIdx >= G.levelWords.length) {
+    clearInterval(G.timer);
+    if (G.level < WORDS.length - 1) {
+      showLevelUp();
+      setTimeout(()=>{ hideLevelUp(); startLevel(G.level+1); }, 2300);
+    } else { endGame(); }
+    return;
+  }
+  G.word    = G.levelWords[G.wordIdx];
+  const w   = trUpper(G.word.word);
+  const wl  = w.split('');
+  const ext = pickExtras(wl, G.level);
+  G.letters = shuffle([...wl, ...ext]);
+  G.used    = [];
+  G.answer  = [];
+  renderClue();
+  renderLetters();
+  renderAnswer();
+  updateProgress();
+  clearFeedback();
+}
+
+function pickExtras(wl, lvl) {
+  const n    = [2,3,4][Math.min(lvl,2)];
+  const pool = TR_ABC.filter(c => !wl.includes(c));
+  return shuffle(pool).slice(0, n);
+}
+
+/* ── Render ─────────────────────────────────────────── */
+function renderClue() {
+  document.getElementById('clueText').textContent  = G.word.clue;
+  document.getElementById('letterCount').textContent = `🔢 Cevabın ${trUpper(G.word.word).length} harfi var`;
+}
+
+function renderLetters() {
+  const grid = document.getElementById('letterGrid');
+  grid.innerHTML = '';
+  G.letters.forEach((ch, i) => {
+    const b = document.createElement('button');
+    b.className   = `letter-btn lc${i%8}`;
+    b.textContent = ch;       // Nunito 900 ile render edilir — İ sorunsuz
+    b.dataset.idx = i;
+    b.onclick     = () => pickLetter(i);
+    grid.appendChild(b);
+  });
+}
+
+function pickLetter(idx) {
+  if (G.used.includes(idx)) return;
+  G.used.push(idx);
+  G.answer.push({ch: G.letters[idx], idx});
+  document.querySelector(`.letter-btn[data-idx="${idx}"]`)?.classList.add('used');
+  renderAnswer();
+  playSound('pick');
+}
+
+function renderAnswer() {
+  const d = document.getElementById('answerDisplay');
+  if (G.answer.length === 0) {
+    d.innerHTML = '<span style="color:var(--ah);font-weight:800;">Harflere tıkla...</span>';
+    return;
+  }
+  d.innerHTML = '';
+  G.answer.forEach(a => {
+    const s = document.createElement('div');
+    s.className   = 'answer-slot';
+    s.textContent = a.ch;
+    d.appendChild(s);
+  });
+}
+
+function clearAnswer() {
+  G.answer.forEach(a => document.querySelector(`.letter-btn[data-idx="${a.idx}"]`)?.classList.remove('used'));
+  G.answer = [];
+  G.used   = [];
+  renderAnswer();
+  playSound('clear');
+}
+
+/* ── Kontrol ─────────────────────────────────────────── */
+function checkAnswer() {
+  const typed   = G.answer.map(a=>a.ch).join('');
+  const correct = trUpper(G.word.word);
+  if (trEq(typed, correct)) {
+    const pts = correct.length * 10 * (G.level+1);
+    G.score += pts; G.totalFound++; G.found.push(correct);
+    markWordSeen(G.level, correct);   // ← hafızaya al
+    showFeedback(`🎉 Aferin! +${pts} puan kazandın!`, 'correct');
+    playSound('correct');
+    spawnConfetti();
+    addFoundTag(correct);
+    G.wordIdx++;
+    setTimeout(loadWord, 950);
+  } else if (typed.length === 0) {
+    showFeedback('✏️ Önce harf seç!', 'wrong'); playSound('wrong');
+  } else {
+    showFeedback('❌ Yanlış, tekrar dene!', 'wrong'); playSound('wrong');
+  }
+  updateStats();
+}
+
+function skipWord() {
+  showFeedback(`💡 Cevap: ${trUpper(G.word.word)}`, 'skip');
+  playSound('skip');
+  markWordSeen(G.level, trUpper(G.word.word)); // geçilen kelimeyi de hatırla
+  G.wordIdx++;
+  clearAnswer();
+  setTimeout(loadWord, 1200);
+}
+
+/* ── Feedback ────────────────────────────────────────── */
+function showFeedback(msg, type) {
+  document.getElementById('feedback').innerHTML = `<div class="feedback-msg ${type}">${msg}</div>`;
+}
+function clearFeedback() { document.getElementById('feedback').innerHTML = ''; }
+
+function addFoundTag(w) {
+  const fw = document.getElementById('foundWords');
+  fw.querySelector('.empty-found')?.remove();
+  const t = document.createElement('div');
+  t.className   = 'found-tag';
+  t.textContent = w;
+  fw.appendChild(t);
+}
+
+/* ── Stats & progress ───────────────────────────────── */
+function updateStats() {
+  document.getElementById('scoreDisplay').textContent = G.score;
+  document.getElementById('levelDisplay').textContent = G.level+1;
+}
+function updateProgress() {
+  const pct = G.levelWords.length ? G.wordIdx/G.levelWords.length*100 : 0;
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = `${G.wordIdx} / ${G.levelWords.length} kelime`;
+}
+function updateTimerDisplay() {
+  document.getElementById('timerDisplay').textContent = settings.infinite ? '∞' : G.timeLeft;
+}
+
+/* ── Timer ──────────────────────────────────────────── */
+function tickTimer() {
+  G.timeLeft--;
+  updateTimerDisplay();
+  const pill = document.getElementById('timePill');
+  if (G.timeLeft <= 10) { pill.classList.add('danger'); playSound('tick'); }
+  else pill.classList.remove('danger');
+  if (G.timeLeft <= 0) { clearInterval(G.timer); endGame(); }
+}
+
+function resetAllMemory() {
+  if (confirm('Tüm kelime hafızası silinsin mi? Oyun yeniden başlayacak.')) {
+    resetSeen();
+    showToast('✅ Hafıza sıfırlandı! Artık tüm kelimeler yeniden sorulacak.');
+    playSound('click');
+  }
+}
+
+/* ── Oyun sonu ──────────────────────────────────────── */
+function endGame() {
+  clearInterval(G.timer);
+  playSound('gameover');
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('gameover').style.display = 'block';
+  document.getElementById('goScore').textContent = `⭐ ${G.score} puan topladın!`;
+  document.getElementById('goWords').textContent  = `🏆 ${G.totalFound} kelime buldun`;
+  if (G.totalFound >= 5) spawnConfetti(60);
+}
+
+function restartGame() {
+  clearInterval(G.timer);
+  playSound('click');
+  G = {level:0,score:0,word:null,letters:[],used:[],answer:[],found:[],timeLeft:settings.infinite?Infinity:settings.baseTime,timer:null,levelWords:[],wordIdx:0,totalFound:0};
+  document.getElementById('gameover').style.display   = 'none';
+  document.getElementById('gameArea').style.display   = 'block';
+  document.getElementById('foundWords').innerHTML     = '<span class="empty-found">Henüz kelime bulamadın...</span>';
+  document.getElementById('timePill').classList.remove('danger');
+  startLevel(0);
+}
+
+/* ── Seviye atlama ──────────────────────────────────── */
+function showLevelUp() {
+  document.getElementById('levelupText').textContent = `Seviye ${G.level+2}'ye hoş geldin! 🎊`;
+  document.getElementById('levelupBanner').style.display = 'block';
+  playSound('levelup'); spawnConfetti(50);
+}
+function hideLevelUp() { document.getElementById('levelupBanner').style.display = 'none'; }
+
+/* ── Konfeti ────────────────────────────────────────── */
+function spawnConfetti(n=30) {
+  const C=['#FFD54F','#EF5350','#42A5F5','#66BB6A','#CE93D8','#FF80AB','#80DEEA','#FFAB91'];
+  for(let i=0;i<n;i++) setTimeout(()=>{
+    const e=document.createElement('div');
+    e.className='confetti-piece';
+    e.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*30}vh;
+      background:${C[0|Math.random()*C.length]};
+      animation-delay:${Math.random()*.4}s;animation-duration:${1.2+Math.random()*.8}s;
+      width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;
+      border-radius:${Math.random()>.5?'50%':'3px'};`;
+    document.body.appendChild(e);
+    e.addEventListener('animationend',()=>e.remove());
+  }, i*30);
+}
+
+/* ═══════════════════════════════════════════════════════
+   BAŞLAT
+   ═══════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  // Varsayılan aktif süre butonu 90s
+  document.querySelectorAll('.time-btn').forEach(b=>{
+    if(b.textContent==='90s') b.classList.add('active');
+  });
+  // Hafıza rozetini güncelle
+  updateSeenBadge();
+  // Cevap kutusuna tıklayınca son harfi sil
+  document.getElementById('answerDisplay').addEventListener('click', ()=>{
+    if(!G.answer.length) return;
+    const last = G.answer.pop();
+    G.used = G.used.filter(i=>i!==last.idx);
+    document.querySelector(`.letter-btn[data-idx="${last.idx}"]`)?.classList.remove('used');
+    renderAnswer();
+    playSound('clear');
+  });
+  startLevel(0);
+});
+</script>
+</body>
+</html>
