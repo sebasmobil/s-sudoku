@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0f">
 <title>Numara Kaçışı</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;--surface3:#22222e;
@@ -20,8 +20,8 @@
   --safe-bot:env(safe-area-inset-bottom,0px);
 }
 body.light{
-  --bg:#ebebf5;--surface:#fff;--surface2:#e4e4f0;--surface3:#d8d8ec;
-  --border:rgba(0,0,0,0.05);--border2:rgba(0,0,0,0.11);
+  --bg:#f2f2f7;--surface:#ffffff;--surface2:#e5e5ea;--surface3:#d1d1d6;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
   --text:#0d0d1a;--muted:rgba(13,13,26,0.48);--dim:rgba(13,13,26,0.28);
   --accent:#5040e8;--accent2:#d93060;--green:#0aaa78;--amber:#c47800;--red:#d42828;--cyan:#0090b8;
   --shadow:rgba(0,0,0,0.09);--grid:rgba(0,0,0,0.035);
@@ -30,7 +30,7 @@ body.light{
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 body{
-  background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
+  background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
   display:flex;flex-direction:column;align-items:center;
   transition:background 0.3s,color 0.3s;position:relative;
   padding-top:var(--safe-top);
@@ -113,19 +113,16 @@ body::before{
 /* ===== INTRO SCREEN ===== */
 #screen-intro{justify-content:flex-start;gap:0;overflow-y:auto;}
 .big-title{
-  font-size:clamp(28px,9vw,64px);font-weight:800;
-  letter-spacing:-2px;line-height:1;margin-bottom:8px;margin-top:4px;
+  font-size:clamp(26px,8vw,52px);font-weight:700;
+  letter-spacing:-1px;line-height:1.05;margin-bottom:8px;margin-top:4px;
 }
 .big-title .hl{color:var(--accent);}
-.big-title .hl2{
-  background:linear-gradient(135deg,var(--accent2),var(--amber));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
+.big-title .hl2{color:var(--accent2);}
 .intro-sub{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;}
 #hs-badge{
   display:inline-flex;align-items:center;gap:6px;
   background:rgba(255,184,77,0.1);border:0.5px solid rgba(255,184,77,0.28);
-  border-radius:8px;padding:4px 12px;font-family:'Space Mono',monospace;
+  border-radius:8px;padding:4px 12px;font-family:'SF Mono','Courier New',monospace;
   font-size:11px;color:var(--amber);margin-bottom:12px;
 }
 
@@ -145,7 +142,7 @@ body::before{
 .mode-card.zen::before{background:linear-gradient(135deg,rgba(61,255,192,0.08),transparent);}
 .mode-card.hard::before{background:linear-gradient(135deg,rgba(255,90,90,0.08),transparent);}
 .mode-icon{font-size:18px;margin-bottom:4px;}
-.mode-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.mode-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
 .mode-desc{font-size:10px;color:var(--muted);line-height:1.3;}
 .mode-badge{
   position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;
@@ -158,14 +155,14 @@ body::before{
 .diff-row{display:flex;gap:7px;margin-bottom:12px;}
 .diff-btn{
   flex:1;padding:7px 4px;border-radius:9px;border:0.5px solid var(--border2);
-  background:var(--surface);color:var(--muted);font-family:'Syne',sans-serif;
+  background:var(--surface);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
   font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center;
 }
 .diff-btn.sel{border-color:var(--accent);color:var(--text);background:var(--surface2);}
 
 .btn-play{
   background:linear-gradient(135deg,var(--accent),#9b6cfa);color:#fff;border:none;
-  border-radius:14px;padding:13px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  border-radius:14px;padding:13px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:700;
   cursor:pointer;width:100%;letter-spacing:0.3px;margin-bottom:4px;
   transition:transform 0.1s,box-shadow 0.2s;
   box-shadow:0 4px 24px rgba(124,108,250,0.4);
@@ -178,7 +175,7 @@ body::before{
 #mode-pill{
   display:inline-flex;align-items:center;gap:5px;align-self:flex-start;
   background:var(--surface);border:0.5px solid var(--border2);border-radius:8px;
-  padding:4px 10px;font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);
+  padding:4px 10px;font-family:'SF Mono','Courier New',monospace;font-size:10px;color:var(--dim);
   flex-shrink:0;
 }
 
@@ -190,23 +187,23 @@ body::before{
   transition:transform 0.15s;
 }
 .hb.bump{transform:scale(1.08);}
-.hl-l{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px;}
-.hv{font-size:19px;font-weight:800;letter-spacing:-0.5px;transition:color 0.3s;}
+.hl-l{font-family:'SF Mono','Courier New',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px;}
+.hv{font-size:19px;font-weight:700;letter-spacing:-0.3px;transition:color 0.3s;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;}
 .hv.green{color:var(--green);}
 .hv.amber{color:var(--amber);}
 
 /* COMBO */
 #combo-row{display:flex;align-items:center;gap:7px;flex-shrink:0;}
-#combo-lbl{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;min-width:36px;}
+#combo-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;min-width:36px;letter-spacing:0.05em;}
 #combo-bar{flex:1;height:5px;background:var(--border2);border-radius:4px;overflow:hidden;}
 #combo-fill{height:5px;border-radius:4px;width:0%;transition:width 0.14s,background 0.3s;background:var(--green);}
-#combo-txt{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);min-width:26px;text-align:right;}
+#combo-txt{font-family:'SF Mono','Courier New',monospace;font-size:9px;color:var(--dim);min-width:26px;text-align:right;}
 
 /* POWER UPS */
 #powerups{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
 .pu-btn{
   display:flex;align-items:center;gap:4px;padding:6px 10px;
-  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+  font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:700;
   border-radius:9px;cursor:pointer;border:0.5px solid var(--border2);
   background:var(--surface);color:var(--text);
   transition:opacity 0.2s,transform 0.1s,background 0.15s;
@@ -215,7 +212,7 @@ body::before{
 .pu-btn:hover:not(:disabled){background:var(--surface2);transform:translateY(-1px);}
 .pu-btn:active:not(:disabled){transform:scale(0.93);}
 .pu-btn:disabled{opacity:0.25;cursor:not-allowed;}
-.pu-c{font-family:'Space Mono',monospace;font-size:9px;padding:1px 5px;border-radius:4px;}
+.pu-c{font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;}
 .pu-c.blue{background:rgba(124,108,250,0.18);color:var(--accent);}
 .pu-c.teal{background:rgba(61,255,192,0.15);color:var(--green);}
 .pu-c.rose{background:rgba(250,108,138,0.18);color:var(--accent2);}
@@ -230,16 +227,16 @@ body::before{
 }
 #next-hint{font-size:12px;color:var(--muted);}
 #next-hint strong{color:var(--green);font-size:16px;margin-left:3px;}
-#streak-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);}
+#streak-txt{font-family:'SF Mono','Courier New',monospace;font-size:10px;color:var(--dim);}
 #streak-txt span{color:var(--amber);}
 
 /* ARENA */
-#arena-wrap{position:relative;flex:1;min-height:0;}
+#arena-wrap{position:relative;flex:1;min-height:0;max-height:calc(100vh - 380px);}
 #arena{
   position:absolute;inset:0;
   background:var(--surface);border-radius:16px;
   border:0.5px solid var(--border2);overflow:hidden;
-  cursor:crosshair;box-shadow:0 2px 16px var(--shadow);transition:background 0.3s;
+  cursor:crosshair;box-shadow:0 2px 12px var(--shadow);transition:background 0.3s;
 }
 #arena-bg{
   position:absolute;inset:0;pointer-events:none;
@@ -254,7 +251,7 @@ body::before{
 @keyframes freezePulse{0%,100%{border-color:rgba(77,217,250,0.5);}50%{border-color:var(--cyan);}}
 #freeze-timer{
   position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;z-index:20;
-  font-family:'Space Mono',monospace;font-size:11px;color:var(--cyan);
+  font-family:'SF Mono','Courier New',monospace;font-size:11px;color:var(--cyan);
   background:rgba(77,217,250,0.15);border-radius:8px;padding:3px 10px;
   border:0.5px solid rgba(77,217,250,0.3);
 }
@@ -281,7 +278,7 @@ body::before{
 /* TOKENS */
 .num-token{
   position:absolute;display:flex;align-items:center;justify-content:center;
-  border-radius:50%;font-family:'Space Mono',monospace;font-weight:700;
+  border-radius:50%;font-family:'SF Mono','Courier New',monospace;font-weight:700;
   cursor:pointer;border:2.5px solid transparent;z-index:2;
   user-select:none;-webkit-user-select:none;
   transition:transform 0.07s,box-shadow 0.15s;
@@ -305,7 +302,7 @@ body::before{
 .num-token.speed{border-color:var(--amber)!important;box-shadow:2px 0 8px rgba(255,184,77,0.4);}
 .num-token.shrink{transform:scale(0.72);}
 .pop-anim{
-  position:absolute;pointer-events:none;font-family:'Space Mono',monospace;
+  position:absolute;pointer-events:none;font-family:'SF Mono','Courier New',monospace;
   font-size:13px;font-weight:700;animation:popUp 0.65s ease-out forwards;z-index:25;white-space:nowrap;
 }
 @keyframes popUp{
@@ -316,7 +313,7 @@ body::before{
 /* MSG */
 #msg{
   flex-shrink:0;text-align:center;font-size:11px;color:var(--muted);
-  min-height:16px;font-family:'Space Mono',monospace;letter-spacing:0.02em;
+  min-height:16px;font-family:'SF Mono','Courier New',monospace;letter-spacing:0.02em;
 }
 
 /* ===== RESULT SCREEN ===== */
@@ -328,16 +325,16 @@ body::before{
 .rec-badge{
   background:rgba(255,184,77,0.13);border:0.5px solid rgba(255,184,77,0.4);
   border-radius:8px;padding:5px 14px;font-size:12px;color:var(--amber);
-  font-family:'Space Mono',monospace;
+  font-family:'SF Mono','Courier New',monospace;
 }
 #res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:20px;margin-top:14px;}
 .rs{background:var(--surface);border:0.5px solid var(--border2);border-radius:12px;padding:12px 8px;}
-.rs-l{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+.rs-l{font-family:'SF Mono','Courier New',monospace;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
 .rs-v{font-size:20px;font-weight:800;}
 #res-btn-row{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;width:100%;}
 .btn-secondary{
   background:transparent;border:0.5px solid var(--border2);border-radius:10px;
-  padding:11px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  padding:11px 20px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:700;
   cursor:pointer;color:var(--muted);transition:background 0.15s,color 0.15s,transform 0.1s;
 }
 .btn-secondary:hover{background:var(--surface2);color:var(--text);}
@@ -365,9 +362,23 @@ body::before{
 <div id="header">
   <div id="logo">numara<span>kaçışı</span></div>
   <div id="hdr-right">
+    <button class="icon-btn" id="quit-btn" onclick="confirmQuit()" title="Çıkış" style="display:none">✕</button>
     <button class="icon-btn" id="sound-btn" onclick="toggleSound()" title="Ses">🔊</button>
     <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Tema">🌙</button>
     <button class="icon-btn" id="settings-btn" onclick="openDrawer()" title="Ayarlar">⚙️</button>
+  </div>
+</div>
+
+<!-- QUIT CONFIRM MODAL -->
+<div id="quit-modal" style="display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);">
+  <div style="background:var(--surface);border:0.5px solid var(--border2);border-radius:20px;padding:28px 24px;max-width:300px;width:88%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.4);">
+    <div style="font-size:36px;margin-bottom:10px;">🚪</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:8px;color:var(--text);">Oyundan çık?</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;">Mevcut oyun <strong style="color:var(--red)">silinecek</strong> ve ana menüye döneceksin.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeQuitModal()" style="flex:1;padding:12px;border-radius:12px;border:0.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;">Devam et</button>
+      <button onclick="doQuit()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Çık</button>
+    </div>
   </div>
 </div>
 
@@ -387,7 +398,7 @@ body::before{
     <div class="s-row">
       <div><div class="s-label">Ses Seviyesi</div></div>
     </div>
-    <input type="range" class="s-slider" id="vol-slider" min="0" max="100" value="70" oninput="masterVol=this.value/100">
+    <input type="range" class="s-slider" id="vol-slider" min="0" max="100" value="70" oninput="masterVol=this.value/100" ontouchstart="unlockAudio()" onchange="testSound()">
 
     <div class="s-section">Oyun</div>
     <div class="s-row">
@@ -406,7 +417,7 @@ body::before{
     <div class="s-section">Hakkında</div>
     <div class="s-row">
       <div><div class="s-label">Versiyon</div></div>
-      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);">v3.0</div>
+      <div style="font-family:'SF Mono','Courier New',monospace;font-size:11px;color:var(--dim);">v3.0</div>
     </div>
   </div>
 </div>
@@ -517,16 +528,35 @@ let highScore={classic:0,blitz:0,zen:0,hard:0};
 let audioCtx=null;
 
 /* ====== AUDIO ====== */
-function AC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function AC(){
+  if(!audioCtx){
+    try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
+  }
+  return audioCtx;
+}
+function unlockAudio(){
+  const ctx=AC();if(!ctx)return;
+  if(ctx.state==='suspended'){
+    ctx.resume().catch(()=>{});
+    // iOS: silent buffer trick
+    const buf=ctx.createBuffer(1,1,22050);
+    const src=ctx.createBufferSource();src.buffer=buf;
+    src.connect(ctx.destination);src.start(0);
+  }
+}
 function tone(f,t,d,v,delay=0){
   if(!soundEnabled)return;
+  const ctx=AC();if(!ctx)return;
+  if(ctx.state==='suspended'){ctx.resume().catch(()=>{});return;}
   try{
-    const ctx=AC(),o=ctx.createOscillator(),g=ctx.createGain();
+    const o=ctx.createOscillator(),g=ctx.createGain();
     o.connect(g);g.connect(ctx.destination);o.type=t;
-    o.frequency.setValueAtTime(f,ctx.currentTime+delay);
-    g.gain.setValueAtTime(Math.min(v*masterVol,1),ctx.currentTime+delay);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+d);
-    o.start(ctx.currentTime+delay);o.stop(ctx.currentTime+delay+d);
+    const start=Math.max(ctx.currentTime+delay,ctx.currentTime+0.001);
+    o.frequency.setValueAtTime(f,start);
+    const vol=Math.min(v*masterVol,0.25);
+    g.gain.setValueAtTime(vol,start);
+    g.gain.exponentialRampToValueAtTime(0.0001,start+d);
+    o.start(start);o.stop(start+d+0.05);
   }catch(e){}
 }
 function sfxHit(c){
@@ -553,11 +583,18 @@ function toggleTheme(){
   $id('app').style.setProperty('--theme-color',darkMode?'#0a0a0f':'#ebebf5');
 }
 function toggleSound(){
+  unlockAudio();
   soundEnabled=!soundEnabled;
   $id('sound-btn').textContent=soundEnabled?'🔊':'🔇';
   $id('snd-toggle').checked=soundEnabled;
+  if(soundEnabled)setTimeout(()=>tone(440,'sine',0.1,0.2),80);
 }
-function syncSound(){soundEnabled=$id('snd-toggle').checked;$id('sound-btn').textContent=soundEnabled?'🔊':'🔇';}
+function syncSound(){
+  unlockAudio();
+  soundEnabled=$id('snd-toggle').checked;
+  $id('sound-btn').textContent=soundEnabled?'🔊':'🔇';
+  if(soundEnabled)setTimeout(()=>tone(440,'sine',0.1,0.2),80);
+}
 function openDrawer(){$id('settings-drawer').classList.add('open');$id('drawer-overlay').classList.add('show');$id('settings-btn').classList.add('on');}
 function closeDrawer(){$id('settings-drawer').classList.remove('open');$id('drawer-overlay').classList.remove('show');$id('settings-btn').classList.remove('on');}
 
@@ -577,6 +614,7 @@ function selDiff(d,el){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
   const s=$id(id);s.style.display='flex';requestAnimationFrame(()=>s.classList.add('active'));
+  $id('quit-btn').style.display=id==='screen-game'?'flex':'none';
 }
 function goIntro(){
   clearAll();showScreen('screen-intro');
@@ -616,13 +654,13 @@ const DARK_C=[
   {bg:'rgba(180,120,255,0.12)',bd:'rgba(180,120,255,0.54)',tx:'#d4aaff'},
 ];
 const LIGHT_C=[
-  {bg:'rgba(80,64,232,0.09)',bd:'rgba(80,64,232,0.48)',tx:'#3022cc'},
-  {bg:'rgba(10,170,120,0.09)',bd:'rgba(10,170,120,0.48)',tx:'#065f42'},
-  {bg:'rgba(217,48,96,0.09)',bd:'rgba(217,48,96,0.48)',tx:'#9a0832'},
-  {bg:'rgba(196,120,0,0.09)',bd:'rgba(196,120,0,0.48)',tx:'#7a4800'},
-  {bg:'rgba(0,145,190,0.09)',bd:'rgba(0,145,190,0.48)',tx:'#004f7a'},
-  {bg:'rgba(210,70,20,0.09)',bd:'rgba(210,70,20,0.48)',tx:'#802000'},
-  {bg:'rgba(130,55,210,0.09)',bd:'rgba(130,55,210,0.48)',tx:'#551898'},
+  {bg:'rgba(80,64,232,0.12)',bd:'rgba(80,64,232,0.6)',tx:'#2a1cb8'},
+  {bg:'rgba(10,160,110,0.12)',bd:'rgba(10,160,110,0.6)',tx:'#055038'},
+  {bg:'rgba(210,40,85,0.12)',bd:'rgba(210,40,85,0.6)',tx:'#880028'},
+  {bg:'rgba(180,100,0,0.12)',bd:'rgba(180,100,0,0.6)',tx:'#6a3800'},
+  {bg:'rgba(0,130,180,0.12)',bd:'rgba(0,130,180,0.6)',tx:'#003f6a'},
+  {bg:'rgba(200,60,10,0.12)',bd:'rgba(200,60,10,0.6)',tx:'#701800'},
+  {bg:'rgba(120,40,200,0.12)',bd:'rgba(120,40,200,0.6)',tx:'#450888'},
 ];
 function CC(){return darkMode?DARK_C:LIGHT_C;}
 
@@ -953,6 +991,22 @@ function endGame(){
   $id('r-score').textContent=score;$id('r-combo').textContent='x'+maxCombo;$id('r-streak').textContent=maxStreak;
 }
 
+function testSound(){
+  unlockAudio();
+  if(!soundEnabled)return;
+  setTimeout(()=>tone(440,'sine',0.1,0.2),80);
+}
+function confirmQuit(){
+  if(!gameActive){goIntro();return;}
+  const m=$id('quit-modal');m.style.display='flex';
+}
+function closeQuitModal(){
+  $id('quit-modal').style.display='none';
+}
+function doQuit(){
+  closeQuitModal();clearAll();goIntro();
+}
+
 /* ====== INIT ====== */
 (function init(){
   const t=localStorage.getItem('nk_theme');
@@ -961,6 +1015,10 @@ function endGame(){
     const v=localStorage.getItem('nk_hs_'+m);if(v)highScore[m]=parseInt(v);
   });
   $id('hs-intro').textContent=Math.max(...Object.values(highScore));
+  // iOS audio unlock on first touch anywhere
+  const unlock=()=>{unlockAudio();document.removeEventListener('touchstart',unlock);document.removeEventListener('click',unlock);};
+  document.addEventListener('touchstart',unlock,{once:true,passive:true});
+  document.addEventListener('click',unlock,{once:true});
   // Prevent scroll bounce on iOS
   document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 })();
