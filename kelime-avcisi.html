@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🔤 Kelime Avcısı</title>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&subset=latin,latin-ext&display=swap" rel="stylesheet">
 <style>
 /* ── TEMA DEĞİŞKENLERİ ─────────────────────────────────── */
 :root {
@@ -100,7 +100,7 @@ body.dark .cloud{filter:brightness(.3) saturate(.2);}
 }
 .settings-panel.open{max-height:520px;padding:18px 20px 20px;}
 .settings-title{
-  font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--h1);
+  font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:800;font-size:1.1rem;color:var(--h1);
   margin-bottom:16px;display:flex;align-items:center;gap:6px;
 }
 .setting-row{
@@ -173,7 +173,7 @@ header .subtitle{font-size:1.05rem;color:var(--sub);font-weight:700;margin-top:2
 }
 
 /* ── CLUE ────────────────────────────────────────────── */
-.clue-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--clue-l);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.clue-label{font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:800;font-size:1rem;color:var(--clue-l);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
 .clue-box{background:linear-gradient(135deg,var(--clue-a),var(--clue-b));border-radius:16px;padding:14px 18px;margin-bottom:18px;border-left:5px solid var(--clue-br);transition:background var(--tr),border-color var(--tr);}
 .clue-text{font-size:1.12rem;font-weight:700;color:var(--clue-t);line-height:1.5;transition:color var(--tr);}
 .letter-count{font-size:.88rem;color:var(--clue-m);margin-top:4px;font-weight:700;}
@@ -183,14 +183,16 @@ header .subtitle{font-size:1.05rem;color:var(--sub);font-weight:700;margin-top:2
   KRİTİK: Fredoka One fontu Türkçe "İ" harfini italik gibi render ediyor.
   Harf butonlarında Nunito 900 kullanıyoruz — tüm Türkçe özel karakterler doğru görünür.
 */
-.letters-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--ll);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.letters-label{font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:800;font-size:1rem;color:var(--ll);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
 .letter-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:18px;}
 .letter-btn{
   width:60px;height:60px;border-radius:16px;border:none;
-  font-family:'Nunito',sans-serif;   /* ← Fredoka One DEĞİL */
+  font-family:'Nunito','Segoe UI','Helvetica Neue',Arial,sans-serif;
   font-weight:900;
   font-size:1.55rem;
-  font-style:normal;                 /* italic kalıbını engelle */
+  font-style:normal;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
   cursor:pointer;
   transition:transform .12s, box-shadow .12s, opacity .12s;
   user-select:none;-webkit-user-select:none;
@@ -220,7 +222,7 @@ body.dark .lc6{background:#003040;color:#80DEEA;box-shadow:0 4px 0 #001820;}
 body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
 
 /* ── CEVAP ALANI ─────────────────────────────────────── */
-.answer-label{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--al);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.answer-label{font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:800;font-size:1rem;color:var(--al);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
 .answer-display{
   display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
   min-height:64px;align-items:center;
@@ -234,8 +236,9 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
   width:54px;height:54px;border-radius:13px;
   background:var(--slot);
   display:flex;align-items:center;justify-content:center;
-  font-family:'Nunito',sans-serif; /* Türkçe karakter için */
+  font-family:'Nunito','Segoe UI','Helvetica Neue',Arial,sans-serif;
   font-weight:900;font-size:1.45rem;font-style:normal;
+  -webkit-font-smoothing:antialiased;
   color:var(--slot-t);
   box-shadow:0 3px 0 var(--slot-sh);
   border:2.5px solid var(--slot-b);
@@ -264,7 +267,7 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
 
 /* ── GERİ BİLDİRİM ───────────────────────────────────── */
 .feedback{text-align:center;min-height:44px;margin-top:14px;}
-.feedback-msg{display:inline-block;padding:10px 22px;border-radius:14px;font-family:'Fredoka One',cursive;font-size:1.2rem;animation:bounceIn .35s ease;}
+.feedback-msg{display:inline-block;padding:10px 22px;border-radius:14px;font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:800;font-size:1.2rem;animation:bounceIn .35s ease;}
 .feedback-msg.correct{background:var(--fb-ok-bg);color:var(--fb-ok-t);border:2px solid var(--fb-ok-b);}
 .feedback-msg.wrong  {background:var(--fb-no-bg);color:var(--fb-no-t);border:2px solid var(--fb-no-b);}
 .feedback-msg.skip   {background:var(--fb-sk-bg);color:var(--fb-sk-t);border:2px solid var(--fb-sk-b);}
@@ -277,7 +280,7 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
 
 /* ── BULUNAN KELİMELER ───────────────────────────────── */
 .found-section{background:var(--fw);border-radius:22px;padding:16px 18px;box-shadow:0 4px 16px var(--sh);margin-bottom:14px;transition:background var(--tr),box-shadow var(--tr);}
-.found-title{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--ft);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.found-title{font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:800;font-size:1rem;color:var(--ft);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
 .found-words{display:flex;flex-wrap:wrap;gap:8px;}
 .found-tag{background:linear-gradient(135deg,var(--tag-a),var(--tag-b));border:2px solid var(--tag-br);border-radius:10px;padding:5px 13px;font-weight:800;font-size:.9rem;color:var(--tag-t);animation:popIn .25s ease;transition:background var(--tr),color var(--tr),border-color var(--tr);}
 .empty-found{font-size:.9rem;color:var(--empty);font-style:italic;font-weight:600;}
@@ -366,15 +369,17 @@ body.dark .lc7{background:#4A1A08;color:#FFAB91;box-shadow:0 4px 0 #2A0E04;}
 
     <!-- Hafıza -->
     <div style="margin-top:16px;padding-top:14px;border-top:2px dashed var(--set-b);">
-      <div style="font-family:'Fredoka One',cursive;font-size:1rem;color:var(--h1);margin-bottom:8px;">🧠 Kelime Hafızası</div>
+      <div style="font-family:'Nunito','Segoe UI',Arial,sans-serif;font-size:1rem;color:var(--h1);margin-bottom:8px;">🧠 Kelime Hafızası</div>
       <div style="font-size:.82rem;color:var(--txt2);font-weight:700;margin-bottom:10px;">
         Görülen kelimeler hatırlanır, tekrar sorulmaz. Tüm kelimeler bitince seviye sıfırlanır.
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
         <span id="seenBadge" style="font-size:.88rem;font-weight:800;color:var(--ft);">📖 yükleniyor...</span>
-        <button class="time-btn" onclick="resetAllMemory()" style="background:#EF5350;color:white;border-color:#C62828;font-size:.82rem;padding:6px 14px;">
-          🗑️ Hafızayı Sıfırla
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+<button class="time-btn" onclick="resetAllMemory()" style="background:#EF5350;color:white;border-color:#C62828;font-size:.82rem;padding:6px 14px;">
+            🗑️ Hafızayı Sıfırla
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -534,144 +539,255 @@ function playSound(type) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   KELİME VERİTABANI  —  3 seviye × 40 kelime = 120 kelime
+   KELİME VERİTABANI  —  3 seviye × 80 kelime = 240 kelime
+   Tümü ilkokul çocukları için uygun, gerçek Türkçe kelimeler.
    ═══════════════════════════════════════════════════════ */
 const WORDS = [
-  [ // Seviye 1 — Kolay (2-4 harf)
-    {word:'KAT',  clue:'Binanın bir bölümü, apartmanda yaşanan yer 🏢'},
-    {word:'BAL',  clue:'Arıların yaptığı tatlı şey 🍯'},
-    {word:'TOP',  clue:'Futbolda kullanılan yuvarlak nesne ⚽'},
-    {word:'GÜL',  clue:'Güzel kokan, dikenli çiçek 🌹'},
-    {word:'AY',   clue:'Geceleri gökyüzünde parlayan 🌙'},
-    {word:'YAZ',  clue:'En sıcak mevsim, okulların tatil olduğu zaman ☀️'},
-    {word:'KIŞ',  clue:'Kar yağan, en soğuk mevsim ❄️'},
-    {word:'SU',   clue:'İçtiğimiz, hayat için gerekli sıvı 💧'},
+  [ // ── SEVİYE 1 — Kolay (2-4 harf) ─────────────────────
     {word:'AT',   clue:'Nalları olan, üstüne binilen hayvan 🐎'},
-    {word:'MASA', clue:'Üstüne kitap koyduğumuz mobilya 🪑'},
-    {word:'KUTU', clue:'İçine bir şeyler konan dört köşeli kap 📦'},
+    {word:'AY',   clue:'Geceleri gökyüzünde parlayan 🌙'},
+    {word:'AZ',   clue:'Çok\'un tersi, küçük miktarda 📉'},
+    {word:'BAL',  clue:'Arıların yaptığı tatlı şey 🍯'},
+    {word:'BAŞ',  clue:'Vücudumuzun en üst kısmı 🙂'},
+    {word:'BUZ',  clue:'Donan su, soğuk ve kaygan 🧊'},
+    {word:'CAM',  clue:'Pencerelerde olan saydam malzeme 🪟'},
+    {word:'ÇAY',  clue:'Sıcak içilen, demlenen içecek ☕'},
+    {word:'ÇOK',  clue:'Az\'ın tersi, fazla miktarda 📈'},
+    {word:'DAĞ',  clue:'Çok yüksek, karlı tepeli doğa oluşumu ⛰️'},
+    {word:'DİŞ',  clue:'Ağzımızda olan, yiyecekleri çiğnediğimiz yapı 🦷'},
+    {word:'EL',   clue:'Beş parmağı olan, kolumuzu bitiren organ ✋'},
+    {word:'EV',   clue:'Yaşadığımız, uyuduğumuz yer 🏠'},
+    {word:'GÖK',  clue:'Bulutların ve yıldızların bulunduğu yer 🌌'},
     {word:'GÖZ',  clue:'Görmemizi sağlayan organ 👁️'},
-    {word:'EL',   clue:'Kolumuzu bitiren, beş parmağı olan organ ✋'},
-    {word:'KUŞ',  clue:'Kanatları olan, gökte uçan hayvan 🐦'},
-    {word:'BUZ',  clue:'Donan su, buz pateni yapılan yüzey 🧊'},
+    {word:'GÜL',  clue:'Güzel kokan, dikenli çiçek 🌹'},
     {word:'GÜN',  clue:'24 saatten oluşan zaman birimi 📅'},
-    {word:'CAM',  clue:'Pencerelerde olan, saydam malzeme 🪟'},
-    {word:'DAĞ',  clue:'Çok yüksek, karlı tepesi olan doğa oluşumu ⛰️'},
-    {word:'YOL',  clue:'Arabalar ve insanların yürüdüğü zemin 🛣️'},
-    {word:'GÖK',  clue:'Bulutların, uçakların ve yıldızların bulunduğu yer 🌌'},
-    {word:'KUZ',  clue:'Kuzey yönünü gösteren kısa kelime 🧭'},
+    {word:'IP',   clue:'Bağlamak ve sarmak için kullanılan ince şerit 🧵'},
+    {word:'İYİ',  clue:'Kötünün tersi, güzel olan şey 😊'},
+    {word:'KAR',  clue:'Kışın gökten yağan beyaz şey 🌨️'},
+    {word:'KAT',  clue:'Binanın bir bölümü, apartmanda yaşanan yer 🏢'},
     {word:'KAFA', clue:'Başımızın üst kısmı, beynin bulunduğu yer 🗣️'},
     {word:'KAYA', clue:'Dağlarda bulunan sert, büyük taş 🪨'},
-    {word:'BABA', clue:'Ailenin erkeği, babamız 👨'},
-    {word:'ANNE', clue:'Bizi doğuran, en çok seven kişi 👩'},
-    {word:'ÇAY',  clue:'Sıcak içilen, demlenen bitkisel içecek ☕'},
-    {word:'KAR',  clue:'Kış mevsiminde gökten yağan beyaz şey 🌨️'},
-    {word:'TAŞ',  clue:'Yerden toplanan, sert ve katı nesne 🪨'},
-    {word:'EV',   clue:'Yaşadığımız, uyuduğumuz yer 🏠'},
+    {word:'KIŞ',  clue:'Kar yağan, en soğuk mevsim ❄️'},
     {word:'KÖY',  clue:'Şehirden küçük, tarlalar içindeki yerleşim yeri 🌾'},
+    {word:'KUŞ',  clue:'Kanatları olan, gökte uçan hayvan 🐦'},
+    {word:'KUM',  clue:'Sahilde ve çöllerde bulunan küçük tanecikler 🏖️'},
+    {word:'KUTU', clue:'İçine bir şeyler konan dört köşeli kap 📦'},
+    {word:'MASA', clue:'Üstüne kitap koyduğumuz mobilya 🪑'},
+    {word:'SAÇ',  clue:'Başımızın üstünde büyüyen teller 💇'},
+    {word:'SU',   clue:'İçtiğimiz, hayat için gerekli sıvı 💧'},
+    {word:'TAŞ',  clue:'Yerden toplanan, sert ve katı nesne 🪨'},
+    {word:'TOP',  clue:'Futbolda kullanılan yuvarlak nesne ⚽'},
+    {word:'TOZ',  clue:'Mobilya üstünde biriken ince gri tabaka 🌫️'},
     {word:'UÇ',   clue:'Bir şeyin en sivri ya da uzak noktası 📍'},
-    {word:'KUM',  clue:'Sahillerde ve çöllerde bulunan küçük tanecikler 🏖️'},
-    {word:'GEL',  clue:'Bir yere doğru hareket et 🚶'},
-    {word:'BAŞ',  clue:'Vücudumuzun en üst kısmı, kafamız 🙂'},
-    {word:'GİT',  clue:'Bir yerden ayrıl, yola çık 🏃'},
-    {word:'BİL',  clue:'Bir konuda bilgi sahibi ol 🧠'},
+    {word:'YAZ',  clue:'En sıcak mevsim, okulların tatil olduğu zaman ☀️'},
     {word:'YER',  clue:'Üstünde durduğumuz, bastığımız zemin 🌍'},
-    {word:'ÇOK',  clue:'Az\'ın tersi, fazla miktarda 📈'},
-    {word:'AZ',   clue:'Çok\'un tersi, küçük miktarda 📉'},
-    {word:'İYİ',  clue:'Kötünün tersi, güzel olan şey 😊'},
+    {word:'YOL',  clue:'Arabaların ve insanların yürüdüğü zemin 🛣️'},
+    {word:'YÜZ',  clue:'Alın, burun, göz ve ağzın bulunduğu kısım 😊'},
+    {word:'ANNE', clue:'Bizi doğuran, en çok seven kişi 👩'},
+    {word:'BABA', clue:'Ailenin erkeği, babamız 👨'},
+    {word:'DEDE', clue:'Babanın ya da annenin babası 👴'},
+    {word:'NINE', clue:'Babanın ya da annenin annesi 👵'},
+    {word:'BEBEK',clue:'Yeni doğmuş, çok küçük insan 👶'},
+    {word:'ÇOCUK',clue:'Büyümekte olan küçük insan 👦'},
+    {word:'ALTI', clue:'Beşten bir fazla, 6 sayısı 6️⃣'},
+    {word:'BEŞ',  clue:'Dörtten bir fazla, 5 sayısı 5️⃣'},
+    {word:'DÖRT', clue:'Üçten bir fazla, 4 sayısı 4️⃣'},
+    {word:'ÜÇ',   clue:'İkiden bir fazla, 3 sayısı 3️⃣'},
+    {word:'İKİ',  clue:'Birden bir fazla, 2 sayısı 2️⃣'},
+    {word:'BİR',  clue:'En küçük tam sayı, 1 rakamı 1️⃣'},
+    {word:'YEDİ', clue:'Altıdan bir fazla, 7 sayısı 7️⃣'},
+    {word:'SEKİZ',clue:'Yediden bir fazla, 8 sayısı 8️⃣'},
+    {word:'DOKUZ',clue:'Sekizden bir fazla, 9 sayısı 9️⃣'},
+    {word:'ON',   clue:'Dokuzdan bir fazla, 10 sayısı 🔟'},
+    {word:'GECE', clue:'Güneşin battıktan sonra gelen karanlık zaman 🌙'},
+    {word:'SABAH',clue:'Güneşin doğduğu, günün başladığı zaman 🌅'},
+    {word:'ÖĞLE', clue:'Gündüzün ortası, yemek saati 🕛'},
+    {word:'AKŞAM',clue:'Güneşin battığı, gecenin yaklaştığı zaman 🌇'},
+    {word:'HAVA', clue:'Soluduğumuz, etrafımızı saran madde 🌬️'},
+    {word:'ATEŞ', clue:'Odunları yakınca çıkan sıcak alevler 🔥'},
+    {word:'IŞIK', clue:'Güneş ve lambadan çıkan, görmemizi sağlayan şey 💡'},
+    {word:'SES',  clue:'Kulaklarımızla duyduğumuz titreşim 🔊'},
+    {word:'RENK', clue:'Mavi, kırmızı, sarı gibi gözle görülen özellik 🎨'},
+    {word:'KOKU', clue:'Burnumuzla hissettiğimiz hoş ya da kötü şey 👃'},
+    {word:'TAD',  clue:'Yiyecekleri yerken ağzımızda hissettiğimiz şey 👅'},
+    {word:'YAŞ',  clue:'Kaç yıl yaşandığını gösteren rakam 🎂'},
+    {word:'BOY',  clue:'Aşağıdan yukarıya uzunluk, ne kadar uzun olduğumuz 📏'},
+    {word:'AĞIR', clue:'Kaldırması zor, kilo olarak çok olan şey ⚖️'},
+    {word:'UZUN', clue:'Kısanın tersi, boyca büyük olan 📏'},
+    {word:'KISA', clue:'Uzunun tersi, boyca az olan 📏'},
+    {word:'HIZLI',clue:'Yavaşın tersi, süratle giden şey 🏎️'},
+    {word:'YAVAŞ',clue:'Hızlının tersi, az hızla giden şey 🐌'},
+    {word:'SICAK',clue:'Soğuğun tersi, ısısı yüksek olan şey 🌡️'},
+    {word:'SOĞUK',clue:'Sıcağın tersi, ısısı düşük olan şey 🥶'},
   ],
-  [ // Seviye 2 — Orta (4-6 harf)
-    {word:'ELMA',    clue:'Kırmızı ya da yeşil, tatlı bir meyve 🍎'},
-    {word:'OKUL',    clue:'Ders öğrendiğimiz, öğretmenlerin çalıştığı yer 🏫'},
-    {word:'KİTAP',   clue:'İçinde yazı ve resim olan, okuduğumuz şey 📚'},
-    {word:'ÇANTA',   clue:'Kitaplarımızı taşıdığımız şey 🎒'},
-    {word:'ARABA',   clue:'Dört tekerlekli, motorlu taşıt 🚗'},
-    {word:'DENİZ',   clue:'Büyük tuzlu su kütlesi, balıkların evi 🌊'},
-    {word:'AĞAÇ',    clue:'Gövdesi, dalları ve yaprakları olan bitki 🌳'},
-    {word:'BULUT',   clue:'Gökyüzünde beyaz ya da gri yüzen şey ☁️'},
-    {word:'KALEM',   clue:'Yazı yazmak için kullandığımız araç ✏️'},
-    {word:'EKMEK',   clue:'Fırında pişen, her öğün yediğimiz yiyecek 🍞'},
-    {word:'KÖPEK',   clue:'İnsanların en sadık hayvan dostu 🐶'},
-    {word:'BALON',   clue:'İçi havayla dolu, uçan renkli şey 🎈'},
-    {word:'KEDİ',    clue:'Miyavlayan, sevimli evcil hayvan 🐱'},
-    {word:'TAVUK',   clue:'Yumurta yiyen, çiftlikte yaşayan hayvan 🐔'},
-    {word:'ÇIÇEK',   clue:'Güzel kokan, renkli bitki 🌸'},
-    {word:'KÖPRÜ',   clue:'İki kıyıyı birbirine bağlayan yapı 🌉'},
-    {word:'BAHÇE',   clue:'Evlerin yanındaki, çiçek ve ağaç olan yer 🌿'},
-    {word:'PENCER',  clue:'Duvarların içindeki cam yüzey 🪟'},
-    {word:'KAPAK',   clue:'Kutu ya da şişenin üstünü kapatan şey 🔒'},
-    {word:'RENK',    clue:'Kırmızı, mavi, sarı gibi gözle görülen özellik 🎨'},
-    {word:'BOYA',    clue:'Duvarları ya da kağıdı renklendiren madde 🖌️'},
-    {word:'KANAT',   clue:'Kuşların ve uçakların uçmasını sağlayan yapı 🪶'},
-    {word:'SABAH',   clue:'Güneşin doğduğu, günün başladığı zaman 🌅'},
-    {word:'AKŞAM',   clue:'Güneşin battığı, gecenin başlamak üzere olduğu zaman 🌇'},
-    {word:'ŞEKER',   clue:'Tatlı, çocukların sevdiği yiyecek 🍬'},
-    {word:'MEYVE',   clue:'Elma, muz, portakal gibi tatlı yiyecekler 🍓'},
-    {word:'ÇORBA',   clue:'Sıcak, içilen ve kaşıkla yenen yemek 🍲'},
-    {word:'HAVUZ',   clue:'İçinde yüzülen, yapay su birikintisi 🏊'},
-    {word:'FENER',   clue:'Karanlıkta ışık veren el lambası 🔦'},
-    {word:'BEYAZ',   clue:'Karın rengi, en açık renk ⬜'},
-    {word:'KIRMIZ',  clue:'Ateşin ve kanın rengi 🔴'},
-    {word:'ÖRDEK',   clue:'Suda yüzen, vak vak diyen hayvan 🦆'},
-    {word:'ASLAN',   clue:'Ormanın kralı, yeleleri olan büyük kedi 🦁'},
-    {word:'TAVŞAN',  clue:'Uzun kulaklı, havuç seven hayvan 🐰'},
-    {word:'FİL',     clue:'Hortumu olan, en büyük kara hayvanı 🐘'},
-    {word:'ZÜRAFA',  clue:'Boynu çok uzun, Afrika\'da yaşayan hayvan 🦒'},
-    {word:'PANDA',   clue:'Siyah beyaz, bambu yiyen sevimli hayvan 🐼'},
-    {word:'KOŞU',    clue:'Hızlı yürüme, spor olarak yapılan hareket 🏃'},
-    {word:'DAĞLAR',  clue:'Birden fazla dağın bir arada bulunduğu yer ⛰️'},
-    {word:'YÜZME',   clue:'Suda hareket etme, havuzda yapılan spor 🏊'},
-    {word:'BULMA',   clue:'Kayıp bir şeyi ortaya çıkarma 🔍'},
+  [ // ── SEVİYE 2 — Orta (4-6 harf) ──────────────────────
+    {word:'AĞAÇ',   clue:'Gövdesi, dalları ve yaprakları olan bitki 🌳'},
+    {word:'AKŞAM',  clue:'Güneşin battığı, gecenin başlamak üzere olduğu zaman 🌇'},
+    {word:'ARABA',  clue:'Dört tekerlekli, motorlu taşıt 🚗'},
+    {word:'ASLAN',  clue:'Ormanın kralı, yeleleri olan büyük kedi 🦁'},
+    {word:'AYAK',   clue:'Bacağımızın en altında olan, yürüdüğümüz organ 🦶'},
+    {word:'BAHÇE',  clue:'Evlerin yanındaki, çiçek ve ağaç olan yer 🌿'},
+    {word:'BALON',  clue:'İçi havayla dolu, uçan renkli şey 🎈'},
+    {word:'BALINA', clue:'Denizde yaşayan en büyük memeli hayvan 🐋'},
+    {word:'BEYAZ',  clue:'Karın rengi, en açık renk ⬜'},
+    {word:'BOYA',   clue:'Duvarları ya da kağıdı renklendiren madde 🖌️'},
+    {word:'BULUT',  clue:'Gökyüzünde beyaz ya da gri yüzen şey ☁️'},
+    {word:'ÇANTA',  clue:'Kitaplarımızı taşıdığımız şey 🎒'},
+    {word:'ÇIÇEK',  clue:'Güzel kokan, renkli bitki 🌸'},
+    {word:'ÇORBA',  clue:'Sıcak, kaşıkla yenen yemek 🍲'},
+    {word:'DENİZ',  clue:'Büyük tuzlu su kütlesi, balıkların evi 🌊'},
+    {word:'EKMEK',  clue:'Fırında pişen, her öğün yediğimiz yiyecek 🍞'},
+    {word:'ELMA',   clue:'Kırmızı ya da yeşil, tatlı bir meyve 🍎'},
+    {word:'FENER',  clue:'Karanlıkta ışık veren el lambası 🔦'},
+    {word:'FİL',    clue:'Hortumu olan, en büyük kara hayvanı 🐘'},
+    {word:'HAVUZ',  clue:'İçinde yüzülen, yapay su birikintisi 🏊'},
+    {word:'KALEM',  clue:'Yazı yazmak için kullandığımız araç ✏️'},
+    {word:'KANAT',  clue:'Kuşların ve uçakların uçmasını sağlayan yapı 🪶'},
+    {word:'KAPAK',  clue:'Kutu ya da şişenin üstünü kapatan şey 🔒'},
+    {word:'KAVUN',  clue:'Yazın yenen, sarı kabuklu tatlı meyve 🍈'},
+    {word:'KEDİ',   clue:'Miyavlayan, sevimli evcil hayvan 🐱'},
+    {word:'KİTAP',  clue:'İçinde yazı ve resim olan, okuduğumuz şey 📚'},
+    {word:'KOŞU',   clue:'Hızlı yürüme, spor olarak yapılan hareket 🏃'},
+    {word:'KÖPEK',  clue:'İnsanların en sadık hayvan dostu 🐶'},
+    {word:'KÖPRÜ',  clue:'İki kıyıyı birbirine bağlayan yapı 🌉'},
+    {word:'MANAV',  clue:'Meyve ve sebze satan dükkan 🥦'},
+    {word:'MERDİVEN', clue:'Yukarı çıkmak için basamaklı yapı 🪜'},
+    {word:'MEYVE',  clue:'Elma, muz, portakal gibi tatlı yiyecekler 🍓'},
+    {word:'OKUL',   clue:'Ders öğrendiğimiz, öğretmenlerin çalıştığı yer 🏫'},
+    {word:'ÖRDEK',  clue:'Suda yüzen, vak vak diyen hayvan 🦆'},
+    {word:'PANDA',  clue:'Siyah beyaz, bambu yiyen sevimli hayvan 🐼'},
+    {word:'SABAH',  clue:'Güneşin doğduğu, günün başladığı zaman 🌅'},
+    {word:'SANDAL', clue:'Küçük, iki kişilik tekne 🚣'},
+    {word:'ŞEKER',  clue:'Tatlı, çocukların sevdiği yiyecek 🍬'},
+    {word:'TAVŞAN', clue:'Uzun kulaklı, havuç seven hayvan 🐰'},
+    {word:'TAVUK',  clue:'Yumurta yiyen, çiftlikte yaşayan hayvan 🐔'},
+    {word:'TILKI',  clue:'Kurnaz, turuncu kürklü orman hayvanı 🦊'},
+    {word:'TREN',   clue:'Ray üzerinde giden, çok vagonlu taşıt 🚂'},
+    {word:'UÇAK',   clue:'Gökte uçan, insanları taşıyan araç ✈️'},
+    {word:'VAPUR',  clue:'Denizde giden, büyük yolcu gemisi ⛴️'},
+    {word:'YEŞİL',  clue:'Yaprakların ve çimlerin rengi 💚'},
+    {word:'YILAN',  clue:'Bacaksız, sürünen, uzun hayvan 🐍'},
+    {word:'YUMURTA', clue:'Tavukların koyduğu, kahvaltıda yediğimiz şey 🥚'},
+    {word:'ZÜRAFA', clue:'Boynu çok uzun, Afrika\'da yaşayan hayvan 🦒'},
+    {word:'KURBAĞA', clue:'Suda ve karada yaşayan, vırak vırak diyen hayvan 🐸'},
+    {word:'ÖRÜMCEK', clue:'Ağ ören, sekiz bacaklı küçük hayvan 🕷️'},
+    {word:'KARINCA', clue:'Çok güçlü, sürü halinde yaşayan küçük böcek 🐜'},
+    {word:'ARI', clue:'Bal yapan, sarı siyah çizgili böcek 🐝'},
+    {word:'KUZU', clue:'Koyunun yavrusu, sevimli ve yumuşak 🐑'},
+    {word:'TAY', clue:'Atın yavrusu, küçük at 🐎'},
+    {word:'İNEK',   clue:'Süt veren, çiftlikte yaşayan hayvan 🐄'},
+    {word:'KEÇİ', clue:'Boynuzu olan, dağda yaşayan hayvan 🐐'},
+    {word:'DOMUZ',  clue:'Çiftçilerin beslediği, pembe tenli hayvan 🐷'},
+    {word:'KOYUN',  clue:'Yünü olan, meler meler bağıran hayvan 🐑'},
+    {word:'HOROZ',  clue:'Sabah öten, ibikli erkek tavuk 🐓'},
+    {word:'GÜVERCIN', clue:'Barışın simgesi, beyaz tüylü kuş 🕊️'},
+    {word:'PAPAĞAN', clue:'Konuşmayı taklit eden, renkli tüylü kuş 🦜'},
+    {word:'PENGUEN', clue:'Yüzebilen ama uçamayan, siyah beyaz kuş 🐧'},
+    {word:'GERGEDAN', clue:'Burnunda boynuzu olan büyük Afrika hayvanı 🦏'},
+    {word:'HİPOPOTAM', clue:'Nehirde yaşayan, ağzı çok büyük hayvan 🦛'},
+    {word:'KANGURU', clue:'Kesesinde yavrusu olan, zıplayan hayvan 🦘'},
+    {word:'KASAP',  clue:'Et satan dükkan ya da o dükkânı işleten kişi 🥩'},
+    {word:'FIRINCI', clue:'Ekmek ve pasta yapan usta 🍞'},
+    {word:'BERBER', clue:'Saç kesen, tıraş yapan kişi 💈'},
+    {word:'POSTACI', clue:'Mektup ve paket dağıtan görevli 📮'},
+    {word:'İTFAİYE',clue:'Yangınları söndüren, kırmızı araçla gelen ekip 🚒'},
+    {word:'POLİS',  clue:'Güvenliği sağlayan, mavi üniforma giyen görevli 👮'},
+    {word:'ASKER',  clue:'Ülkeyi koruyan, üniforma giyen kişi 🎖️'},
+    {word:'HAKİM',  clue:'Mahkemede karar veren görevli 👨‍⚖️'},
+    {word:'AVUKAT', clue:'İnsanları mahkemede savunan kişi ⚖️'},
+    {word:'MİMAR',  clue:'Bina tasarlayan, çizen kişi 🏛️'},
+    {word:'RESSAM', clue:'Tablo yapan, boya kullanan sanatçı 🎨'},
+    {word:'GARSON', clue:'Restoranda yemek servisi yapan kişi 🍽️'},
   ],
-  [ // Seviye 3 — Zor (5-9 harf)
-    {word:'MÜZİK',     clue:'Nota ve ritimden oluşan sanat 🎵'},
-    {word:'SINCAP',    clue:'Fındık seven, ağaçta yaşayan küçük hayvan 🐿️'},
-    {word:'KELEBEK',   clue:'Renkli kanatları olan, çiçeklere konan böcek 🦋'},
-    {word:'YILDIZ',    clue:'Geceleri gökyüzünde parlayan küçük ışık ⭐'},
-    {word:'ÇOCUK',     clue:'Büyümekte olan küçük insan 👦'},
-    {word:'HAVUÇ',     clue:'Turuncu, tavşanların sevdiği sebze 🥕'},
-    {word:'GÜNEŞ',     clue:'Gündüz ışık ve ısı veren büyük yıldız ☀️'},
-    {word:'UÇURTMA',   clue:'Rüzgarda göğe yükselen, ipli oyuncak 🪁'},
-    {word:'KARDEŞ',    clue:'Aynı anne ya da babadan olan kişi 👧👦'},
-    {word:'ÖĞRETMEN',  clue:'Bize ders veren, okuldaki büyüğümüz 👩‍🏫'},
-    {word:'ÇİKOLATA',  clue:'Kakaodan yapılan, çocukların sevdiği tatlı 🍫'},
-    {word:'PAYLAŞIM',  clue:'Bir şeyi başkalarıyla bölüşme 🤝'},
+  [ // ── SEVİYE 3 — Zor (5+ harf, soyut ve uzun kelimeler) ─
     {word:'ARKADAŞ',   clue:'Birlikte oynanan, güvenilen kişi 🧑‍🤝‍🧑'},
-    {word:'MUTLULUK',  clue:'Sevinç dolu olma hali, mutlu olmak 😄'},
-    {word:'ÖZGÜRLÜK',  clue:'İstediğin gibi yaşayabilme hakkı 🕊️'},
-    {word:'SAYGI',     clue:'Büyüklere ve diğer insanlara gösterilen değer 🙏'},
-    {word:'GÖKYÜZÜ',   clue:'Yukarıya baktığımızda gördüğümüz mavi alan 🌌'},
-    {word:'MEVSİM',    clue:'İlkbahar, yaz, sonbahar, kış gibi dönemler 🍂'},
-    {word:'TATİL',     clue:'Okul ya da işin olmadığı dinlenme günleri 🏖️'},
-    {word:'ÇEVRE',     clue:'Etrafımızdaki doğa ve yaşam alanı 🌿'},
-    {word:'DOĞA',      clue:'Ormanlar, denizler, dağlar — tüm canlı dünya 🌍'},
-    {word:'HAYVAN',    clue:'Canlıların bir grubu, insanlardan farklı varlıklar 🐾'},
-    {word:'BİTKİ',     clue:'Topraktan çıkan, fotosentez yapan canlı 🌱'},
-    {word:'HEYECAN',   clue:'Bir şey olmadan önce duyulan hareketli duygu 😲'},
-    {word:'ŞARKICI',   clue:'Sahneye çıkan, şarkı söyleyen kişi 🎤'},
-    {word:'RESSAM',    clue:'Tablo yapan, boya kullanan sanatçı 🎨'},
-    {word:'KAPTAN',    clue:'Gemi ya da uçağı yöneten kişi 🧑‍✈️'},
-    {word:'DOKTOR',    clue:'Hastaları iyileştiren, beyaz önlük giyen kişi 🩺'},
-    {word:'İTFAİYE',   clue:'Yangınları söndüren, kırmızı araçla gelen ekip 🚒'},
-    {word:'MİMAR',     clue:'Bina tasarlayan kişi 🏛️'},
-    {word:'GARSON',    clue:'Restoranda yemek servisi yapan kişi 🍽️'},
     {word:'BAHÇIVAN',  clue:'Bahçede çiçek ve bitki yetiştiren kişi 👨‍🌾'},
-    {word:'OYUNCAK',   clue:'Çocukların oynadığı, eğlenmek için kullanılan nesne 🧸'},
-    {word:'MASAL',     clue:'Çocuklara anlatılan, hayali hikâye 📖'},
-    {word:'ŞELALE',    clue:'Yüksekten akan, uğultulu su kütlesi 💦'},
+    {word:'BİTKİ',     clue:'Topraktan çıkan, fotosentez yapan canlı 🌱'},
+    {word:'ÇEVRE',     clue:'Etrafımızdaki doğa ve yaşam alanı 🌿'},
+    {word:'ÇİKOLATA',  clue:'Kakaodan yapılan, çocukların sevdiği tatlı 🍫'},
+    {word:'DOĞA',      clue:'Ormanlar, denizler, dağlar, tüm canlı dünya 🌍'},
+    {word:'DOKTOR',    clue:'Hastaları iyileştiren, beyaz önlük giyen kişi 🩺'},
+    {word:'GARSON',    clue:'Restoranda yemek servisi yapan kişi 🍽️'},
     {word:'GÖKKUŞAĞI', clue:'Yağmurdan sonra gökyüzünde beliren renkli yay 🌈'},
+    {word:'GÖKYÜZÜ',   clue:'Yukarıya baktığımızda gördüğümüz mavi alan 🌌'},
+    {word:'GÜNEŞ',     clue:'Gündüz ışık ve ısı veren büyük yıldız ☀️'},
+    {word:'HAVUÇ',     clue:'Turuncu, tavşanların sevdiği sebze 🥕'},
+    {word:'HAYVAN',    clue:'Canlıların bir grubu, insanlardan farklı varlıklar 🐾'},
+    {word:'HEYECAN',   clue:'Bir şey olmadan önce duyulan coşkulu duygu 😲'},
+    {word:'HİKAYE',    clue:'Başı, ortası ve sonu olan, anlatılan olay 📖'},
+    {word:'KAPTAN',    clue:'Gemi ya da uçağı yöneten kişi 🧑‍✈️'},
+    {word:'KARDEŞ',    clue:'Aynı anne ya da babadan olan kişi 👧👦'},
+    {word:'KELEBEK',   clue:'Renkli kanatları olan, çiçeklere konan böcek 🦋'},
+    {word:'KUYRUK',    clue:'Hayvanların arkasında uzanan kıl uzantısı 🐾'},
     {word:'MAĞARA',    clue:'Dağların içindeki, karanlık doğal boşluk 🕳️'},
-    {word:'VOLKAN',    clue:'Lav püskürten, dağ gibi görünen doğa oluşumu 🌋'},
+    {word:'MASAL',     clue:'Çocuklara anlatılan, hayal gücüyle dolu hikaye 📖'},
+    {word:'MEVSİM',    clue:'İlkbahar, yaz, sonbahar, kış gibi dönemler 🍂'},
+    {word:'MİMAR',     clue:'Bina tasarlayan kişi 🏛️'},
+    {word:'MUTLULUK',  clue:'Sevinç dolu olma hali, gülmek ve sevinmek 😄'},
+    {word:'MÜZİK',     clue:'Nota ve ritimden oluşan güzel sanat 🎵'},
     {word:'OKYANUS',   clue:'Dünyanın en büyük su kütlesi 🌊'},
-    {word:'KUYRUK',    clue:'Hayvanların arkasında uzanan kıl ya da deri uzantısı 🐾'},
+    {word:'OYUNCAK',   clue:'Çocukların oynadığı, eğlenmek için kullanılan nesne 🧸'},
+    {word:'ÖĞRETMEN',  clue:'Bize ders veren, okuldaki büyüğümüz 👩‍🏫'},
+    {word:'ÖZGÜRLÜK',  clue:'İstediğin gibi yaşayabilme hakkı 🕊️'},
+    {word:'PAYLAŞIM',  clue:'Bir şeyi başkalarıyla bölüşme 🤝'},
+    {word:'RESSAM',    clue:'Tablo yapan, boya kullanan sanatçı 🎨'},
+    {word:'SAYGI',     clue:'Büyüklere ve diğer insanlara gösterilen değer 🙏'},
+    {word:'SINCAP',    clue:'Fındık seven, ağaçta yaşayan küçük hayvan 🐿️'},
+    {word:'ŞARKICI',   clue:'Sahneye çıkan, şarkı söyleyen kişi 🎤'},
+    {word:'ŞELALE',    clue:'Yüksekten dökülen, uğultulu su kütlesi 💦'},
+    {word:'TATİL',     clue:'Okul ya da işin olmadığı dinlenme günleri 🏖️'},
+    {word:'UÇURTMA',   clue:'Rüzgarda göğe yükselen, ipli oyuncak 🪁'},
+    {word:'VOLKAN',    clue:'Lav püskürten, dağ gibi görünen doğa oluşumu 🌋'},
+    {word:'YILDIZ',    clue:'Geceleri gökyüzünde parlayan küçük ışık ⭐'},
+    {word:'KAHRAMAN',  clue:'Zor durumda yardım eden, cesur kişi 🦸'},
+    {word:'MACERA',    clue:'Heyecan dolu, beklenmedik yolculuk ve olaylar 🗺️'},
+    {word:'MÜZE',      clue:'Tarihi eserlerin sergilendiği özel bina 🏛️'},
+    {word:'ORKESTRA',  clue:'Birlikte müzik çalan büyük müzisyen grubu 🎻'},
+    {word:'FOTOĞRAF',  clue:'Kamerayla çekilen, anı donduran görüntü 📷'},
+    {word:'KÜTÜPHANE', clue:'Binlerce kitabın bulunduğu, sessiz yer 📚'},
+    {word:'HASTANE',   clue:'Hastaların tedavi edildiği büyük bina 🏥'},
+    {word:'ECZANE',    clue:'İlaç satılan dükkan 💊'},
+    {word:'MARKET',    clue:'Her türlü yiyeceğin satıldığı büyük dükkan 🛒'},
+    {word:'LOKANTA',   clue:'Yemek yenen, aşçıların çalıştığı yer 🍽️'},
+    {word:'İSTASYON',  clue:'Trenlerin durduğu ve kalktığı yer 🚉'},
+    {word:'SÖZLÜK',    clue:'Kelimelerin anlamlarının yazıldığı kitap 📖'},
+    {word:'GAZETE', clue:'Her gün çıkan, haberlerin yazıldığı kağıt 📰'},
+    {word:'DERGİ',     clue:'Resimli, haftalık ya da aylık yayın 📰'},
+    {word:'TELEFON',   clue:'Konuşmak ve mesaj göndermek için kullanılan araç 📱'},
+    {word:'MİKROSKOP', clue:'Çok küçük şeyleri büyütüp gösteren alet 🔬'},
+    {word:'TELESKOP',  clue:'Uzaktaki yıldızları görmek için kullanılan alet 🔭'},
+    {word:'YERÇEKİMİ', clue:'Her şeyi yere çeken gizemli kuvvet 🍎'},
+    {word:'DEPREM',    clue:'Yerin sarsılmasına yol açan doğal olay 🌍'},
+    {word:'KASIRGA',   clue:'Çok güçlü, dönen rüzgar fırtınası 🌀'},
+    {word:'KUTUP',     clue:'Dünyanın en kuzeyindeki ya da güneyindeki soğuk bölge 🧊'},
+    {word:'ÇÖLLÜK', clue:'Kum dolu, çok sıcak ve susuz geniş alan 🏜️'},
+    {word:'ORMAN',     clue:'Ağaçlarla dolu, hayvanların yaşadığı alan 🌲'},
+    {word:'BUZUL',     clue:'Kutuplardaki dev buz kütlesi 🧊'},
+    {word:'GÖKKUBBE',  clue:'Gökyüzünün yuvarlak görünen üst kısmı 🌐'},
+    {word:'ÇAĞLAYAN',  clue:'Kayalardan dökülen küçük şelale 💦'},
+    {word:'ZAMAN',     clue:'Saniye, dakika, saat, gün ile ölçülen akış ⏰'},
+    {word:'ENERJİ', clue:'İş yapmayı sağlayan güç, güneş ve elektrik 🔋'},
+    {word:'MADDE',     clue:'Her şeyin yapıldığı, ağırlığı ve hacmi olan varlık ⚗️'},
+    {word:'IŞIK',      clue:'Güneş ve lambadan çıkan, görmemizi sağlayan şey 💡'},
+    {word:'GÖLGE',     clue:'Işık engellenince arka yüzeyde oluşan koyu alan 🌑'},
+    {word:'YANSIMA',   clue:'Işığın düzgün yüzeyden geri sekip gelmesi 🪞'},
+    {word:'EVREN',     clue:'Galaksiler, yıldızlar ve tüm uzay 🌌'},
+    {word:'GALAKSİ', clue:'Milyarlarca yıldızdan oluşan büyük yıldız kümesi 🌌'},
+    {word:'METEOR',    clue:'Uzaydan Dünya\'ya düşen küçük taş parçası ☄️'},
+    {word:'ROKET',     clue:'Uzaya gitmek için kullanılan araç 🚀'},
+    {word:'ASTRONOT', clue:'Uzaya giden, uzay giysisi giyen kişi 👨‍🚀'},
   ]
 ];
 
-// Hatalı/kısa girişleri temizle ve tekil yap
+// Hatalı/kısa/tekrar girişleri temizle
 const WORDS_CLEAN = WORDS.map(lvl => {
   const seen = new Set();
   return lvl.filter(w => {
+    if (!w || !w.word || !w.clue) return false;
     const k = trUpper(w.word);
-    if (!w.word || k.length < 2 || seen.has(k)) return false;
+    if (k.length < 2 || seen.has(k)) return false;
+    // Sadece geçerli Türkçe harf içerenleri kabul et
+    if (!/^[A-ZÇĞİIÖŞÜ]+$/.test(k)) return false;
     seen.add(k);
     return true;
   });
@@ -705,7 +821,6 @@ function getUnseenWords(lvl) {
   const pool = WORDS_CLEAN[Math.min(lvl, WORDS_CLEAN.length - 1)];
   let unseen = pool.filter(w => !seen[lvl].includes(trUpper(w.word)));
   if (unseen.length === 0) {
-    // Tüm kelimeler görüldü → o seviyeyi sıfırla
     seen[lvl] = [];
     saveSeen(seen);
     unseen = [...pool];
@@ -723,9 +838,9 @@ function markWordSeen(lvl, word) {
 }
 
 function updateSeenBadge() {
-  const seen = loadSeen();
-  const total = WORDS_CLEAN.reduce((s,l)=>s+l.length, 0);
-  const done  = seen.reduce((s,l)=>s+l.length, 0);
+  const seen  = loadSeen();
+  const total = WORDS_CLEAN.reduce((s, l) => s + l.length, 0);
+  const done  = seen.reduce((s, l) => s + l.length, 0);
   const el = document.getElementById('seenBadge');
   if (el) el.textContent = `📖 ${done} / ${total} kelime görüldü`;
 }
@@ -820,7 +935,8 @@ function renderLetters() {
   G.letters.forEach((ch, i) => {
     const b = document.createElement('button');
     b.className   = `letter-btn lc${i%8}`;
-    b.textContent = ch;       // Nunito 900 ile render edilir — İ sorunsuz
+    // innerHTML ile set et — iOS Safari'de textContent Türkçe büyük harf sorununu önler
+    b.innerHTML = `<span style="font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:900;font-style:normal;line-height:1;">${ch}</span>`;
     b.dataset.idx = i;
     b.onclick     = () => pickLetter(i);
     grid.appendChild(b);
@@ -846,7 +962,7 @@ function renderAnswer() {
   G.answer.forEach(a => {
     const s = document.createElement('div');
     s.className   = 'answer-slot';
-    s.textContent = a.ch;
+    s.innerHTML = `<span style="font-family:'Nunito','Segoe UI',Arial,sans-serif;font-weight:900;font-style:normal;">${a.ch}</span>`;
     d.appendChild(s);
   });
 }
@@ -1002,7 +1118,9 @@ window.addEventListener('DOMContentLoaded', () => {
     renderAnswer();
     playSound('clear');
   });
+  // Oyunu başlat
   startLevel(0);
+
 });
 </script>
 </body>
