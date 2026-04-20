@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DAMA — v1.0</title>
+<title>DAMA — v3.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -969,14 +969,14 @@
     <button class="icon-btn" id="sound-btn" title="Ses">🔊</button>
   </div>
 
-  <div class="version-fixed">v1.0</div>
+  <div class="version-fixed">v3.0</div>
 
   <!-- ══ MENU SCREEN ══ -->
   <div class="screen active" id="menu-screen">
     <div class="logo-wrapper">
       <div class="logo-title">DAMA</div>
       <div class="logo-sub">Klasik Strateji</div>
-      <div class="version-badge">VERSİYON 1.0</div>
+      <div class="version-badge">VERSİYON 3.0</div>
     </div>
 
     <div>
@@ -1496,462 +1496,1733 @@ function applyMove(board, move) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  DAMA AI MOTORU v3 — Stratejik + Güvenli + Hızlı
+//  DAMA AI v9 — TAM STRATEJİK MİMARİ
+//
+//  [1] FEDA TAKTİĞİ  : 1 taş ver, 2-3 taş ye (zorunlu hamle tuzağı)
+//  [2] DAMA ÇIKMA    : Terfi yakınlığına üstel puan; rakip terfiini anında engelle
+//  [3] FORMASYON     : Yan yana / altlı üstlü taşlara bonus; yalnız taşa ceza
+//  [4] KENAR+MERKEZ  : Erken oyun → kenar güvenliği; geç oyun → merkez baskısı
+//  [5] 8-10 HAMLELİK ARAMA: Alpha-Beta + Quiescence + TT + Killer + History
+//  [6] ENDGAME DB    : 6 taş altında hazır mat tablolarından hamle çek
 // ════════════════════════════════════════════════════════════════
 
-const DIFFICULTY_DEPTH = [0, 1, 2, 4, 6, 8];
+const DIFFICULTY_DEPTH = [0, 1, 2, 4, 7, 10];
+const INF = 1e9;
+const PIECE_VAL  = 100;   // normal taş
+const KING_VAL   = 400;   // dama — normal taşın 4 katı
+const PROMO_BASE = 900;   // terfi eşiği bonus başlangıcı (üstel)
 
+// ── Transposition Table ────────────────────────────────────────
 const ttMap = new Map();
-const TT_EXACT = 0, TT_LOWER = 1, TT_UPPER = 2;
-
-function boardHash(board) {
-  // Hızlı hash — base36
-  let h = '';
-  for (let r = 0; r < 8; r++)
-    for (let c = 0; c < 8; c++)
-      h += board[r][c];
+const TT_EXACT=0, TT_LOWER=1, TT_UPPER=2;
+function boardHash(b){
+  // Zobrist-tarzı string hash (hızlı)
+  let h='';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++) h+=b[r][c];
   return h;
 }
-
-// ── YARDIMCI: taşın tehdit altında mı? ─────────────────────────
-function isUnderThreat(board, r, c) {
-  const p = board[r][c];
-  if (!p) return false;
-  const enemy = isWhite(p) ? BLACK : WHITE;
-  const allEnemyMoves = getAllMoves(board, isWhite(p) ? BLACK : WHITE);
-  return allEnemyMoves.some(m => m.over && m.over[0] === r && m.over[1] === c);
+let killers=[], histTbl={};
+function hk(m){return m.from[0]*1000+m.from[1]*100+m.to[0]*10+m.to[1];}
+function resetSearch(){
+  ttMap.clear();
+  killers=Array.from({length:40},()=>[]);
+  histTbl={};
 }
 
-// ── YARDIMCI: taş korunuyor mu? (arkasında dost taş var mı) ────
-function isProtected(board, r, c) {
-  const p = board[r][c];
-  if (!p) return false;
-  const dirs = isWhite(p)
-    ? [[1,-1],[1,1]]   // beyazın arkası aşağı
-    : [[-1,-1],[-1,1]]; // siyahın arkası yukarı
-  for (const [dr,dc] of dirs) {
-    const nr = r+dr, nc = c+dc;
-    if (nr>=0&&nr<8&&nc>=0&&nc<8 && isSameColor(p, board[nr][nc])) return true;
+// ── [A] TEHDİT ANALİZİ ───────────────────────────────────────
+function threatened(board, r, c) {
+  const p=board[r][c]; if(!p) return false;
+  const enemy=isWhite(p)?BLACK:WHITE;
+  return getAllMoves(board,enemy).some(m=>m.over&&m.over[0]===r&&m.over[1]===c);
+}
+function attackCount(board, r, c) {
+  const p=board[r][c]; if(!p) return 0;
+  const enemy=isWhite(p)?BLACK:WHITE;
+  return getAllMoves(board,enemy).filter(m=>m.over&&m.over[0]===r&&m.over[1]===c).length;
+}
+function defenderCount(board, r, c) {
+  const p=board[r][c]; if(!p) return 0;
+  const friend=isWhite(p)?WHITE:BLACK;
+  return getAllMoves(board,friend).filter(m=>m.to[0]===r&&m.to[1]===c).length;
+}
+
+// ── [B] ZİNCİR YEME SAYACI ───────────────────────────────────
+// Maksimum derinliğe kadar en uzun yeme zincirini bul
+function maxCaptureChain(board, r, c, color, depth) {
+  if(depth<=0) return 0;
+  const caps=getCaptures(board,r,c);
+  if(!caps.length) return 0;
+  let best=0;
+  for(const m of caps){
+    const nb=copyBoard(board);
+    nb[m.from[0]][m.from[1]]=EMPTY;
+    nb[m.over[0]][m.over[1]]=EMPTY;
+    nb[m.to[0]][m.to[1]]=board[r][c];
+    const cont=maxCaptureChain(nb,m.to[0],m.to[1],color,depth-1);
+    if(1+cont>best) best=1+cont;
   }
-  return false;
+  return best;
 }
 
-// ── YARDIMCI: kaç taş yenilebilir (zincir hesabı) ──────────────
-function countMaxCaptures(board, r, c, visited) {
-  const caps = getCapturesForPiece(board, r, c);
-  if (!caps.length) return 0;
-  let max = 0;
-  for (const m of caps) {
-    const key = `${m.over[0]},${m.over[1]}`;
-    if (visited.has(key)) continue;
-    const nb = copyBoard(board);
-    nb[m.from[0]][m.from[1]] = EMPTY;
-    nb[m.over[0]][m.over[1]] = EMPTY;
-    nb[m.to[0]][m.to[1]] = board[m.from[0]][m.from[1]];
-    const newVisited = new Set(visited);
-    newVisited.add(key);
-    max = Math.max(max, 1 + countMaxCaptures(nb, m.to[0], m.to[1], newVisited));
-  }
-  return max;
-}
-
-// Bir taş dama satırına kaç adımda ulaşır?
-function stepsToKing(board, r, c) {
-  const p = board[r][c];
-  if (!p || isKing(p)) return 99;
-  // Beyaz row 0'a gider (yukarı = r azalır), siyah row 7'ye (aşağı = r artar)
-  return isWhite(p) ? r : (7 - r);
-}
-
-// ── ANA DEĞERLENDİRME ─────────────────────────────────────────
-function evaluate(board) {
-  const isDuz = state.mode === 'kurdish';
-  let score = 0;
-  let wCount = 0, bCount = 0, wKings = 0, bKings = 0;
-
-  // Taş sayısı ve pozisyon
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = board[r][c];
-      if (!p) continue;
-      if (p === WHITE)      { wCount++; score += 100; }
-      else if (p === BLACK) { bCount++; score -= 100; }
-      else if (p === WHITE_KING) { wKings++; score += 320; }
-      else                       { bKings++; score -= 320; }
+// ── [1] FEDA TAKTİĞİ SKORU ──────────────────────────────────
+// Bir taşı feda edip rakibe zorunlu hamle yaptırarak büyük kazanım sağla
+// Kural: "sacrifice_gain" = (yenilecek zincir taşları × değer) - feda edilen taş
+function sacrificeScore(board) {
+  let score=0;
+  // Her AI taşı için: eğer bunu feda edersek, bir sonraki hamlede kaç tane yiyebiliriz?
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c];
+    if(!isBlack(p)) continue;
+    // Bu taşın beyaz tarafından yenilebilir olduğunu simüle et
+    const whiteCaps=getAllMoves(board,WHITE).filter(m=>m.over&&m.over[0]===r&&m.over[1]===c);
+    for(const wm of whiteCaps){
+      // Beyaz bu taşı yedi — şimdi siyahın yeme fırsatı ne?
+      const nb=copyBoard(board);
+      nb[wm.from[0]][wm.from[1]]=EMPTY;
+      nb[r][c]=EMPTY;
+      nb[wm.to[0]][wm.to[1]]=board[wm.from[0]][wm.from[1]];
+      // Siyahın zincir yeme potansiyeli
+      let maxChain=0;
+      for(let tr=0;tr<8;tr++) for(let tc=0;tc<8;tc++){
+        if(isBlack(nb[tr][tc])){
+          const chain=maxCaptureChain(nb,tr,tc,BLACK,4);
+          if(chain>maxChain) maxChain=chain;
+        }
+      }
+      if(maxChain>=2){
+        // Feda kazancı: yenilecek taş değeri - feda edilen
+        const fedaVal=isKing(p)?KING_VAL:PIECE_VAL;
+        const kazanc=maxChain*PIECE_VAL - fedaVal;
+        if(kazanc>0) score+=kazanc*0.5; // AI için feda çekici
+      }
     }
   }
+  return -score; // evaluate: pozitif = siyah iyi, ama burada siyah feda = AI fayda
+}
 
-  if (isDuz) {
-    // ══ DÜZ DAMA ══════════════════════════════════════════════
+// ── [2] DAMA ÇIKMA (PROMOSYON) SKORU — ÜstelÄ ─────────────
+function promotionScore(board) {
+  const isDuz=state.mode==='kurdish';
+  let score=0;
 
-    // İlerleme puanı
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const p = board[r][c];
-        if (p === WHITE) score += (6 - r) * 6;
-        else if (p === BLACK) score -= (r - 1) * 6;
-      }
-    }
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c]; if(!p||isKing(p)) continue;
 
-    // AÇIK SÜTUN — HER SÜTUN TARA
-    // Bu Düz Dama'nın ana tehdidi: sütun tamamen boşsa taş dama koşuyor
-    for (let c = 0; c < 8; c++) {
-      // Beyazın bu sütundaki en ileri taşını bul
-      let wFront = -1;
-      for (let r = 1; r <= 6; r++) {
-        if (isWhite(board[r][c]) && !isKing(board[r][c])) { wFront = r; break; }
-      }
-      if (wFront > 0) {
-        let blocked = false;
-        for (let r2 = wFront - 1; r2 >= 0; r2--) {
-          if (board[r2][c] !== EMPTY) { blocked = true; break; }
-        }
-        if (!blocked) {
-          // Tamamen açık sütun — çok büyük ceza
-          const steps = wFront; // row 0'a kaç adım
-          score -= (6 - steps) * 120 + 200; // 1 adım = 680 ceza!
-        }
-      }
+    if(isBlack(p)){
+      // Siyah row 7'ye ulaşmak istiyor (row artıkça yaklaşıyor)
+      const stepsLeft = 7-r; // 0=dama oldu, max 6
+      // Üstel: ne kadar yakınsa o kadar büyük puan
+      const bonus = PROMO_BASE / Math.max(1, stepsLeft*stepsLeft);
+      score -= bonus; // AI için iyi = negatif (evaluate siyah perspektifi)
 
-      // Siyahın bu sütundaki en ileri taşı (aşağıya doğru)
-      let bFront = -1;
-      for (let r = 6; r >= 1; r--) {
-        if (isBlack(board[r][c]) && !isKing(board[r][c])) { bFront = r; break; }
-      }
-      if (bFront > 0 && bFront < 7) {
-        let blocked = false;
-        for (let r2 = bFront + 1; r2 <= 7; r2++) {
-          if (board[r2][c] !== EMPTY) { blocked = true; break; }
-        }
-        if (!blocked) {
-          const steps = 7 - bFront;
-          score += (6 - steps) * 120 + 200;
-        }
-      }
-    }
-
-    // Hareketlilik
-    const wM = getAllMoves(board, WHITE).length;
-    const bM = getAllMoves(board, BLACK).length;
-    score += (wM - bM) * 2;
-
-    return score;
-  }
-
-  // ══ ÇAPRAZ DAMA ══════════════════════════════════════════════
-
-  // Pozisyon tablosu
-  const BADV = [[0,0,0,0,0,0,0,0],[6,6,6,6,6,6,6,6],[4,5,5,5,5,5,5,4],
-                [2,3,4,4,4,4,3,2],[1,2,3,4,4,3,2,1],[0,1,2,3,3,2,1,0],
-                [0,0,1,1,1,1,0,0],[0,0,0,0,0,0,0,0]];
-  const WADV = [[0,0,0,0,0,0,0,0],[0,0,1,1,1,1,0,0],[0,1,2,3,3,2,1,0],
-                [1,2,3,4,4,3,2,1],[2,3,4,4,4,4,3,2],[4,5,5,5,5,5,5,4],
-                [6,6,6,6,6,6,6,6],[0,0,0,0,0,0,0,0]];
-
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = board[r][c];
-      if (!p) continue;
-      if (p === WHITE) {
-        score += WADV[r][c] * 2;
-        if (r === 7) score += 8;
-        if (isProtected(board, r, c)) score += 4;
-      } else if (p === BLACK) {
-        score -= BADV[r][c] * 2;
-        if (r === 0) score -= 8;
-        if (isProtected(board, r, c)) score -= 4;
-      } else if (p === WHITE_KING) {
-        score += (3.5-Math.abs(r-3.5))*8 + (3.5-Math.abs(c-3.5))*8;
+      // Açık yol varsa (önünde engel yok) ekstra bonus
+      if(isDuz){
+        let open=true;
+        for(let pr=r+1;pr<=7;pr++) if(board[pr][c]!==EMPTY){open=false;break;}
+        if(open) score -= bonus*1.5;
       } else {
-        score -= (3.5-Math.abs(r-3.5))*8 + (3.5-Math.abs(c-3.5))*8;
+        for(const dc of[-1,1]){
+          let open=true;
+          for(let s=1;r+s<=7&&c+dc*s>=0&&c+dc*s<=7;s++)
+            if(board[r+s][c+dc*s]!==EMPTY){open=false;break;}
+          if(open) score -= bonus*1.5;
+        }
       }
     }
-  }
 
-  // Çapraz açık yol tespiti
-  for (let r = 1; r < 7; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = board[r][c];
-      if (!p || isKing(p)) continue;
-      if (isWhite(p)) {
-        for (const dc of [-1, 1]) {
-          let ok = true;
-          for (let s = 1; s <= r; s++) {
-            const nr2 = r-s, nc2 = c+dc*s;
-            if (nc2<0||nc2>7||(board[nr2][nc2]!==EMPTY&&!isWhite(board[nr2][nc2]))) { ok=false; break; }
-          }
-          if (ok) score -= Math.max(0, 400 - r * 60);
-        }
+    if(isWhite(p)){
+      // Beyaz row 0'a ulaşmak istiyor — AI bunu engelleme!
+      const stepsLeft = r; // 0=dama oldu
+      const threat = PROMO_BASE / Math.max(1, stepsLeft*stepsLeft);
+      // Beyaz dama yakınsa AI için büyük eksi
+      score += threat*2.5; // AI kötü = pozitif (evaluate: pozitif = beyaz iyi)
+
+      // Açık yol varsa daha da tehlikeli
+      if(isDuz){
+        let open=true;
+        for(let pr=r-1;pr>=0;pr--) if(board[pr][c]!==EMPTY){open=false;break;}
+        if(open) score += threat*2.0;
       } else {
-        for (const dc of [-1, 1]) {
-          let ok = true;
-          for (let s = 1; s <= (7-r); s++) {
-            const nr2 = r+s, nc2 = c+dc*s;
-            if (nc2<0||nc2>7||(board[nr2][nc2]!==EMPTY&&!isBlack(board[nr2][nc2]))) { ok=false; break; }
-          }
-          if (ok) score += Math.max(0, 400 - (7-r) * 60);
+        for(const dc of[-1,1]){
+          let open=true;
+          for(let s=1;r-s>=0&&c+dc*s>=0&&c+dc*s<=7;s++)
+            if(board[r-s][c+dc*s]!==EMPTY){open=false;break;}
+          if(open) score += threat*2.0;
         }
       }
     }
   }
+  return score;
+}
 
-  // Tehdit altındaki taşlar
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = board[r][c];
-      if (!p) continue;
-      if (isUnderThreat(board, r, c) && !isProtected(board, r, c)) {
-        const pen = isKing(p) ? 70 : 30;
-        if (isWhite(p)) score -= pen; else score += pen;
-      }
+// ── [3] FORMASYON SKORU ──────────────────────────────────────
+// Birbirine temas eden taşlar bonus, yalnız taşlar ceza
+function formationScore(board) {
+  const isDuz=state.mode==='kurdish';
+  let score=0;
+  const dirs = isDuz
+    ? [[-1,0],[1,0],[0,-1],[0,1]]         // düz komşular
+    : [[-1,-1],[-1,1],[1,-1],[1,1]];      // çapraz komşular
+
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c]; if(!p) continue;
+    let friendCount=0, enemyAdj=0;
+
+    for(const [dr,dc] of dirs){
+      const nr=r+dr, nc=c+dc;
+      if(nr<0||nr>7||nc<0||nc>7) continue;
+      const nb=board[nr][nc];
+      if(!nb) continue;
+      if(isSameColor(p,nb)) friendCount++;
+      else enemyAdj++;
     }
+
+    const isol = friendCount===0;
+    const bonus = isKing(p)?0:( friendCount*18 - (isol?40:0) );
+
+    if(isBlack(p)) score -= bonus;  // AI (siyah) için iyi = negatif
+    else           score += bonus;  // oyuncu (beyaz) için iyi = pozitif
+  }
+  return score;
+}
+
+// ── [4] KENAR + MERKEZ KONTROLÜ ─────────────────────────────
+function positionScore(board) {
+  const isDuz=state.mode==='kurdish';
+  const total=board.flat().filter(p=>p&&p!==EMPTY).length;
+  const phase = Math.min(1, (24-total)/16); // 0=açılış, 1=son oyun
+
+  let score=0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c]; if(!p||isKing(p)) continue;
+    const isEdge=(c===0||c===7);
+    const isMid=(c>=2&&c<=5&&r>=2&&r<=5);
+
+    let posVal=0;
+    if(phase<0.4){
+      // Erken oyun: kenar taşlara güvenlik bonusu
+      if(isBlack(p)&&isEdge) posVal+=20;
+      if(isWhite(p)&&isEdge) posVal-=20;
+    }
+    // Geç oyun: merkez baskısı
+    if(isDuz){
+      if(isBlack(p)) posVal+=(r-1)*3 + (isMid?15:0)*phase;
+      if(isWhite(p)) posVal-=(6-r)*3 + (isMid?15:0)*phase;
+    } else {
+      // Çapraz dama: BADV tablosu
+      const BADV=[[0,0,0,0,0,0,0,0],[8,8,8,8,8,8,8,8],[5,7,7,7,7,7,7,5],
+                  [3,5,6,7,7,6,5,3],[1,3,5,6,6,5,3,1],[0,1,3,4,4,3,1,0],
+                  [0,0,1,2,2,1,0,0],[0,0,0,0,0,0,0,0]];
+      const WADV=[[0,0,0,0,0,0,0,0],[0,0,1,2,2,1,0,0],[0,1,3,4,4,3,1,0],
+                  [1,3,5,6,6,5,3,1],[3,5,6,7,7,6,5,3],[5,7,7,7,7,7,7,5],
+                  [8,8,8,8,8,8,8,8],[0,0,0,0,0,0,0,0]];
+      if(isBlack(p)) posVal-=BADV[r][c]*2;
+      else           posVal+=WADV[r][c]*2;
+    }
+
+    score+=posVal;
   }
 
-  const total = wCount+bCount+wKings+bKings;
-  if (total > 4) {
-    const wM = getAllMoves(board, WHITE).length;
-    const bM = getAllMoves(board, BLACK).length;
-    score += (wM - bM) * 2;
-  }
-
-  const wMat = wCount*100+wKings*320, bMat = bCount*100+bKings*320;
-  if (total <= 6) {
-    if (wMat > bMat+200) for (let r=0;r<8;r++) for (let c=0;c<8;c++)
-      { if (isBlack(board[r][c])) score += (Math.abs(r-3.5)+Math.abs(c-3.5))*5; }
-    else if (bMat > wMat+200) for (let r=0;r<8;r++) for (let c=0;c<8;c++)
-      { if (isWhite(board[r][c])) score -= (Math.abs(r-3.5)+Math.abs(c-3.5))*5; }
+  // Dama merkez bonusu
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c]; if(!isKing(p)) continue;
+    const centr=(3.5-Math.abs(r-3.5))+(3.5-Math.abs(c-3.5));
+    if(isBlack(p)) score-=centr*8;
+    else           score+=centr*8;
   }
 
   return score;
 }
 
-function quiescence(board, alpha, beta, maximizing, depth) {
-  const stand = evaluate(board);
-  if (depth <= 0) return stand;
-  if (maximizing) {
-    if (stand >= beta) return beta;
-    alpha = Math.max(alpha, stand);
-    const caps = getAllMoves(board, BLACK).filter(m => m.over);
-    for (const m of caps) {
-      const {board: nb} = applyMove(board, m);
-      const v = quiescence(nb, alpha, beta, false, depth-1);
-      alpha = Math.max(alpha, v);
-      if (alpha >= beta) break;
+// ── AÇIK YOL TESPİTİ ─────────────────────────────────────────
+function colOpen(board,r,c){
+  const p=board[r][c]; if(!p) return false;
+  if(isWhite(p)&&!isKing(p)){for(let pr=r-1;pr>=0;pr--)if(board[pr][c]!==EMPTY)return false;return true;}
+  if(isBlack(p)&&!isKing(p)){for(let pr=r+1;pr<=7;pr++)if(board[pr][c]!==EMPTY)return false;return true;}
+  return false;
+}
+function diagOpen(board,r,c,dc){
+  const p=board[r][c]; if(!p) return false;
+  if(isWhite(p)&&!isKing(p)){for(let s=1;s<=r;s++){const nc=c+dc*s;if(nc<0||nc>7)return false;if(board[r-s][nc]!==EMPTY&&!isWhite(board[r-s][nc]))return false;}return true;}
+  if(isBlack(p)&&!isKing(p)){for(let s=1;r+s<=7;s++){const nc=c+dc*s;if(nc<0||nc>7)return false;if(board[r+s][nc]!==EMPTY&&!isBlack(board[r+s][nc]))return false;}return true;}
+  return false;
+}
+function hasOpenBackside(board,r,c){
+  const p=board[r][c]; if(!p||!isBlack(p)||isKing(p)) return false;
+  if(state.mode==='kurdish'){return r+1<=7&&board[r+1][c]===EMPTY;}
+  for(const dc of[-1,1]){const br=r+1,bc=c+dc;if(br<=7&&bc>=0&&bc<=7&&board[br][bc]===EMPTY)return true;}
+  return false;
+}
+
+// ── YOLU ENGELLEME SKORU (Kural 4 güvenli) ───────────────────
+function blockingScore(board) {
+  const isDuz=state.mode==='kurdish';
+  let score=0;
+  for(let r=1;r<=6;r++) for(let c=0;c<8;c++){
+    const p=board[r][c]; if(!p||isKing(p)) continue;
+    const steps=isWhite(p)?r:(7-r);
+    const urgency=Math.max(0,500-steps*80);
+    if(isDuz){
+      if(isWhite(p)&&colOpen(board,r,c)) score+=urgency;
+      if(isBlack(p)&&colOpen(board,r,c)) score-=(hasOpenBackside(board,r,c)?urgency*0.25:urgency);
+    } else {
+      if(isWhite(p)){for(const dc of[-1,1])if(diagOpen(board,r,c,dc))score+=urgency;}
+      if(isBlack(p)){for(const dc of[-1,1])if(diagOpen(board,r,c,dc))score-=(hasOpenBackside(board,r,c)?urgency*0.25:urgency);}
+    }
+  }
+  return score;
+}
+
+// ── [6] ENDGAME TABLE BASE ────────────────────────────────────
+// Toplam <=6 taşta özel son oyun hamleleri
+function endgameTableMove(board) {
+  let wPieces=[], bPieces=[];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(isWhite(board[r][c])) wPieces.push([r,c,board[r][c]]);
+    if(isBlack(board[r][c])) bPieces.push([r,c,board[r][c]]);
+  }
+  const total=wPieces.length+bPieces.length;
+  if(total>6) return null;
+
+  const moves=getAllMoves(board,BLACK);
+  if(!moves.length) return null;
+
+  // Senaryo: AI materyel üstünlüğü varsa — rakibi köşeye sıkıştır
+  const wMat=wPieces.reduce((s,[,, p])=>s+(isKing(p)?KING_VAL:PIECE_VAL),0);
+  const bMat=bPieces.reduce((s,[,, p])=>s+(isKing(p)?KING_VAL:PIECE_VAL),0);
+
+  if(bMat>wMat+PIECE_VAL){
+    // Üstünlük siyahta: beyazı köşeye sıkıştır, sonra ye
+    let best=null, bestScore=-INF;
+    for(const m of moves){
+      const {board:nb}=applyMove(board,m);
+      // Köşeye sıkıştırma skoru: beyaz taşları köşeye it
+      let s=0;
+      for(const [wr,wc] of wPieces.map(([r,c])=>[r,c])){
+        // Köşe uzaklığı küçülsün
+        const corner=Math.min(wr,7-wr)+Math.min(wc,7-wc);
+        s+=corner*12;
+        // Beyaz ile en yakın siyah taş arasındaki mesafe azalsın
+        let minDist=99;
+        for(let tr=0;tr<8;tr++) for(let tc=0;tc<8;tc++){
+          if(isBlack(nb[tr][tc])) minDist=Math.min(minDist,Math.abs(tr-wr)+Math.abs(tc-wc));
+        }
+        s-=minDist*5;
+      }
+      // Anlık yeme öncelikli
+      if(m.over) s+=PIECE_VAL*3;
+      if(s>bestScore){bestScore=s;best=m;}
+    }
+    return best;
+  }
+
+  if(wMat>bMat+PIECE_VAL){
+    // Dezavantaj: kaç — dama olmaya çalış
+    const damaMoves=moves.filter(m=>{
+      const {board:nb}=applyMove(board,m);
+      for(let c=0;c<8;c++) if(isBlack(nb[7][c])&&isKing(nb[7][c])) return true;
+      return false;
+    });
+    if(damaMoves.length) return damaMoves[0];
+    // Kaç — köşeye git
+    let best=null, bestScore=-INF;
+    for(const m of moves){
+      const corner=Math.min(m.to[0],7-m.to[0])+Math.min(m.to[1],7-m.to[1]);
+      const s=corner*5+(m.over?PIECE_VAL:0);
+      if(s>bestScore){bestScore=s;best=m;}
+    }
+    return best;
+  }
+
+  return null; // Eşit materyal = normal arama
+}
+
+// ── ANA DEĞERLENDİRME FONKSİYONU ─────────────────────────────
+// Not: pozitif = beyaz iyi, negatif = siyah (AI) iyi
+//      minimax maximizing=false → AI negatife basar → AI kazanır
+function evaluate(board) {
+  let score=0;
+  let wN=0,bN=0,wK=0,bK=0;
+
+  // ① MATERYAL — en ağır ağırlık
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c]; if(!p) continue;
+    if(p===WHITE){score+=PIECE_VAL;wN++;}
+    else if(p===WHITE_KING){score+=KING_VAL;wK++;}
+    else if(p===BLACK){score-=PIECE_VAL;bN++;}
+    else{score-=KING_VAL;bK++;}
+  }
+
+  const total=wN+bN+wK+bK;
+
+  // ② DAMA ÇIKMA (üstel) — [2]
+  score += promotionScore(board);
+
+  // ③ YOLU ENGELLEME — arkası boşsa düşük ağırlık
+  score += blockingScore(board);
+
+  // ④ FORMASYON — [3] birlik güç
+  score += formationScore(board);
+
+  // ⑤ KENAR/MERKEZ POZİSYON — [4]
+  score += positionScore(board);
+
+  // ⑥ HAREKETLİLİK — hamle sayısı farkı
+  if(total>4){
+    const wM=getAllMoves(board,WHITE).length;
+    const bM=getAllMoves(board,BLACK).length;
+    score+=(wM-bM)*2;
+    if(!bM) score-=80000;
+    if(!wM) score+=80000;
+  }
+
+  return score;
+}
+
+// ── QUIESCENCE ARAMA ─────────────────────────────────────────
+// Taktik gürültüsünü temizle: sadece yeme hamlelerinde devam et
+function quiescence(board,alpha,beta,maximizing,depth){
+  const stand=evaluate(board);
+  if(depth<=0) return stand;
+  if(maximizing){
+    if(stand>=beta) return beta;
+    alpha=Math.max(alpha,stand);
+    const caps=getAllMoves(board,BLACK).filter(m=>m.over);
+    // Zincir yeme: önce çok yeme yapanı dene
+    caps.sort((a,b)=>{
+      const va=isKing(board[a.over[0]][a.over[1]])?KING_VAL:PIECE_VAL;
+      const vb=isKing(board[b.over[0]][b.over[1]])?KING_VAL:PIECE_VAL;
+      return vb-va;
+    });
+    for(const m of caps){
+      const{board:nb}=applyMove(board,m);
+      alpha=Math.max(alpha,quiescence(nb,alpha,beta,false,depth-1));
+      if(alpha>=beta) break;
     }
     return alpha;
   } else {
-    if (stand <= alpha) return alpha;
-    beta = Math.min(beta, stand);
-    const caps = getAllMoves(board, WHITE).filter(m => m.over);
-    for (const m of caps) {
-      const {board: nb} = applyMove(board, m);
-      const v = quiescence(nb, alpha, beta, true, depth-1);
-      beta = Math.min(beta, v);
-      if (alpha >= beta) break;
+    if(stand<=alpha) return alpha;
+    beta=Math.min(beta,stand);
+    const caps=getAllMoves(board,WHITE).filter(m=>m.over);
+    caps.sort((a,b)=>{
+      const va=isKing(board[a.over[0]][a.over[1]])?KING_VAL:PIECE_VAL;
+      const vb=isKing(board[b.over[0]][b.over[1]])?KING_VAL:PIECE_VAL;
+      return vb-va;
+    });
+    for(const m of caps){
+      const{board:nb}=applyMove(board,m);
+      beta=Math.min(beta,quiescence(nb,alpha,beta,true,depth-1));
+      if(alpha>=beta) break;
     }
     return beta;
   }
 }
 
-// ── HAMLE SIRALAMA ────────────────────────────────────────────
-function orderMoves(moves, board, maximizing) {
-  return moves.slice().sort((a, b) => {
-    let sa = 0, sb = 0;
-    const pa = board[a.from[0]][a.from[1]];
-    const pb = board[b.from[0]][b.from[1]];
+// ── HAMLE SIRALAMA — Alpha-Beta verimliliği ───────────────────
+function moveScore(m,board,ply,ttBest,maximizing){
+  if(ttBest&&hk(ttBest)===hk(m)) return 2e7;
 
-    // 1. Çoklu yeme (zincir) en önce
-    if (a.over) {
-      const caps = countMaxCaptures(board, a.from[0], a.from[1], new Set());
-      sa += 2000 + caps * 500;
-    }
-    if (b.over) {
-      const caps = countMaxCaptures(board, b.from[0], b.from[1], new Set());
-      sb += 2000 + caps * 500;
-    }
+  if(m.over){
+    const vv=isKing(board[m.over[0]][m.over[1]])?KING_VAL:PIECE_VAL;
+    const av=isKing(board[m.from[0]][m.from[1]])?KING_VAL:PIECE_VAL;
+    const nb=copyBoard(board);
+    nb[m.from[0]][m.from[1]]=EMPTY;
+    nb[m.over[0]][m.over[1]]=EMPTY;
+    nb[m.to[0]][m.to[1]]=board[m.from[0]][m.from[1]];
+    // Zincir devam eder mi?
+    const chainCont=getCapturesForPiece(nb,m.to[0],m.to[1]).length;
+    // Yedikten sonra misilleme var mı?
+    const retake=threatened(nb,m.to[0],m.to[1]);
+    // MVV-LVA + zincir bonus
+    return 1e6 + (retake?vv-av:vv)*10 + chainCont*800;
+  }
 
-    // 2. Kendi dama promotion
-    if (maximizing) {
-      if (pa === BLACK && a.to[0] === 7) sa += 1500;
-      if (pb === BLACK && b.to[0] === 7) sb += 1500;
-    } else {
-      if (pa === WHITE && a.to[0] === 0) sa += 1500;
-      if (pb === WHITE && b.to[0] === 0) sb += 1500;
-    }
+  const p=board[m.from[0]][m.from[1]];
+  // Dama olma — çok yüksek öncelik
+  if(maximizing&&p===BLACK&&m.to[0]===7) return 9.5e5;
+  if(!maximizing&&p===WHITE&&m.to[0]===0) return 9.5e5;
 
-    // 3. Rakibin dama yolunu engelle — hedefe taş koy
-    // AI (siyah) oynuyor: beyaz taşın yolu üzerindeyse blok yap
-    if (maximizing) {
-      // Düz Dama: beyaz bir taşın sütununda aşağıdan gelen AI taşı
-      if (state.mode === 'kurdish') {
-        for (let wr = 5; wr >= 1; wr--) {
-          if (board[wr][a.to[1]] === WHITE) {
-            // a.to bu sütunda beyazın önünde
-            if (a.to[0] < wr) sa += (200 - wr * 20); // ne kadar yakın o kadar önemli
-            break;
-          }
-        }
-        for (let wr = 5; wr >= 1; wr--) {
-          if (board[wr][b.to[1]] === WHITE) {
-            if (b.to[0] < wr) sb += (200 - wr * 20);
-            break;
-          }
-        }
-      } else {
-        // Çapraz Dama: beyaz taşın çapraz yolunu kapat
-        for (let wr = 5; wr >= 1; wr--) {
-          for (let wc = 0; wc < 8; wc++) {
-            if (board[wr][wc] === WHITE) {
-              const stepsW = stepsToKing(board, wr, wc);
-              if (stepsW <= 3) { // Tehlikeli mesafede
-                // Hedef kare bu taşın çapraz yolunda mı?
-                const dr = a.to[0] - wr, dc = Math.abs(a.to[1] - wc);
-                if (dr < 0 && dr === -dc) sa += 150; // çapraz yolda
-                const dr2 = b.to[0] - wr, dc2 = Math.abs(b.to[1] - wc);
-                if (dr2 < 0 && dr2 === -dc2) sb += 150;
-              }
-            }
-          }
-        }
+  let s=0;
+
+  // Killer heuristic
+  if(killers[ply]?.some(k=>k&&hk(k)===hk(m))) s+=8e4;
+  // History heuristic
+  s+=(histTbl[hk(m)]||0);
+
+  const nb=copyBoard(board);
+  nb[m.from[0]][m.from[1]]=EMPTY;
+  nb[m.to[0]][m.to[1]]=p;
+
+  // Taşı tehlikeye atmak yasak (kendi taşını koru)
+  if(threatened(nb,m.to[0],m.to[1])){
+    s -= isKing(p)?700:400;
+  } else {
+    s += 60;
+  }
+
+  // Tehdit altındaki taşı kurtar
+  if(threatened(board,m.from[0],m.from[1])) s+=350;
+
+  // [1] FEDA: Hamleden sonra büyük zincir yeme açılıyor mu?
+  if(maximizing){
+    let maxChain=0;
+    for(let tr=0;tr<8;tr++) for(let tc=0;tc<8;tc++){
+      if(isBlack(nb[tr][tc])){
+        const ch=maxCaptureChain(nb,tr,tc,BLACK,3);
+        if(ch>maxChain) maxChain=ch;
       }
     }
+    if(maxChain>=2) s+=maxChain*300; // Tuzak kuruyor = yüksek bonus
+  }
 
-    // 4. Tehditten kaç
-    if (isUnderThreat(board, a.from[0], a.from[1])) sa += 300;
-    if (isUnderThreat(board, b.from[0], b.from[1])) sb += 300;
+  // [2] Dama yakınlığı bonus
+  if(maximizing&&isBlack(p)&&!isKing(p)){
+    const stepsLeft=7-m.to[0];
+    if(stepsLeft<=2) s+=200/(stepsLeft+1);
+  }
+  if(!maximizing&&isWhite(p)&&!isKing(p)){
+    const stepsLeft=m.to[0];
+    if(stepsLeft<=2) s+=200/(stepsLeft+1);
+  }
 
-    // 5. İlerleme (ama tehdit engellemeden az öncelikli)
-    if (maximizing) {
-      sa += a.to[0] * 2;
-      sb += b.to[0] * 2;
-    } else {
-      sa += (7 - a.to[0]) * 2;
-      sb += (7 - b.to[0]) * 2;
-    }
+  // Arkasında boşluk varsa öne geçme cezası
+  if(maximizing&&hasOpenBackside(board,m.from[0],m.from[1])) s-=80;
 
-    return sb - sa;
-  });
+  // Genel ilerleme (düşük ağırlık)
+  s += maximizing ? m.to[0]*2 : (7-m.to[0])*2;
+  return s;
 }
 
 // ── MINIMAX + ALPHA-BETA + TT ─────────────────────────────────
-function minimax(board, depth, alpha, beta, maximizing) {
-  const hash = boardHash(board);
-  const tt = ttMap.get(hash);
-  if (tt && tt.depth >= depth) {
-    if (tt.flag === TT_EXACT) return tt.value;
-    if (tt.flag === TT_LOWER && tt.value > alpha) alpha = tt.value;
-    if (tt.flag === TT_UPPER && tt.value < beta)  beta  = tt.value;
-    if (alpha >= beta) return tt.value;
+function minimax(board,depth,alpha,beta,maximizing,ply){
+  const hash=boardHash(board);
+  const tt=ttMap.get(hash);
+  let ttBest=null;
+  if(tt&&tt.depth>=depth){
+    if(tt.flag===TT_EXACT) return tt.value;
+    if(tt.flag===TT_LOWER) alpha=Math.max(alpha,tt.value);
+    if(tt.flag===TT_UPPER) beta=Math.min(beta,tt.value);
+    if(alpha>=beta) return tt.value;
+    ttBest=tt.bestMove;
   }
 
-  const moves = getAllMoves(board, maximizing ? BLACK : WHITE);
-  if (depth === 0 || !moves.length)
-    return quiescence(board, alpha, beta, maximizing, 3);
+  const moves=getAllMoves(board,maximizing?BLACK:WHITE);
+  if(!moves.length||depth===0){
+    return quiescence(board,alpha,beta,maximizing,6);
+  }
 
-  const ordered = orderMoves(moves, board, maximizing);
-  const origAlpha = alpha;
-  let best = maximizing ? -Infinity : Infinity;
+  // Hamle sıralaması
+  const ordered=moves.slice().sort((a,b)=>
+    moveScore(b,board,ply,ttBest,maximizing)-moveScore(a,board,ply,ttBest,maximizing)
+  );
 
-  for (const m of ordered) {
-    const {board: nb, promoted} = applyMove(board, m);
-    // Derinlik uzantıları: promotion veya zincir yeme
-    const ext = promoted ? 1 :
-      (m.over && getCapturesForPiece(nb, m.to[0], m.to[1]).length > 0) ? 1 : 0;
-    const v = minimax(nb, depth - 1 + ext, alpha, beta, !maximizing);
+  const orig=alpha;
+  let best=maximizing?-INF:INF, bestMv=null;
 
-    if (maximizing) {
-      if (v > best) best = v;
-      if (v > alpha) alpha = v;
-    } else {
-      if (v < best) best = v;
-      if (v < beta) beta = v;
+  for(const m of ordered){
+    const{board:nb,promoted}=applyMove(board,m);
+    // Uzatma: terfi veya devam eden zincir yeme
+    const chainExt = m.over&&getCapturesForPiece(nb,m.to[0],m.to[1]).length>0 ? 1 : 0;
+    const ext = promoted ? 1 : chainExt;
+    const v=minimax(nb,depth-1+ext,alpha,beta,!maximizing,ply+1);
+
+    if(maximizing){if(v>best){best=v;bestMv=m;}alpha=Math.max(alpha,v);}
+    else          {if(v<best){best=v;bestMv=m;}beta=Math.min(beta,v);}
+
+    if(alpha>=beta){
+      if(!m.over){
+        if(!killers[ply]) killers[ply]=[];
+        killers[ply]=[m,...killers[ply]].slice(0,3);
+        histTbl[hk(m)]=(histTbl[hk(m)]||0)+depth*depth;
+      }
+      break;
     }
-    if (alpha >= beta) break;
   }
 
-  const flag = best <= origAlpha ? TT_UPPER : (best >= beta ? TT_LOWER : TT_EXACT);
-  ttMap.set(hash, { value: best, depth, flag });
-  if (ttMap.size > 150000) ttMap.clear();
-
+  const flag=best<=orig?TT_UPPER:(best>=beta?TT_LOWER:TT_EXACT);
+  if(ttMap.size>200000) ttMap.clear();
+  ttMap.set(hash,{value:best,depth,flag,bestMove:bestMv});
   return best;
 }
 
-// ── HAMLE GÜVENLİK SKORU — bu hamle yapıldıktan sonra tehlike var mı? ──
-function moveSafetyScore(board, move) {
-  const {board: nb} = applyMove(board, move);
-  let danger = 0;
+// ── AÇILIŞ KİTABI ─────────────────────────────────────────────
+function getOpeningMove(board){
+  if(state.moveCount>10) return null;
+  const isDuz=state.mode==='kurdish';
+  const book=isDuz
+    ?[{from:[2,3],to:[3,3]},{from:[2,4],to:[3,4]},
+      {from:[2,2],to:[3,2]},{from:[2,5],to:[3,5]},
+      {from:[1,3],to:[2,3]},{from:[1,4],to:[2,4]},
+      {from:[2,1],to:[3,1]},{from:[2,6],to:[3,6]}]
+    :[{from:[2,3],to:[3,2]},{from:[2,3],to:[3,4]},
+      {from:[2,5],to:[3,4]},{from:[2,5],to:[3,6]},
+      {from:[2,1],to:[3,2]},{from:[2,7],to:[3,6]},
+      {from:[2,2],to:[3,3]},{from:[2,6],to:[3,5]}];
 
-  // Bu hamleden sonra beyaz kaç adımda damaya ulaşabilir?
-  for (let r = 1; r <= 6; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = nb[r][c];
-      if (!isWhite(p) || isKing(p)) continue;
-      const steps = stepsToKing(nb, r, c);
+  const valid=book.filter(m=>
+    board[m.from[0]]?.[m.from[1]]===BLACK&&
+    board[m.to[0]]?.[m.to[1]]===EMPTY
+  );
+  if(!valid.length) return null;
 
-      if (state.mode === 'kurdish') {
-        // Düz: sütun temizse tehlike
-        let blocked = false;
-        for (let pr = r - 1; pr >= 0; pr--) {
-          if (nb[pr][c] !== EMPTY) { blocked = true; break; }
+  // Güvenli ve tuzak potansiyeli olan hamleleri önceliklendir
+  const scored=valid.map(m=>{
+    const nb=copyBoard(board);
+    nb[m.from[0]][m.from[1]]=EMPTY;nb[m.to[0]][m.to[1]]=BLACK;
+    const safe=!threatened(nb,m.to[0],m.to[1]);
+    const chain=maxCaptureChain(nb,m.to[0],m.to[1],BLACK,2);
+    return {m, score:(safe?100:0)+chain*50};
+  });
+  scored.sort((a,b)=>b.score-a.score);
+  // İlk birkaç en iyi arasından rastgele seç (varyasyon için)
+  const pool=scored.slice(0,3);
+  return pool[Math.floor(Math.random()*pool.length)].m;
+}
+
+// ── EN İYİ HAMLE — Tüm sistemi birleştir ─────────────────────
+function getBestMove(board,difficulty){
+  const maxDepth=DIFFICULTY_DEPTH[difficulty];
+  // getAllMoves: yeme varsa SADECE yeme hamlelerini döndürür (zorunlu yeme garantisi)
+  const moves=getAllMoves(board,BLACK);
+  if(!moves.length) return null;
+
+  const hasMandatoryCapture = moves.some(m=>m.over);
+
+  // Acemi: rastgele — getAllMoves zaten zorunlu yemeyi garanti eder
+  if(difficulty===1) return moves[Math.floor(Math.random()*moves.length)];
+
+  // Kolay: %70 akıllı, %30 rastgele (yeme yoksa)
+  if(difficulty===2){
+    if(!hasMandatoryCapture && Math.random()<0.30)
+      return moves[Math.floor(Math.random()*moves.length)];
+    const caps=moves.filter(m=>m.over);
+    if(caps.length){
+      // En uzun zinciri seç
+      let best=caps[0],bestLen=0;
+      for(const m of caps){
+        const {board:nb}=applyMove(board,m);
+        const len=maxCaptureChain(nb,m.to[0],m.to[1],BLACK,3);
+        if(len>bestLen){bestLen=len;best=m;}
+      }
+      return best;
+    }
+    return moves[Math.floor(Math.random()*moves.length)];
+  }
+
+  // [6] Endgame tablosu — yeme varsa sadece yeme hamlesi kabul et
+  const egMove=endgameTableMove(board);
+  if(egMove){
+    if(!hasMandatoryCapture) return egMove;
+    if(egMove.over) return egMove;
+    // yeme zorunlu ama endgame normal hamle döndürdü — aramaya düş
+  }
+
+  // Açılış kitabı — yeme zorunlu değilse kullan
+  if(difficulty>=3 && !hasMandatoryCapture){
+    const ob=getOpeningMove(board);
+    if(ob) return ob;
+  }
+
+  resetSearch();
+  let best=null, bestVal=-INF;
+
+  // İteratif derinleştirme: 2'den maxDepth'e kadar
+  for(let d=2;d<=maxDepth;d++){
+    const ordered=moves.slice().sort((a,b)=>
+      moveScore(b,board,0,best,true)-moveScore(a,board,0,best,true)
+    );
+    let iterBest=null, iterVal=-INF;
+    for(const m of ordered){
+      const{board:nb}=applyMove(board,m);
+      const v=minimax(nb,d-1,-INF,INF,false,1);
+      if(v>iterVal){iterVal=v;iterBest=m;}
+    }
+    if(iterBest){best=iterBest;bestVal=iterVal;}
+    if(bestVal>50000) break; // Kesin kazanç bulundu
+  }
+
+  // Son kontrol: Feda tuzağı var mı? Varsa onu önceliklendir
+  if(best && bestVal < 30000 && difficulty>=4){
+    for(const m of moves){
+      if(m.over) continue; // Zaten yeme hamleleri yukarıda ele alındı
+      const {board:nb}=applyMove(board,m);
+      let maxChain=0;
+      for(let tr=0;tr<8;tr++) for(let tc=0;tc<8;tc++){
+        if(isBlack(nb[tr][tc])){
+          const ch=maxCaptureChain(nb,tr,tc,BLACK,4);
+          if(ch>maxChain) maxChain=ch;
         }
-        if (!blocked) danger += Math.max(0, 300 - steps * 60);
-      } else {
-        // Çapraz: her iki yön
-        for (const dc of [-1, 1]) {
-          let blocked = false;
-          for (let s = 1; s <= r; s++) {
-            const nr2 = r - s, nc2 = c + dc * s;
-            if (nc2 < 0 || nc2 > 7 || (nb[nr2][nc2] !== EMPTY && !isWhite(nb[nr2][nc2]))) {
-              blocked = true; break;
-            }
-          }
-          if (!blocked) danger += Math.max(0, 300 - steps * 60);
-        }
+      }
+      if(maxChain>=3){
+        const v=minimax(nb,Math.min(maxDepth-1,5),-INF,INF,false,1);
+        if(v>bestVal-80){best=m;bestVal=v;break;}
       }
     }
   }
-  return -danger; // Tehlike ne kadar fazlaysa skor o kadar düşük
+
+  return best||moves[0];
 }
 
-// ── EN İYİ HAMLE ──────────────────────────────────────────────
+
+
+// ── RENDER ────────────────────────────────────────────────────
+function render() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+
+  const allPlayerMoves = getAllMoves(state.board, WHITE);
+  const mustCaptures   = allPlayerMoves.filter(m => m.over);
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const cell = document.createElement('div');
+
+      if (state.mode === 'kurdish') {
+        // Düz Dama: tüm kareler kullanılır, yatay çizgili desen
+        if (r === 0) {
+          cell.className = 'cell kurdish-promo-top';
+        } else if (r === 7) {
+          cell.className = 'cell kurdish-promo-bot';
+        } else {
+          cell.className = 'cell ' + (r % 2 === 0 ? 'row-even' : 'row-odd');
+        }
+      } else {
+        cell.className = 'cell ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+      }
+      cell.dataset.r = r; cell.dataset.c = c;
+
+      // Last move highlight
+      if (state.lastMove) {
+        if (r === state.lastMove.from[0] && c === state.lastMove.from[1]) cell.classList.add('last-move-from');
+        if (r === state.lastMove.to[0]   && c === state.lastMove.to[1])   cell.classList.add('last-move-to');
+      }
+
+      // Selected
+      if (state.selectedCell && state.selectedCell[0] === r && state.selectedCell[1] === c) {
+        cell.classList.add('selected');
+      }
+
+      // Valid moves
+      if (state.selectedCell) {
+        const vm = state.validMoves.find(m => m.to[0] === r && m.to[1] === c);
+        if (vm) {
+          cell.classList.add(vm.over ? 'valid-capture' : 'valid-move');
+        }
+      }
+
+      // Piece
+      const p = state.board[r][c];
+      if (p) {
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'piece ' + (isWhite(p) ? 'light-piece' : 'dark-piece');
+        if (isKing(p)) pieceEl.classList.add('king');
+        if (state.selectedCell && state.selectedCell[0] === r && state.selectedCell[1] === c) {
+          pieceEl.classList.add('selected-piece');
+        }
+        cell.appendChild(pieceEl);
+      }
+
+      cell.addEventListener('click', () => onCellClick(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+
+  // Update UI
+  document.getElementById('player-score').textContent = state.playerScore;
+  document.getElementById('ai-score').textContent = state.aiScore;
+  document.getElementById('move-count-chip').textContent = `Hamle: ${state.moveCount}`;
+
+  // Turn indicator
+  const isPlayerTurn = state.currentTurn === WHITE;
+  document.getElementById('player-panel').classList.toggle('active-turn', isPlayerTurn);
+  document.getElementById('ai-panel').classList.toggle('active-turn', !isPlayerTurn);
+  document.getElementById('turn-dot').style.background = isPlayerTurn ? '#f0e8d0' : '#d4852a';
+  document.getElementById('turn-text').textContent = isPlayerTurn ? 'Sizin sıranız' : 'Yapay Zeka';
+
+  // Piece dots
+  renderDots();
+
+  // Must capture hint
+  if (mustCaptures.length && isPlayerTurn && !state.gameOver) {
+    document.getElementById('status-text').innerHTML = `⚠️ <span>Zorunlu yeme!</span> ${mustCaptures.length} yeme hamlesi mevcut`;
+  }
+}
+
+function renderDots() {
+  const pd = document.getElementById('player-dots');
+  const ad = document.getElementById('ai-dots');
+  pd.innerHTML = ''; ad.innerHTML = '';
+  const total = state.startPieces || 12;
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'piece-dot';
+    d.style.background = '#e8d8b0';
+    if (i >= state.playerPieces) d.classList.add('captured');
+    pd.appendChild(d);
+  }
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'piece-dot';
+    d.style.background = '#c8701a';
+    if (i >= state.aiPieces) d.classList.add('captured');
+    ad.appendChild(d);
+  }
+}
+
+// ── CELL CLICK ────────────────────────────────────────────────
+function onCellClick(r, c) {
+  if (state.currentTurn !== WHITE || state.gameOver) return;
+  if (document.getElementById('ai-thinking').classList.contains('visible')) return;
+
+  const p = state.board[r][c];
+
+  // Select own piece
+  if (isWhite(p)) {
+    const allMoves = getAllMoves(state.board, WHITE);
+    const hasCaptures = allMoves.some(m => m.over);
+
+    if (state.chainCapture && (state.chainCapture[0] !== r || state.chainCapture[1] !== c)) {
+      playSound('invalid'); return;
+    }
+
+    const pieceMoves = getMovesForPiece(state.board, r, c);
+
+    if (hasCaptures && !pieceMoves.length) {
+      playSound('invalid');
+      highlightMustCapture(allMoves.filter(m => m.over));
+      return;
+    }
+
+    state.selectedCell = [r, c];
+    state.validMoves = pieceMoves;
+    playSound('select');
+    render();
+    return;
+  }
+
+  // Move to cell
+  if (state.selectedCell) {
+    const vm = state.validMoves.find(m => m.to[0] === r && m.to[1] === c);
+    if (vm) {
+      executePlayerMove(vm);
+    } else {
+      state.selectedCell = null;
+      state.validMoves = [];
+      playSound('invalid');
+      render();
+    }
+  }
+}
+
+function highlightMustCapture(captures) {
+  // Flash the pieces that must capture
+  const boardEl = document.getElementById('board');
+  captures.forEach(m => {
+    const idx = m.from[0] * 8 + m.from[1];
+    const cell = boardEl.children[idx];
+    if (cell) {
+      cell.style.outline = '3px solid var(--danger)';
+      setTimeout(() => { cell.style.outline = ''; }, 800);
+    }
+  });
+}
+
+// ── EXECUTE MOVE ──────────────────────────────────────────────
+function executePlayerMove(move) {
+  // Save history
+  state.history.push({
+    board: copyBoard(state.board),
+    playerScore: state.playerScore,
+    aiScore: state.aiScore,
+    playerPieces: state.playerPieces,
+    aiPieces: state.aiPieces,
+    moveCount: state.moveCount,
+    moveHistory: [...state.moveHistory]
+  });
+
+  const { board: nb, captured, promoted } = applyMove(state.board, move);
+  state.board = nb;
+  state.lastMove = move;
+
+  animateMove(move, 'white');
+
+  if (captured) {
+    state.aiPieces--;
+    state.playerScore++;
+    playSound('capture');
+    spawnParticles(move.to[0], move.to[1], '#e84040');
+    addMoveHistory(move, true, WHITE);
+  } else {
+    playSound('move');
+    addMoveHistory(move, false, WHITE);
+  }
+
+  if (promoted) {
+    playSound('king');
+    setTimeout(() => {
+      const boardEl = document.getElementById('board');
+      const idx = move.to[0] * 8 + move.to[1];
+      const cell = boardEl.children[idx];
+      if (cell) {
+        const piece = cell.querySelector('.piece');
+        if (piece) piece.classList.add('newly-crowned');
+      }
+    }, 200);
+    document.getElementById('status-text').innerHTML = `👑 <span>Dama!</span> Taşınız dama oldu!`;
+  }
+
+  state.moveCount++;
+
+  // Chain capture?
+  if (move.over && !promoted) {
+    const nextCaptures = getCapturesForPiece(state.board, move.to[0], move.to[1]);
+    if (nextCaptures.length > 0) {
+      state.chainCapture = move.to;
+      state.selectedCell = move.to;
+      state.validMoves = nextCaptures;
+      render();
+      document.getElementById('status-text').innerHTML = `🔗 <span>Zincir yeme!</span> Devam edebilirsiniz`;
+      return;
+    }
+  }
+
+  state.chainCapture = null;
+  state.selectedCell = null;
+  state.validMoves = [];
+
+  if (checkGameOver()) return;
+
+  state.currentTurn = BLACK;
+  document.getElementById('status-text').textContent = 'Yapay Zeka düşünüyor…';
+  render();
+
+  const delay = 400 + Math.random() * 600;
+  setTimeout(doAIMove, delay);
+}
+
+function doAIMove() {
+  const thinkEl = document.getElementById('ai-thinking');
+  thinkEl.classList.add('visible');
+
+  const thinkTime = [0, 300, 400, 600, 900, 1400][state.difficulty] + Math.random() * 300;
+
+  setTimeout(() => {
+    thinkEl.classList.remove('visible');
+
+    const move = getBestMove(state.board, state.difficulty);
+    if (!move) {
+      endGame(WHITE, 'Yapay zeka hamle yapamıyor!');
+      return;
+    }
+
+    const { board: nb, captured, promoted } = applyMove(state.board, move);
+    state.board = nb;
+    state.lastMove = move;
+
+    animateMove(move, 'black');
+
+    if (captured) {
+      state.playerPieces--;
+      state.aiScore++;
+      playSound('capture');
+      spawnParticles(move.to[0], move.to[1], '#8040e8');
+      addMoveHistory(move, true, BLACK);
+    } else {
+      playSound('move');
+      addMoveHistory(move, false, BLACK);
+    }
+
+    if (promoted) {
+      playSound('king');
+      document.getElementById('status-text').innerHTML = `👑 <span>Yapay Zeka Dama!</span>`;
+    }
+
+    state.moveCount++;
+
+    // AI chain capture
+    if (move.over && !promoted) {
+      const nextCaptures = getCapturesForPiece(state.board, move.to[0], move.to[1]);
+      if (nextCaptures.length > 0) {
+        render();
+        setTimeout(() => doAIChainCapture(move.to, nextCaptures), 600);
+        return;
+      }
+    }
+
+    state.currentTurn = WHITE;
+    document.getElementById('status-text').textContent = 'Hamlenizi yapın';
+    render();
+
+    if (checkGameOver()) return;
+
+    const allPlayer = getAllMoves(state.board, WHITE);
+    if (allPlayer.some(m => m.over)) {
+      document.getElementById('status-text').innerHTML = `⚠️ <span>Zorunlu yeme!</span> Yapmalısınız`;
+    }
+
+  }, thinkTime);
+}
+
+function doAIChainCapture(pos, captures) {
+  // Zincirde en uzun devamı seç (sadece captures[0] değil)
+  let best = captures[0], bestLen = 0;
+  for (const m of captures) {
+    const {board: nb} = applyMove(state.board, m);
+    const len = maxCaptureChain(nb, m.to[0], m.to[1], BLACK, 5);
+    if (len > bestLen) { bestLen = len; best = m; }
+  }
+  const move = best;
+
+  const { board: nb, captured, promoted } = applyMove(state.board, move);
+  state.board = nb;
+  state.lastMove = move;
+
+  if (captured) {
+    state.playerPieces--;
+    state.aiScore++;
+    playSound('capture');
+    spawnParticles(move.to[0], move.to[1], '#8040e8');
+    addMoveHistory(move, true, BLACK);
+  }
+  state.moveCount++;
+
+  if (move.over && !promoted) {
+    const next = getCapturesForPiece(state.board, move.to[0], move.to[1]);
+    if (next.length > 0) {
+      render();
+      setTimeout(() => doAIChainCapture(move.to, next), 600);
+      return;
+    }
+  }
+
+  state.currentTurn = WHITE;
+  document.getElementById('status-text').textContent = 'Hamlenizi yapın';
+  render();
+  checkGameOver();
+}
+
+// ── MOVE HISTORY ──────────────────────────────────────────────
+function addMoveHistory(move, isCapture, color) {
+  const cols = 'abcdefgh';
+  const from = cols[move.from[1]] + (8 - move.from[0]);
+  const to   = cols[move.to[1]]   + (8 - move.to[0]);
+  const label = (color === WHITE ? '⬜' : '⬛') + from + (isCapture ? '×' : '→') + to;
+  state.moveHistory.push({ label, isCapture });
+
+  const el = document.getElementById('move-history');
+  const tag = document.createElement('span');
+  tag.className = 'move-tag' + (isCapture ? ' capture-tag' : '');
+  tag.textContent = label;
+  el.appendChild(tag);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── ANIMATION ─────────────────────────────────────────────────
+function animateMove(move, color) {
+  // Just trigger re-render with smooth CSS
+  render();
+}
+
+function spawnParticles(r, c, color) {
+  const boardEl = document.getElementById('board');
+  const idx = r * 8 + c;
+  const cell = boardEl.children[idx];
+  if (!cell) return;
+  const rect = cell.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    const angle = (i / 8) * Math.PI * 2;
+    const dist = 30 + Math.random() * 50;
+    p.className = 'particle';
+    p.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      width:${4 + Math.random()*6}px;
+      height:${4 + Math.random()*6}px;
+      background:${color};
+      --tx:${Math.cos(angle)*dist}px;
+      --ty:${Math.sin(angle)*dist}px;
+      animation-duration:${0.6 + Math.random()*0.4}s;
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+
+// ── GAME OVER ─────────────────────────────────────────────────
+function checkGameOver() {
+  const whitePieces = state.board.flat().filter(p => isWhite(p)).length;
+  const blackPieces = state.board.flat().filter(p => isBlack(p)).length;
+
+  state.playerPieces = whitePieces;
+  state.aiPieces = blackPieces;
+
+  if (blackPieces === 0) { endGame(WHITE, 'Tüm rakip taşları yediniz!'); return true; }
+  if (whitePieces === 0) { endGame(BLACK, 'Tüm taşlarınız yenildi!'); return true; }
+
+  const whiteCanMove = getAllMoves(state.board, WHITE).length > 0;
+  const blackCanMove = getAllMoves(state.board, BLACK).length > 0;
+
+  if (state.currentTurn === WHITE && !whiteCanMove) { endGame(BLACK, 'Hareket edemiyorsunuz!'); return true; }
+  if (state.currentTurn === BLACK && !blackCanMove) { endGame(WHITE, 'Yapay zeka hamle yapamıyor!'); return true; }
+
+  return false;
+}
+
+function endGame(winner, reason) {
+  state.gameOver = true;
+  playSound(winner === WHITE ? 'win' : 'lose');
+
+  if (winner === WHITE) {
+    spawnConfetti();
+    showModal('🏆', 'Kazandınız!', `${reason}<br>Toplam hamle: ${state.moveCount}`, true);
+  } else {
+    showModal('💀', 'Kaybettiniz!', `${reason}<br>Toplam hamle: ${state.moveCount}`, false);
+  }
+}
+
+function spawnConfetti() {
+  const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#c8a85a', '#fff'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.cssText = `
+        left:${Math.random()*100}vw;
+        top:-10px;
+        width:${6+Math.random()*8}px;
+        height:${8+Math.random()*10}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+        animation-duration:${2+Math.random()*2}s;
+        animation-delay:${Math.random()*0.5}s;
+      `;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4000);
+    }, i * 40);
+  }
+}
+
+function showModal(emoji, title, sub, isWin) {
+  document.getElementById('modal-emoji').textContent = emoji;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-sub').innerHTML = sub;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+// ── UNDO ──────────────────────────────────────────────────────
+function undoMove() {
+  if (!state.history.length || state.currentTurn !== WHITE) return;
+  const prev = state.history.pop();
+  state.board = prev.board;
+  state.playerScore = prev.playerScore;
+  state.aiScore = prev.aiScore;
+  state.playerPieces = prev.playerPieces;
+  state.aiPieces = prev.aiPieces;
+  state.moveCount = prev.moveCount;
+  state.moveHistory = prev.moveHistory;
+  state.selectedCell = null;
+  state.validMoves = [];
+  state.chainCapture = null;
+  state.gameOver = false;
+  state.lastMove = null;
+
+  // Rebuild move history UI
+  const el = document.getElementById('move-history');
+  el.innerHTML = '';
+  state.moveHistory.forEach(m => {
+    const tag = document.createElement('span');
+    tag.className = 'move-tag' + (m.isCapture ? ' capture-tag' : '');
+    tag.textContent = m.label;
+    el.appendChild(tag);
+  });
+
+  document.getElementById('status-text').textContent = 'Hamle geri alındı';
+  playSound('move');
+  render();
+}
+
+// ── HINT ──────────────────────────────────────────────────────
+function showHint() {
+  const moves = getAllMoves(state.board, WHITE);
+  if (!moves.length) return;
+  // Pick a capture if available, else random
+  const captures = moves.filter(m => m.over);
+  const hint = captures.length ? captures[0] : moves[Math.floor(Math.random() * moves.length)];
+
+  state.selectedCell = hint.from;
+  state.validMoves = [hint];
+  playSound('select');
+  render();
+  document.getElementById('status-text').innerHTML = `💡 <span>İpucu:</span> Bu hamleyi deneyin`;
+
+  setTimeout(() => {
+    state.selectedCell = null;
+    state.validMoves = [];
+    render();
+  }, 2000);
+}
+
+// ── GAME SETUP ────────────────────────────────────────────────
+function startGame() {
+  const isKurdish = state.mode === 'kurdish';
+  const startPieces = isKurdish ? 16 : 12;
+
+  state.board = initBoard();
+  state.currentTurn = WHITE;
+  state.selectedCell = null;
+  state.validMoves = [];
+  state.playerScore = 0;
+  state.aiScore = 0;
+  state.playerPieces = startPieces;
+  state.aiPieces = startPieces;
+  state.moveCount = 0;
+  state.moveHistory = [];
+  state.lastMove = null;
+  state.gameOver = false;
+  state.history = [];
+  state.chainCapture = null;
+  state.startPieces = startPieces;
+
+  // Board class
+  document.getElementById('board').className = isKurdish ? 'kurdish-board' : '';
+
+  // UI labels
+  document.getElementById('mode-chip').textContent = isKurdish ? '➕ Düz' : '↗ Çapraz';
+  document.getElementById('diff-chip').textContent = DIFFICULTY_NAMES[state.difficulty];
+  document.getElementById('move-history').innerHTML = '';
+  document.getElementById('status-text').textContent = 'Hamlenizi yapın';
+
+  showScreen('game-screen');
+  render();
+}
+
+// ── SCREENS ───────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Hide global top-bar on game screen (buttons are inline in header)
+  document.querySelector('.top-bar').style.display = (id === 'game-screen') ? 'none' : 'flex';
+}
+
+// ── THEME ─────────────────────────────────────────────────────
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.classList.toggle('light-theme', state.theme === 'light');
+  const icon = state.theme === 'dark' ? '☀️' : '🌙';
+  document.getElementById('theme-btn').textContent = icon;
+  const btn2 = document.getElementById('theme-btn2');
+  if (btn2) btn2.textContent = icon;
+  playSound('select');
+}
+
+function toggleSound() {
+  state.soundEnabled = !state.soundEnabled;
+  const icon = state.soundEnabled ? '🔊' : '🔇';
+  document.getElementById('sound-btn').textContent = icon;
+  const btn2 = document.getElementById('sound-btn2');
+  if (btn2) btn2.textContent = icon;
+}
+
+// ── EVENTS ────────────────────────────────────────────────────
+document.getElementById('start-btn').onclick = startGame;
+document.getElementById('howto-btn').onclick = () => showScreen('howto-screen');
+document.getElementById('back-btn').onclick  = () => showScreen('menu-screen');
+
+// Mode selector
+const MODE_DESCS = {
+  turkish: 'Çapraz hareket · 12 taş · Zorunlu yeme',
+  kurdish: 'Düz hareket · 16 taş · Dama da sadece düz gider'
+};
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    document.getElementById('mode-desc').textContent = MODE_DESCS[state.mode];
+    playSound('select');
+  };
+});
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.difficulty = parseInt(btn.dataset.level);
+    playSound('select');
+  };
+});
+
+document.getElementById('theme-btn').onclick = toggleTheme;
+document.getElementById('sound-btn').onclick = toggleSound;
+document.getElementById('theme-btn2').onclick = toggleTheme;
+document.getElementById('sound-btn2').onclick = toggleSound;
+
+document.getElementById('undo-btn').onclick = undoMove;
+document.getElementById('hint-btn').onclick = showHint;
+
+document.getElementById('restart-btn').onclick = () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+  startGame();
+};
+
+document.getElementById('menu-btn').onclick = () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+  showScreen('menu-screen');
+};
+
+document.getElementById('modal-play-again').onclick = () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+  startGame();
+};
+
+document.getElementById('modal-menu').onclick = () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+  showScreen('menu-screen');
+};
+
+// Init AudioCtx on first interaction
+document.body.addEventListener('click', () => { try { getAudioCtx(); } catch(e){} }, { once: true });
+</script>
+</body>
+</html>// ════════════════════════════════════════════════════════════════
+//  DAMA AI MOTORU v4 — GRANDMASTER SEVİYESİ
+//  • Transposition Table (Zobrist hash)
+//  • Iterative Deepening + Aspiration Windows
+//  • Killer Move Heuristic
+//  • History Heuristic
+//  • Quiescence Search
+//  • Move ordering: TT > captures > killers > history > positional
+//  • Opening Book (ilk 3 hamle için güvenli başlangıç)
+//  • Düz Dama: açık sütun = anlık ölüm tespiti
+// ════════════════════════════════════════════════════════════════
+
+const DIFFICULTY_DEPTH = [0, 1, 2, 4, 6, 9];
+const INF = 1e9;
+
+// ── ZOBRIST HASH ─────────────────────────────────────────────
+const ZKeys = (() => {
+  const k = [];
+  // Seed-based pseudo-random for reproducibility
+  let s = 1234567891;
+  const rnd = () => { s ^= s<<13; s ^= s>>17; s ^= s<<5; return Math.abs(s); };
+  for (let r = 0; r < 8; r++) { k[r] = []; for (let c = 0; c < 8; c++) { k[r][c] = []; for (let p = 0; p < 5; p++) k[r][c][p] = rnd() * rnd(); } }
+  return k;
+})();
+
+function zobrist(board) {
+  let h = 0;
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]) h ^= ZKeys[r][c][board[r][c]];
+  return h;
+}
+
+const ttMap = new Map();
+const TT_EXACT = 0, TT_LOWER = 1, TT_UPPER = 2;
+
+// ── KILLER & HISTORY TABLES ──────────────────────────────────
+let killerMoves = []; // killerMoves[depth] = [move1, move2]
+let historyTable = {}; // historyTable[from_to] = score
+
+function hKey(m) { return m.from[0]*1000+m.from[1]*100+m.to[0]*10+m.to[1]; }
+
+function clearSearchTables() {
+  ttMap.clear();
+  killerMoves = Array.from({length: 20}, () => []);
+  historyTable = {};
+}
+
+function storeKiller(depth, move) {
+  if (!move.over) {
+    if (!killerMoves[depth]) killerMoves[depth] = [];
+    if (!killerMoves[depth][0] || hKey(killerMoves[depth][0]) !== hKey(move)) {
+      killerMoves[depth][1] = killerMoves[depth][0];
+      killerMoves[depth][0] = move;
+    }
+  }
+}
+
+function isKillerMove(depth, move) {
+  if (!killerMoves[depth]) return false;
+  return killerMoves[depth].some(k => k && hKey(k) === hKey(move));
+}
+
+// ── YARDIMCILAR ───────────────────────────────────────────────
+function isUnderThreat(board, r, c) {
+  const p = board[r][c];
+  if (!p) return false;
+  const enemyCaps = getAllMoves(board, isWhite(p) ? BLACK : WHITE).filter(m => m.over);
+  return enemyCaps.some(m => m.over[0] === r && m.over[1] === c);
+}
+
+function isProtected(board, r, c) {
+  const p = board[r][c];
+  if (!p) return false;
+  const dirs = isWhite(p) ? [[1,-1],[1,1]] : [[-1,-1],[-1,1]];
+  return dirs.some(([dr,dc]) => { const nr=r+dr,nc=c+dc; return nr>=0&&nr<8&&nc>=0&&nc<8&&isSameColor(p,board[nr][nc]); });
+}
+
+function stepsToKing(board, r, c) {
+  const p = board[r][c];
+  if (!p || isKing(p)) return 99;
+  return isWhite(p) ? r : (7 - r);
+}
+
+function countMaxCaptures(board, r, c, visited) {
+  const caps = getCapturesForPiece(board, r, c);
+  if (!caps.length) return 0;
+  let max = 0;
+  for (const m of caps) {
+    const key = m.over[0]*10+m.over[1];
+    if (visited.has(key)) continue;
+    const nb = copyBoard(board);
+    nb[m.from[0]][m.from[1]] = EMPTY;
+    nb[m.over[0]][m.over[1]] = EMPTY;
+    nb[m.to[0]][m.to[1]] = board[m.from[0]][m.from[1]];
+    const nv = new Set(visited); nv.add(key);
+    max = Math.max(max, 1 + countMaxCaptures(nb, m.to[0], m.to[1], nv));
+  }
+  return max;
+}
+
+// ── DÜZELTILMIŞ AÇIK SÜTUN / ÇAPRAZ TESPİTİ ─────────────────
+// Bir taşın önü tamamen açık mı?
+function isColumnOpen(board, r, c) {
+  // Beyaz taş: r-1 den 0'a kadar boş mu?
+  if (isWhite(board[r][c]) && !isKing(board[r][c])) {
+    for (let pr = r-1; pr >= 0; pr--) if (board[pr][c] !== EMPTY) return false;
+    return true;
+  }
+  // Siyah taş: r+1 den 7'ye kadar boş mu?
+  if (isBlack(board[r][c]) && !isKing(board[r][c])) {
+    for (let pr = r+1; pr <= 7; pr++) if (board[pr][c] !== EMPTY) return false;
+    return true;
+  }
+  return false;
+}
+
+function isDiagOpen(board, r, c, dc) {
+  if (isWhite(board[r][c]) && !isKing(board[r][c])) {
+    for (let s=1; s<=r; s++) {
+      const nr=r-s, nc=c+dc*s;
+      if (nc<0||nc>7) return false;
+      if (board[nr][nc]!==EMPTY && !isWhite(board[nr][nc])) return false;
+    }
+    return true;
+  }
+  if (isBlack(board[r][c]) && !isKing(board[r][c])) {
+    for (let s=1; s<=(7-r); s++) {
+      const nr=r+s, nc=c+dc*s;
+      if (nc<0||nc>7) return false;
+      if (board[nr][nc]!==EMPTY && !isBlack(board[nr][nc])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+// ── ANA DEĞERLENDİRME ────────────────────────────────────────
+const WADV = [[0,0,0,0,0,0,0,0],[0,0,1,1,1,1,0,0],[0,1,2,3,3,2,1,0],
+              [1,2,3,4,4,3,2,1],[2,3,4,4,4,4,3,2],[4,5,5,5,5,5,5,4],
+              [6,6,6,6,6,6,6,6],[0,0,0,0,0,0,0,0]];
+const BADV = [[0,0,0,0,0,0,0,0],[6,6,6,6,6,6,6,6],[4,5,5,5,5,5,5,4],
+              [2,3,4,4,4,4,3,2],[1,2,3,4,4,3,2,1],[0,1,2,3,3,2,1,0],
+              [0,0,1,1,1,1,0,0],[0,0,0,0,0,0,0,0]];
+
+function evaluate(board) {
+  const isDuz = state.mode === 'kurdish';
+  let score = 0;
+  let wCount=0,bCount=0,wKings=0,bKings=0;
+
+  for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+    const p = board[r][c]; if (!p) continue;
+    if      (p===WHITE)      wCount++;
+    else if (p===BLACK)      bCount++;
+    else if (p===WHITE_KING) wKings++;
+    else                     bKings++;
+  }
+
+  const wMat = wCount*100 + wKings*350;
+  const bMat = bCount*100 + bKings*350;
+  score += wMat - bMat;
+
+  if (isDuz) {
+    // ── DÜZ DAMA ────────────────────────────────────────────
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      const p=board[r][c]; if (!p) continue;
+      if (p===WHITE)      score += (6-r)*8 + Math.min(c,7-c);
+      else if(p===BLACK)  score -= (r-1)*8 + Math.min(c,7-c);
+      else if(p===WHITE_KING) score += (3.5-Math.abs(r-3.5))*7+(3.5-Math.abs(c-3.5))*7;
+      else                    score -= (3.5-Math.abs(r-3.5))*7+(3.5-Math.abs(c-3.5))*7;
+    }
+
+    // AÇIK SÜTUN — kritik tehdit
+    for (let c=0;c<8;c++) {
+      for (let r=1;r<=6;r++) {
+        const p=board[r][c]; if (!p) continue;
+        if (isWhite(p)&&!isKing(p)) {
+          if (isColumnOpen(board,r,c)) {
+            // Tamamen açık sütun: 1 adım = 680, 2 adım = 520, ...
+            score -= 200 + (6-r)*120;
+          }
+          break; // Bu sütunun en ileri beyaz taşı
+        }
+      }
+      for (let r=6;r>=1;r--) {
+        const p=board[r][c]; if (!p) continue;
+        if (isBlack(p)&&!isKing(p)) {
+          if (isColumnOpen(board,r,c)) {
+            score += 200 + (r-1)*120;
+          }
+          break;
+        }
+      }
+    }
+
+    // Hareketlilik
+    const wM=getAllMoves(board,WHITE).length, bM=getAllMoves(board,BLACK).length;
+    score += (wM-bM)*3;
+    if (!bM) score -= 50000; // AI mahsur = kayıp
+    if (!wM) score += 50000;
+
+  } else {
+    // ── ÇAPRAZ DAMA ─────────────────────────────────────────
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      const p=board[r][c]; if (!p) continue;
+      if      (p===WHITE) { score += WADV[r][c]*3; if(r===7) score+=10; if(isProtected(board,r,c)) score+=6; }
+      else if (p===BLACK) { score -= BADV[r][c]*3; if(r===0) score-=10; if(isProtected(board,r,c)) score-=6; }
+      else if (p===WHITE_KING) score += (3.5-Math.abs(r-3.5))*10+(3.5-Math.abs(c-3.5))*10;
+      else                     score -= (3.5-Math.abs(r-3.5))*10+(3.5-Math.abs(c-3.5))*10;
+    }
+
+    // Çapraz açık yol
+    for (let r=1;r<7;r++) for (let c=0;c<8;c++) {
+      const p=board[r][c]; if (!p||isKing(p)) continue;
+      if (isWhite(p)) {
+        for (const dc of [-1,1]) if (isDiagOpen(board,r,c,dc)) score -= 200+(6-r)*60;
+      } else {
+        for (const dc of [-1,1]) if (isDiagOpen(board,r,c,dc)) score += 200+(r-1)*60;
+      }
+    }
+
+    // Savunma hattı: geri satır taşı yoksa ceza
+    let whiteBackCount=0;
+    for (let c=1;c<8;c+=2) if (isWhite(board[7][c])) whiteBackCount++;
+    score += whiteBackCount * 4;
+
+    // Tehdit altındaki taşlar
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      const p=board[r][c]; if (!p) continue;
+      if (isUnderThreat(board,r,c)&&!isProtected(board,r,c)) {
+        const pen=isKing(p)?80:35;
+        if (isWhite(p)) score-=pen; else score+=pen;
+      }
+    }
+
+    // Hareketlilik
+    const wM=getAllMoves(board,WHITE).length, bM=getAllMoves(board,BLACK).length;
+    score += (wM-bM)*2;
+    if (!bM) score -= 50000;
+    if (!wM) score += 50000;
+
+    // Endgame
+    const total=wCount+bCount+wKings+bKings;
+    if (total<=8 && wMat!==bMat) {
+      const winning = wMat>bMat;
+      for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+        const p=board[r][c]; if (!p) continue;
+        const dist = Math.abs(r-3.5)+Math.abs(c-3.5);
+        if (winning && isBlack(p)) score += dist*6;
+        if (!winning && isWhite(p)) score -= dist*6;
+      }
+    }
+  }
+
+  return score;
+}
+
+// ── HAMLE SIRALAMA ───────────────────────────────────────────
+function scoreMove(m, board, depth, ttMove, maximizing) {
+  let s = 0;
+  // 1. TT best move
+  if (ttMove && hKey(ttMove)===hKey(m)) return 2e6;
+  // 2. Yemeler — MVV-LVA (Most Valuable Victim - Least Valuable Aggressor)
+  if (m.over) {
+    const victim = board[m.over[0]][m.over[1]];
+    const aggr   = board[m.from[0]][m.from[1]];
+    const vVal = isKing(victim) ? 350 : 100;
+    const aVal = isKing(aggr)   ? 350 : 100;
+    s = 1e6 + vVal*10 - aVal;
+    // Zincir bonusu
+    s += countMaxCaptures(board, m.from[0], m.from[1], new Set()) * 500;
+    return s;
+  }
+  // 3. Promotion
+  const pa = board[m.from[0]][m.from[1]];
+  if (maximizing && pa===BLACK && m.to[0]===7) return 9e5;
+  if (!maximizing && pa===WHITE && m.to[0]===0) return 9e5;
+  // 4. Killer
+  if (isKillerMove(depth, m)) s += 8e4;
+  // 5. History
+  s += (historyTable[hKey(m)] || 0);
+  // 6. İlerleme
+  s += maximizing ? m.to[0]*3 : (7-m.to[0])*3;
+  return s;
+}
+
+function orderMoves(moves, board, depth, ttMove, maximizing) {
+  return moves.slice().sort((a,b) =>
+    scoreMove(b,board,depth,ttMove,maximizing) - scoreMove(a,board,depth,ttMove,maximizing)
+  );
+}
+
+// ── QUIESCENCE SEARCH ────────────────────────────────────────
+function quiescence(board, alpha, beta, maximizing, depth) {
+  const stand = evaluate(board);
+  if (depth<=0) return stand;
+  if (maximizing) {
+    if (stand>=beta) return beta;
+    alpha = Math.max(alpha,stand);
+    for (const m of getAllMoves(board,BLACK).filter(m=>m.over)) {
+      const {board:nb}=applyMove(board,m);
+      alpha=Math.max(alpha,quiescence(nb,alpha,beta,false,depth-1));
+      if (alpha>=beta) break;
+    }
+    return alpha;
+  } else {
+    if (stand<=alpha) return alpha;
+    beta=Math.min(beta,stand);
+    for (const m of getAllMoves(board,WHITE).filter(m=>m.over)) {
+      const {board:nb}=applyMove(board,m);
+      beta=Math.min(beta,quiescence(nb,alpha,beta,true,depth-1));
+      if (alpha>=beta) break;
+    }
+    return beta;
+  }
+}
+
+// ── MINIMAX + ALPHA-BETA + TT + KILLERS + HISTORY ────────────
+function minimax(board, depth, alpha, beta, maximizing, ply) {
+  const hash = zobrist(board);
+  const tt = ttMap.get(hash);
+  let ttMove = null;
+  if (tt && tt.depth>=depth) {
+    if (tt.flag===TT_EXACT) return tt.value;
+    if (tt.flag===TT_LOWER) alpha=Math.max(alpha,tt.value);
+    if (tt.flag===TT_UPPER) beta=Math.min(beta,tt.value);
+    if (alpha>=beta) return tt.value;
+    ttMove = tt.bestMove;
+  }
+
+  const moves = getAllMoves(board, maximizing?BLACK:WHITE);
+  if (!moves.length || depth===0) return quiescence(board,alpha,beta,maximizing,4);
+
+  const ordered = orderMoves(moves,board,ply,ttMove,maximizing);
+  const origAlpha=alpha;
+  let best=maximizing?-INF:INF, bestMove=null;
+
+  for (const m of ordered) {
+    const {board:nb,promoted}=applyMove(board,m);
+    const ext = promoted?1:(m.over&&getCapturesForPiece(nb,m.to[0],m.to[1]).length>0?1:0);
+    const v = minimax(nb,depth-1+ext,alpha,beta,!maximizing,ply+1);
+
+    if (maximizing) {
+      if (v>best) { best=v; bestMove=m; }
+      alpha=Math.max(alpha,v);
+    } else {
+      if (v<best) { best=v; bestMove=m; }
+      beta=Math.min(beta,v);
+    }
+    if (alpha>=beta) {
+      storeKiller(ply,m);
+      if (!m.over) historyTable[hKey(m)]=(historyTable[hKey(m)]||0)+depth*depth;
+      break;
+    }
+  }
+
+  const flag = best<=origAlpha?TT_UPPER:(best>=beta?TT_LOWER:TT_EXACT);
+  ttMap.set(hash,{value:best,depth,flag,bestMove});
+  if (ttMap.size>200000) ttMap.clear();
+  return best;
+}
+
+// ── OPENING BOOK — ilk hamleler için güvenli seçimler ─────────
+const DUZ_OPENINGS = [
+  // Siyahın 1. hamlesi: ortadan birini ilerlet, kenarları açma
+  {from:[2,3],to:[3,3]},{from:[2,4],to:[3,4]},
+  {from:[2,2],to:[3,2]},{from:[2,5],to:[3,5]},
+];
+const CAPRAZ_OPENINGS = [
+  {from:[2,3],to:[3,2]},{from:[2,3],to:[3,4]},
+  {from:[2,5],to:[3,4]},{from:[2,5],to:[3,6]},
+  {from:[2,1],to:[3,2]},{from:[2,7],to:[3,6]},
+];
+
+function getOpeningMove(board, moveCount) {
+  if (moveCount > 5) return null; // opening book sadece ilk 3 AI hamlesi
+  const isDuz = state.mode==='kurdish';
+  const book = isDuz ? DUZ_OPENINGS : CAPRAZ_OPENINGS;
+  // Geçerli olanları filtrele
+  const valid = book.filter(m =>
+    board[m.from[0]][m.from[1]]===BLACK &&
+    board[m.to[0]][m.to[1]]===EMPTY
+  );
+  if (!valid.length) return null;
+  return valid[Math.floor(Math.random()*valid.length)];
+}
+
+// ── EN İYİ HAMLE — İTERATİF DERİNLEŞME + ASPIRATION ─────────
 function getBestMove(board, difficulty) {
   const maxDepth = DIFFICULTY_DEPTH[difficulty];
   const moves = getAllMoves(board, BLACK);
   if (!moves.length) return null;
 
-  // Acemi: rastgele
-  if (difficulty === 1) return moves[Math.floor(Math.random() * moves.length)];
-
-  // Kolay: sadece yeme varsa ye, %40 hata
-  if (difficulty === 2) {
-    if (Math.random() < 0.4) return moves[Math.floor(Math.random() * moves.length)];
-    const caps = moves.filter(m => m.over);
-    if (caps.length) return caps[0];
-    return moves[Math.floor(Math.random() * moves.length)];
+  if (difficulty===1) return moves[Math.floor(Math.random()*moves.length)];
+  if (difficulty===2) {
+    if (Math.random()<0.35) return moves[Math.floor(Math.random()*moves.length)];
+    const caps=moves.filter(m=>m.over);
+    return caps.length ? caps[Math.floor(Math.random()*caps.length)] : moves[Math.floor(Math.random()*moves.length)];
   }
 
-  ttMap.clear();
-  let best = null, bestVal = -Infinity;
+  // Opening book
+  const opening = getOpeningMove(board, state.moveCount);
+  if (opening && difficulty>=4) return opening;
 
-  // İteratif derinleşme
-  for (let d = 2; d <= maxDepth; d++) {
-    const ordered = orderMoves(moves, board, true);
-    let iterBest = null, iterVal = -Infinity;
+  clearSearchTables();
+  let best=null, bestVal=-INF;
+  let window=50; // Aspiration window
 
-    for (const m of ordered) {
-      const {board: nb} = applyMove(board, m);
-      const mmVal = minimax(nb, d - 1, -Infinity, Infinity, false);
-      // Güvenlik skorunu da ekle — tehlikeli hamleleri cezalandır
-      const safetyVal = moveSafetyScore(board, m);
-      const v = mmVal + safetyVal * 0.6;
-      if (v > iterVal) { iterVal = v; iterBest = m; }
+  for (let d=2; d<=maxDepth; d++) {
+    let alpha=bestVal-window, beta=bestVal+window;
+    let iterBest=null, iterVal=-INF;
+    let research=false;
+
+    for (let attempt=0; attempt<3; attempt++) {
+      const ordered=orderMoves(moves,board,0,best,true);
+      iterBest=null; iterVal=-INF;
+
+      for (const m of ordered) {
+        const {board:nb}=applyMove(board,m);
+        const v=minimax(nb,d-1,alpha,beta,false,1);
+        if (v>iterVal) { iterVal=v; iterBest=m; }
+        alpha=Math.max(alpha,v);
+      }
+
+      if (iterVal<=alpha-window || iterVal>=beta+window) {
+        // Aspiration fail — full window ile tekrar
+        alpha=-INF; beta=INF; window=INF;
+      } else break;
     }
-    if (iterBest) { best = iterBest; bestVal = iterVal; }
-    if (bestVal > 8000) break;
+
+    if (iterBest) { best=iterBest; bestVal=iterVal; }
+    window=Math.max(25, window/2);
+    if (bestVal>40000) break; // Kazanan pozisyon
   }
 
-  return best || moves[0];
+  return best||moves[0];
 }
+
 
 // ── RENDER ────────────────────────────────────────────────────
 function render() {
