@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SudokuMaster v1.0</title>
+<title>SudokuMaster Pro 2.0</title>
 <meta name="description" content="Gelişmiş Sudoku Oyunu - sebasmobil">
 <style>
 :root {
@@ -109,12 +109,42 @@ body{background:var(--bg);color:var(--text);transition:background var(--transiti
 #error-modal .err-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
 #error-modal .err-badge{width:36px;height:36px;border-radius:50%;background:var(--cell-error);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
 
+/* ===== INFO BAR (ince üst bilgi çubuğu) ===== */
+#info-bar{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  padding:5px 16px;
+  background:var(--accent2);
+  color:rgba(255,255,255,0.82);
+  font-size:0.7rem;
+  font-weight:500;
+  letter-spacing:0.03em;
+  flex-shrink:0;
+  user-select:none;
+  -webkit-user-select:none;
+  transition:background var(--transition);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+[data-theme="dark"] #info-bar{
+  background:var(--surface2);
+  color:var(--text3);
+  border-bottom:1px solid var(--border);
+}
+#info-bar .ib-sep{margin:0 8px;opacity:0.45;}
+#info-bar .ib-link{
+  color:inherit;
+  text-decoration:none;
+  cursor:pointer;
+  opacity:0.9;
+  transition:opacity var(--transition);
+}
+#info-bar .ib-link:hover{opacity:1;}
+
 /* ===== MAIN LAYOUT ===== */
 #app{height:100vh;display:flex;flex-direction:column;overflow:hidden;}
-#top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;}
-#top-bar .app-brand{display:flex;flex-direction:column;}
+#top-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;}
 #top-bar .app-name{font-size:1.05rem;font-weight:800;color:var(--accent);letter-spacing:-0.02em;}
-#top-bar .app-ver{font-size:0.7rem;color:var(--text3);}
 #top-bar-actions{display:flex;gap:8px;align-items:center;}
 .icon-btn{width:38px;height:38px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all var(--transition);color:var(--text);}
 .icon-btn:hover{background:var(--border);transform:scale(1.05);}
@@ -269,7 +299,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 <!-- ===== WHAT'S NEW OVERLAY ===== -->
 <div class="overlay" id="whatsnew-overlay">
   <div class="modal" id="whatsnew-modal">
-    <span class="version-badge">v1.0 · Yenilikler</span>
+    <span class="version-badge">Pro 2.0 · Yenilikler</span>
     <h2>SudokuMaster'a Hoş Geldiniz!</h2>
     <p>Bu sürümde gelen özellikler:</p>
     <div class="news-scroll" id="news-scroll">
@@ -354,12 +384,18 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 <div id="app">
   <div id="right-pane" style="display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;">
 
+    <!-- INFO BAR -->
+    <div id="info-bar">
+      <span>SudokuMaster Pro 2.0</span>
+      <span class="ib-sep">|</span>
+      <span>©sebasmobil 2026</span>
+      <span class="ib-sep">|</span>
+      <a class="ib-link" href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL v3.0</a>
+    </div>
+
     <!-- TOP BAR -->
     <div id="top-bar">
-      <div class="app-brand">
-        <span class="app-name">SudokuMaster</span>
-        <span class="app-ver">v1.0 · AGPL v3.0</span>
-      </div>
+      <span class="app-name">SudokuMaster</span>
       <div id="top-bar-actions">
         <button class="icon-btn" id="theme-btn" title="Tema Değiştir">🌙</button>
         <button class="icon-btn" id="pause-btn" title="Duraklat">⏸</button>
@@ -432,7 +468,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
         </div>
         <div class="about-section">
           <h3>Uygulama Hakkında</h3>
-          <p>SudokuMaster · v1.0<br>Geliştirici: sebasmobil<br>Tüm hakları saklıdır.</p>
+          <p>SudokuMaster Pro 2.0<br>Geliştirici: sebasmobil<br>Tüm hakları saklıdır.</p>
           <p style="margin-top:8px;">Bu uygulama Android, iOS, Windows ve diğer tüm platformlarda çalışmak üzere tasarlanmıştır.</p>
           <span class="license-badge">© sebasmobil · AGPL v3.0</span>
         </div>
@@ -458,7 +494,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:po
 <script>
 try {
 
-const APP_VERSION = '1.0';
+const APP_VERSION = 'Pro 2.0';
 const STORAGE_PREFIX = 'sudokumaster_';
 const MAX_MISTAKES = 3;
 const HINT_LIMITS = { 'cok-kolay': Infinity, 'kolay': 5, 'orta': 3, 'zor': 2, 'uzman': 1 };
