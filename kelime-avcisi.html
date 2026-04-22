@@ -1,3 +1,42 @@
+<!--
+================================================================================
+  Kelime Avcısı — Pro 2.0
+  Copyright (C) 2024  sebasmobil
+
+  Bu program özgür yazılımdır: Free Software Foundation tarafından yayımlanan
+  GNU Affero Genel Kamu Lisansı'nın 3. sürümü ya da (tercihinize göre)
+  daha sonraki bir sürümü kapsamında yeniden dağıtabilir ve/veya
+  değiştirebilirsiniz.
+
+  Bu program yararlı olması umuduyla dağıtılmaktadır; ancak HİÇBİR GARANTİ
+  VERİLMEMEKTEDİR; hatta SATILABİLİRLİK veya BELİRLİ BİR AMACA UYGUNLUK
+  konusunda zımni bir garanti dahi söz konusu değildir. Ayrıntılar için
+  GNU Affero Genel Kamu Lisansı'na bakınız.
+
+  Bu programla birlikte GNU Affero Genel Kamu Lisansı'nın bir kopyasını
+  almış olmanız gerekir. Almadıysanız bkz. <https://www.gnu.org/licenses/>.
+
+  ---
+
+  Kelime Avcısı — Pro 2.0
+  Copyright (C) 2024  sebasmobil
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+  SPDX-License-Identifier: AGPL-3.0-or-later
+================================================================================
+-->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,6 +45,10 @@
 <title>🔤 Kelime Avcısı</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&subset=latin,latin-ext&display=swap" rel="stylesheet">
 <style>
+/*
+ * Kelime Avcısı — Pro 2.0  |  Copyright (C) 2024 sebasmobil
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /* ── TEMA DEĞİŞKENLERİ ─────────────────────────────────── */
 :root {
   --bg-a:#B3E5FC; --bg-b:#E8F5E9; --bg-c:#FFF9C4;
@@ -337,8 +380,51 @@ body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
 .stat-pill.time.danger .icon{animation:pulse .5s ease infinite alternate;}
 @keyframes pulse{from{transform:scale(1);}to{transform:scale(1.4);}}
 </style>
+<!-- LİSANS: GNU Affero General Public License v3.0 (AGPL-3.0) -->
+<!-- Copyright (C) 2024 sebasmobil. All rights reserved. -->
+<!-- Bu yazılım AGPL v3.0 lisansı altında dağıtılmaktadır. -->
+<!-- https://www.gnu.org/licenses/agpl-3.0.html -->
+<style>
+.top-bar {
+  width: 100%;
+  background: rgba(21, 101, 192, 0.10);
+  border-bottom: 1px solid rgba(21, 101, 192, 0.18);
+  color: var(--txt2);
+  font-family: 'Nunito', sans-serif;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .3px;
+  padding: 5px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: background var(--tr), border-color var(--tr), color var(--tr);
+}
+body.dark .top-bar {
+  background: rgba(144, 202, 249, 0.07);
+  border-bottom: 1px solid rgba(144, 202, 249, 0.15);
+  color: var(--txt2);
+}
+.top-bar .tb-left { opacity: .9; color: var(--h1); transition: color var(--tr); }
+.top-bar .tb-mid  { opacity: .65; font-size: .68rem; }
+.top-bar a.tb-right {
+  color: var(--txt2);
+  text-decoration: none;
+  opacity: .8;
+  transition: opacity .2s, color var(--tr);
+  cursor: pointer;
+}
+.top-bar a.tb-right:hover { opacity: 1; }
+</style>
 </head>
 <body>
+
+<div class="top-bar">
+  <span class="tb-left">⚡ Pro 2.0</span>
+  <span class="tb-mid">© sebasmobil</span>
+  <a class="tb-right" href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">AGPL v3.0</a>
+</div>
 
 <div class="cloud">☁️</div>
 <div class="cloud">🌤️</div>
@@ -539,6 +625,12 @@ body.dark .ls-hard   .ls-badge{background:#2E0D4A;color:#CE93D8;}
 </div>
 
 <script>
+/*
+ * Kelime Avcısı — Pro 2.0
+ * Copyright (C) 2024  sebasmobil
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ */
 /* ═══════════════════════════════════════════════════════
    TÜRKÇE KARAKTER — büyük harf dönüşümü
    JS'de "i".toUpperCase() → "I" döner, oysa Türkçede "İ" olmalı.
