@@ -174,6 +174,70 @@ canvas{display:block;}
 #right{grid-column:3;grid-row:2;}
 #down {grid-column:2;grid-row:3;}
 
+/* ── SETTINGS BUTTON ── */
+#settingsbtn{
+  font-size:20px;padding:0;width:46px;height:46px;
+  border-radius:12px;cursor:pointer;
+  border:1px solid #444;background:#222;
+  -webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+#settingsbtn:active{opacity:0.7;}
+
+/* ── SETTINGS MODAL ── */
+#settingsmodal{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.80);align-items:flex-end;justify-content:center;z-index:100;
+}
+#settingsmodal.show{display:flex;}
+#settingsbox{
+  width:100%;max-width:440px;
+  border-radius:20px 20px 0 0;
+  padding:20px 16px 32px;
+  border-top:1px solid #333;
+  background:#1a1a1a;
+}
+#settingstitle{
+  font-size:15px;font-weight:700;color:#eee;
+  text-align:center;margin-bottom:16px;letter-spacing:0.5px;
+}
+.sgroup{margin-bottom:14px;}
+.sgrouplabel{
+  font-size:9px;letter-spacing:1.5px;color:#555;
+  text-transform:uppercase;margin-bottom:6px;padding-left:2px;
+}
+#settingsbox select{
+  width:100%;font-size:13px;padding:8px 10px;
+  border-radius:10px;cursor:pointer;outline:none;
+  border:1px solid #444;background:#222;color:#aaa;
+}
+#closesettings{
+  width:100%;padding:12px;border-radius:12px;
+  background:#3fb950;border:none;color:#111;
+  font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;
+}
+#closesettings:active{opacity:0.8;}
+
+/* ── SKIN PICKER ── */
+.skinrow-wrap{
+  display:flex;align-items:center;gap:8px;
+  overflow-x:auto;padding:4px 2px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.skinrow-wrap::-webkit-scrollbar{display:none;}
+.skinbtn{
+  width:42px;height:42px;border-radius:12px;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+  font-size:18px;
+}
+.skinbtn.active{border-color:#111;box-shadow:0 0 0 2px #111, 0 0 0 4px rgba(255,255,255,0.6);transform:scale(1.12);}
+.skinbtn:active{opacity:0.7;}
+
 /* ── MODAL ── */
 #modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.78);align-items:center;justify-content:center;z-index:99;}
 #modal.show{display:flex;}
@@ -208,11 +272,13 @@ canvas{display:block;}
     <option value="nokia">📱 Yeşil</option>
   </select>
   <button id="sndbtn">🔊 Ses</button>
+  <button id="settingsbtn" title="Ayarlar">🐍</button>
 </div>
 
 <div id="speedrow">
   <span id="speedlbl">HIZ</span>
 </div>
+
 
 <div id="sborder">
   <div id="sscreen">
@@ -246,8 +312,87 @@ canvas{display:block;}
   </div>
 </div>
 
+<!-- SETTINGS PANEL -->
+<div id="settingsmodal">
+  <div id="settingsbox">
+    <div id="settingstitle">⚙️ Ayarlar</div>
+
+    <div class="sgroup">
+      <div class="sgrouplabel">YILAN</div>
+      <div id="snakerow" class="skinrow-wrap"></div>
+    </div>
+    <div class="sgroup">
+      <div class="sgrouplabel">YEM</div>
+      <div id="foodrow" class="skinrow-wrap"></div>
+    </div>
+    <button id="closesettings">Kapat</button>
+  </div>
+</div>
+
 <script>
 // ── THEMES ───────────────────────────────────────────────────
+// ── SKINS ────────────────────────────────────────────────────
+var SNAKE_SKINS = [
+  { id:'classic', label:'🟢', snakeColor:'#3fb950', headColor:'#56d364', shape:'round'  },
+  { id:'ocean',   label:'🔵', snakeColor:'#58a6ff', headColor:'#79c0ff', shape:'round'  },
+  { id:'fire',    label:'🔴', snakeColor:'#e05252', headColor:'#ff7b72', shape:'round'  },
+  { id:'gold',    label:'🟡', snakeColor:'#d4a017', headColor:'#f0c040', shape:'round'  },
+  { id:'purple',  label:'🟣', snakeColor:'#8b5cf6', headColor:'#a78bfa', shape:'round'  },
+  { id:'neon',    label:'⚡', snakeColor:'#00ff88', headColor:'#66ffbb', shape:'sharp'  },
+  { id:'retro',   label:'👾', snakeColor:'#a8ff00', headColor:'#ccff55', shape:'sharp'  },
+  { id:'ice',     label:'🧊', snakeColor:'#a0d8ef', headColor:'#d0f0ff', shape:'round'  },
+  { id:'dark',    label:'🖤', snakeColor:'#666',    headColor:'#999',    shape:'round'  },
+  { id:'pink',    label:'🩷', snakeColor:'#ff6b9d', headColor:'#ffaacc', shape:'round'  },
+];
+var FOOD_SKINS = [
+  { id:'apple',   label:'🍎', color:'#f85149', shape:'apple'  },
+  { id:'cherry',  label:'🍒', color:'#cc2255', shape:'apple'  },
+  { id:'lemon',   label:'🍋', color:'#f0c040', shape:'apple'  },
+  { id:'grape',   label:'🍇', color:'#9b59b6', shape:'circle' },
+  { id:'orange',  label:'🍊', color:'#ff8c00', shape:'circle' },
+  { id:'star',    label:'⭐', color:'#ffd700', shape:'star'   },
+  { id:'diamond', label:'💎', color:'#00cfff', shape:'diamond'},
+  { id:'neon',    label:'🔮', color:'#ff00ff', shape:'star'   },
+  { id:'white',   label:'⬜', color:'#eeeeee', shape:'square' },
+  { id:'fire',    label:'🔥', color:'#ff6600', shape:'apple'  },
+];
+var curSnakeSkin = SNAKE_SKINS[0];
+var curFoodSkin  = FOOD_SKINS[0];
+
+function buildPicker(containerId, items, getCur, setCur, colorKey) {
+  var row = document.getElementById(containerId);
+  if (!row) return;
+  row.innerHTML = '';
+  for (var i = 0; i < items.length; i++) {
+    (function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'skinbtn' + (item.id === getCur().id ? ' active' : '');
+      btn.title = item.id;
+      btn.innerHTML = item.label;
+      btn.style.background = item[colorKey];
+      btn.onclick = function() {
+        setCur(item);
+        var btns = row.querySelectorAll('.skinbtn');
+        for (var j = 0; j < btns.length; j++) btns[j].className = 'skinbtn';
+        btn.className = 'skinbtn active';
+        if (state === 'playing') draw();
+      };
+      row.appendChild(btn);
+    })(items[i]);
+  }
+}
+
+function buildSkinPicker() {
+  buildPicker('snakerow', SNAKE_SKINS,
+    function(){ return curSnakeSkin; },
+    function(s){ curSnakeSkin = s; },
+    'snakeColor');
+  buildPicker('foodrow', FOOD_SKINS,
+    function(){ return curFoodSkin; },
+    function(s){ curFoodSkin = s; },
+    'color');
+}
+
 var THEMES = {
   dark:{
     body:'#111',text:'#eee',textDim:'#aaa',
@@ -289,6 +434,15 @@ function applyTheme(name) {
   thsel.style.background = t.selBg; thsel.style.borderColor = t.selBorder; thsel.style.color = t.selText;
   var sndbtn = document.getElementById('sndbtn');
   sndbtn.style.background = t.btnBg; sndbtn.style.borderColor = t.btnBorder; sndbtn.style.color = t.btnText;
+  var sbtn = document.getElementById('settingsbtn');
+  sbtn.style.background = t.btnBg; sbtn.style.borderColor = t.btnBorder;
+  var sbox = document.getElementById('settingsbox');
+  sbox.style.background = t.mBg; sbox.style.borderColor = t.mBorder;
+  document.getElementById('settingstitle').style.color = t.mText;
+  var sgls = document.querySelectorAll('.sgrouplabel');
+  for (var i=0;i<sgls.length;i++) sgls[i].style.color = t.textDim;
+  var ssel = document.getElementById('thsel');
+  ssel.style.background = t.selBg; ssel.style.borderColor = t.selBorder; ssel.style.color = t.selText;
   document.getElementById('sscreen').style.borderColor = t.canBorder;
   document.getElementById('sborder').style.background = 'transparent';
   var dps = document.querySelectorAll('.dp');
@@ -338,8 +492,8 @@ var W = COLS*CELL, H = ROWS*CELL;
 cv.width = W; cv.height = H;
 
 // ── SPEED LEVELS ─────────────────────────────────────────────
-var LEVEL_SPEEDS    = [220,195,170,148,128,110,93,78,65,54];
-var LEVEL_THRESHOLDS= [0,3,7,12,18,25,33,42,52,63];
+var LEVEL_SPEEDS    = [420,370,325,285,248,215,185,158,135,115];
+var LEVEL_THRESHOLDS= [0,6,14,24,36,50,66,84,104,126];
 var level = 1;
 
 var sdRow = document.getElementById('speedrow');
@@ -453,16 +607,32 @@ function gameOver(){
   dieS();upBtn();show('OYUN BİTTİ','Tekrar için yeşil tuşa bas');
 }
 
+function drawStar(cx,cy,r){
+  ctx.beginPath();
+  for(var i=0;i<5;i++){
+    var a1=Math.PI/2+i*2*Math.PI/5;
+    var a2=a1+Math.PI/5;
+    var x1=cx+r*Math.cos(a1), y1=cy-r*Math.sin(a1);
+    var x2=cx+(r*0.45)*Math.cos(a2), y2=cy-(r*0.45)*Math.sin(a2);
+    if(i===0) ctx.moveTo(x1,y1); else ctx.lineTo(x1,y1);
+    ctx.lineTo(x2,y2);
+  }
+  ctx.closePath();ctx.fill();
+}
+
 function draw(){
   var i,s,px,py,sz,e;
   ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);
   ctx.strokeStyle=t.gr;ctx.lineWidth=0.5;
   for(i=0;i<=W;i+=CELL){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke();}
   for(i=0;i<=H;i+=CELL){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i);ctx.stroke();}
+  var cornerR = curSnakeSkin.shape === 'sharp' ? 2 : Math.floor(CELL*0.3);
+  var bodyR   = curSnakeSkin.shape === 'sharp' ? 1 : Math.floor(CELL*0.2);
   for(i=0;i<snake.length;i++){
-    s=snake[i];ctx.fillStyle=(i===0)?t.sh:t.sn;
+    s=snake[i];
+    ctx.fillStyle=(i===0)?curSnakeSkin.headColor:curSnakeSkin.snakeColor;
     px=s.x*CELL+1;py=s.y*CELL+1;sz=CELL-2;
-    rr(px,py,sz,sz,(i===0)?Math.floor(CELL*0.3):Math.floor(CELL*0.2));ctx.fill();
+    rr(px,py,sz,sz,(i===0)?cornerR:bodyR);ctx.fill();
     if(i===0){
       ctx.fillStyle=t.ey;
       e=eyePos(px,py,sz);
@@ -470,10 +640,21 @@ function draw(){
       ctx.beginPath();ctx.arc(e[2],e[3],Math.max(1,CELL*0.08),0,Math.PI*2);ctx.fill();
     }
   }
-  ctx.fillStyle=t.fd;
+  ctx.fillStyle = curFoodSkin.color;
   var fx=food.x*CELL+CELL/2,fy=food.y*CELL+CELL/2,fr=CELL/2-2;
-  ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.moveTo(fx,fy-fr);ctx.lineTo(fx-3,fy-fr-4);ctx.lineTo(fx+3,fy-fr-4);ctx.closePath();ctx.fill();
+  if(curFoodSkin.shape==='square'){
+    rr(food.x*CELL+2,food.y*CELL+2,CELL-4,CELL-4,2);ctx.fill();
+  } else if(curFoodSkin.shape==='star'){
+    drawStar(fx,fy,fr);
+  } else if(curFoodSkin.shape==='diamond'){
+    ctx.beginPath();ctx.moveTo(fx,fy-fr);ctx.lineTo(fx+fr,fy);ctx.lineTo(fx,fy+fr);ctx.lineTo(fx-fr,fy);ctx.closePath();ctx.fill();
+  } else if(curFoodSkin.shape==='circle'){
+    ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.fill();
+  } else {
+    ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle = curFoodSkin.color;
+    ctx.beginPath();ctx.moveTo(fx,fy-fr);ctx.lineTo(fx-3,fy-fr-5);ctx.lineTo(fx+3,fy-fr-5);ctx.closePath();ctx.fill();
+  }
 }
 
 function eyePos(px,py,sz){
@@ -529,7 +710,7 @@ function hideModal(){document.getElementById('modal').className='';}
 document.getElementById('startbtn').onclick=handleStart;
 document.getElementById('mno').onclick=function(){hideModal();resumeGame();};
 document.getElementById('myes').onclick=function(){hideModal();startGame();};
-document.getElementById('thsel').onchange=function(){applyTheme(this.value);};
+
 document.getElementById('sndbtn').onclick=function(){
   soundOn=!soundOn;this.innerHTML=soundOn?'🔊 Ses':'🔇 Ses';
 };
@@ -579,10 +760,22 @@ cvEl.addEventListener('touchend',function(e){
   e.preventDefault();
 },{passive:false});
 
+// ── SETTINGS ─────────────────────────────────────────────────
+document.getElementById('settingsbtn').onclick = function() {
+  // pause if playing
+  if (state === 'playing') pauseGame();
+  document.getElementById('settingsmodal').className = 'show';
+};
+document.getElementById('closesettings').onclick = function() {
+  document.getElementById('settingsmodal').className = '';
+};
+document.getElementById('thsel').onchange = function() { applyTheme(this.value); };
+
 // ── BOOT ─────────────────────────────────────────────────────
 // Wait for layout then size canvas
 window.addEventListener('load', function() {
   sizeCanvas();
+  buildSkinPicker();
   applyTheme('dark');
   updateDots();
   ctx.fillStyle=t.bg;ctx.fillRect(0,0,W,H);
