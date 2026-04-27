@@ -15,9 +15,10 @@
 html,body{
   width:100%;height:100%;overflow:hidden;
   font-family:Arial,sans-serif;
-  background:#111;color:#eee;
+  background:#0a0a0f;color:#eee;
   display:flex;flex-direction:column;align-items:stretch;
   touch-action:manipulation;
+  transition: background 0.3s;
 }
 
 /* INFO BAR */
@@ -87,11 +88,13 @@ html,body{
 /* CANVAS */
 #sborder{
   flex:1 1 auto;min-height:0;margin:0 10px;
-  border-radius:6px;padding:0;border:2px solid #333;
+  border-radius:12px;padding:4px;border:2px solid #333;
   background:#0d1117;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
-#sscreen{position:relative;flex-shrink:0;}
+#sscreen{position:relative;flex-shrink:0;border-radius:4px;overflow:hidden;}
 canvas{display:block;}
 #overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
@@ -265,34 +268,40 @@ canvas{display:block;}
 // ── THEMES ───────────────────────────────────────────────────
 var THEMES = {
   dark:{
-    body:'#111',text:'#eee',textDim:'#555',
-    btnBg:'#2a2a2a',btnBorder:'#555',btnText:'#ddd',
-    selBg:'#222',selBorder:'#444',selText:'#aaa',
-    lvlBorder:'#3a3a3a',canBorder:'#333',
-    mBg:'#1e1e1e',mBorder:'#444',mText:'#eee',
-    sBg:'#1a1a1a',sTopBorder:'#333',sLbl:'#555',
-    dotOn:'#3fb950',dotOff:'#222',dotOffB:'#333',
-    bg:'#0d1117',gr:'#161b22',sn:'#3fb950',sh:'#56d364',ey:'#0d1117'
+    body:'#0a0a0f',text:'#eee',textDim:'#555',
+    btnBg:'#1a1a24',btnBorder:'#2e2e42',btnText:'#ddd',
+    selBg:'#1a1a24',selBorder:'#2e2e42',selText:'#aaa',
+    lvlBorder:'#2e2e42',canBorder:'#3fb95066',
+    canGlow:'0 0 0 1px #3fb95033, 0 0 20px #3fb95022, 0 0 40px #3fb95011',
+    canBg:'#0d1117',
+    mBg:'#12121a',mBorder:'#2e2e42',mText:'#eee',
+    sBg:'#12121a',sTopBorder:'#2e2e42',sLbl:'#555',
+    dotOn:'#3fb950',dotOff:'#1a1a24',dotOffB:'#2e2e42',
+    bg:'#0d1117',gr:'#12181f',sn:'#3fb950',sh:'#56d364',ey:'#0d1117'
   },
   light:{
-    body:'#e8e8e3',text:'#111',textDim:'#888',
-    btnBg:'#d5d5d0',btnBorder:'#bbb',btnText:'#222',
-    selBg:'#e8e8e3',selBorder:'#ccc',selText:'#333',
-    lvlBorder:'#bbb',canBorder:'#bbb',
-    mBg:'#f0f0eb',mBorder:'#ccc',mText:'#111',
-    sBg:'#f0f0eb',sTopBorder:'#ccc',sLbl:'#888',
-    dotOn:'#2d8a2d',dotOff:'#ccc',dotOffB:'#bbb',
-    bg:'#f0f0eb',gr:'#ddddd8',sn:'#2d8a2d',sh:'#38b038',ey:'#f0f0eb'
+    body:'#c8cfc2',text:'#111',textDim:'#777',
+    btnBg:'#dde3d8',btnBorder:'#b0b8aa',btnText:'#222',
+    selBg:'#dde3d8',selBorder:'#b0b8aa',selText:'#333',
+    lvlBorder:'#b0b8aa',canBorder:'#2d8a2d99',
+    canGlow:'0 0 0 1px #2d8a2d44, 0 0 20px #2d8a2d22, 0 0 40px #2d8a2d11',
+    canBg:'#f5f7ef',
+    mBg:'#eef2e8',mBorder:'#b0b8aa',mText:'#111',
+    sBg:'#eef2e8',sTopBorder:'#b0b8aa',sLbl:'#777',
+    dotOn:'#2d8a2d',dotOff:'#c5ccc0',dotOffB:'#b0b8aa',
+    bg:'#f5f7ef',gr:'#e8ece0',sn:'#2d8a2d',sh:'#38b038',ey:'#f5f7ef'
   },
   nokia:{
-    body:'#6a7a55',text:'#0a1a00',textDim:'#3a4a20',
-    btnBg:'#7a8a65',btnBorder:'#5a6a45',btnText:'#0a1a00',
-    selBg:'#7a8a65',selBorder:'#5a6a45',selText:'#0a1a00',
-    lvlBorder:'#5a6a45',canBorder:'#5a6a45',
-    mBg:'#8a9a75',mBorder:'#5a6a45',mText:'#0a1a00',
-    sBg:'#8a9a75',sTopBorder:'#5a6a45',sLbl:'#3a4a20',
-    dotOn:'#1a2a0a',dotOff:'#7a8a65',dotOffB:'#5a6a45',
-    bg:'#9dab7a',gr:'#8fa06a',sn:'#1a2a0a',sh:'#2a3a14',ey:'#9dab7a'
+    body:'#4a5535',text:'#c8d8a0',textDim:'#6a7a45',
+    btnBg:'#5a6540',btnBorder:'#3a4a25',btnText:'#c8d8a0',
+    selBg:'#5a6540',selBorder:'#3a4a25',selText:'#c8d8a0',
+    lvlBorder:'#3a4a25',canBorder:'#a8d82066',
+    canGlow:'0 0 0 1px #a8d82033, 0 0 20px #a8d82033, 0 0 40px #a8d82011',
+    canBg:'#1a2408',
+    mBg:'#4a5535',mBorder:'#3a4a25',mText:'#c8d8a0',
+    sBg:'#4a5535',sTopBorder:'#3a4a25',sLbl:'#6a7a45',
+    dotOn:'#a8d820',dotOff:'#3a4a25',dotOffB:'#2a3a15',
+    bg:'#1a2408',gr:'#222e0a',sn:'#a8d820',sh:'#c8f040',ey:'#1a2408'
   }
 };
 var t = THEMES.dark;
@@ -312,7 +321,8 @@ function applyTheme(name) {
   var sbtn = document.getElementById('settingsbtn');
   sbtn.style.background = t.btnBg; sbtn.style.borderColor = t.btnBorder;
   document.getElementById('sborder').style.borderColor = t.canBorder;
-  document.getElementById('sborder').style.background = t.bg;
+  document.getElementById('sborder').style.background = t.canBg || t.bg;
+  document.getElementById('sborder').style.boxShadow = t.canGlow || '';
   document.getElementById('sscreen').style.borderColor = t.canBorder;
   var dps = document.querySelectorAll('.dp');
   for (var i = 0; i < dps.length; i++) {
@@ -751,6 +761,9 @@ window.addEventListener('load', function() {
   updateDots();
   ctx.fillStyle = t.bg; ctx.fillRect(0,0,W,H);
   show('SNAKE', 'Yeşil tuşa bas');
+  // Ensure sborder uses canBg not body bg on init
+  document.getElementById('sborder').style.background = t.canBg || t.bg;
+  document.getElementById('sborder').style.boxShadow = t.canGlow || '';
 });
 </script>
 </body>
