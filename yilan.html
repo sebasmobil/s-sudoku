@@ -91,7 +91,7 @@ html,body{
   background:#0d1117;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
 }
-#sscreen{position:relative;flex-shrink:0;}
+#sscreen{position:relative;flex-shrink:0;outline:2px solid rgba(0,0,0,0.7);outline-offset:0px;}
 canvas{display:block;}
 #overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
@@ -106,6 +106,15 @@ canvas{display:block;}
   flex:0 0 auto;display:flex;align-items:center;justify-content:center;
   padding:5px 10px 5px;gap:10px;
 }
+.cside{display:flex;flex-direction:column;align-items:center;gap:22px;flex-shrink:0;justify-content:flex-end;padding-bottom:6px;}
+#turboL,#turboR{
+  width:38px;height:38px;border-radius:10px;font-size:16px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+  border:1.5px solid #f0a030;background:#333;color:#f0a030;flex-shrink:0;
+  touch-action:none;transition:background 0.1s;
+}
+#turboL.boosting,#turboR.boosting{background:#f0a030;color:#111;}
 #ccw{
   width:50px;height:50px;border-radius:12px;font-size:22px;font-weight:700;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -218,14 +227,20 @@ canvas{display:block;}
 </div>
 
 <div id="controls">
-  <button id="ccw">*</button>
+  <div class="cside">
+    <button id="turboL">⚡</button>
+    <button id="ccw">*</button>
+  </div>
   <div id="dpad">
     <button class="dp" id="up">&#9650;</button>
     <button class="dp" id="left">&#9664;</button>
     <button class="dp" id="right">&#9654;</button>
     <button class="dp" id="down">&#9660;</button>
   </div>
-  <button id="cw">#</button>
+  <div class="cside">
+    <button id="turboR">⚡</button>
+    <button id="cw">#</button>
+  </div>
 </div>
 
 <div id="settingsmodal">
@@ -268,21 +283,23 @@ var THEMES = {
     body:'#111',text:'#eee',textDim:'#555',
     btnBg:'#2a2a2a',btnBorder:'#555',btnText:'#ddd',
     selBg:'#222',selBorder:'#444',selText:'#aaa',
-    lvlBorder:'#3a3a3a',canBorder:'#333',
+    lvlBorder:'#3a3a3a',canBorder:'#3fb950',
     mBg:'#1e1e1e',mBorder:'#444',mText:'#eee',
     sBg:'#1a1a1a',sTopBorder:'#333',sLbl:'#555',
     dotOn:'#3fb950',dotOff:'#222',dotOffB:'#333',
-    bg:'#0d1117',gr:'#161b22',sn:'#3fb950',sh:'#56d364',ey:'#0d1117'
+    bg:'#0d1117',gr:'#161b22',sn:'#3fb950',sh:'#56d364',ey:'#0d1117',
+    wall:'#3fb950'
   },
   light:{
     body:'#e8e8e3',text:'#111',textDim:'#888',
     btnBg:'#d5d5d0',btnBorder:'#bbb',btnText:'#222',
     selBg:'#e8e8e3',selBorder:'#ccc',selText:'#333',
-    lvlBorder:'#bbb',canBorder:'#4a7a4a',
+    lvlBorder:'#bbb',canBorder:'#222222',
     mBg:'#f0f0eb',mBorder:'#ccc',mText:'#111',
     sBg:'#f0f0eb',sTopBorder:'#ccc',sLbl:'#888',
     dotOn:'#2d8a2d',dotOff:'#ccc',dotOffB:'#bbb',
-    bg:'#ffffff',gr:'#c8c8c0',sn:'#2d8a2d',sh:'#38b038',ey:'#ffffff'
+    bg:'#ffffff',gr:'#c8c8c0',sn:'#2d8a2d',sh:'#38b038',ey:'#ffffff',
+    wall:'#222222'
   },
   nokia:{
     body:'#6a7a55',text:'#0a1a00',textDim:'#3a4a20',
@@ -292,7 +309,8 @@ var THEMES = {
     mBg:'#8a9a75',mBorder:'#5a6a45',mText:'#0a1a00',
     sBg:'#8a9a75',sTopBorder:'#5a6a45',sLbl:'#3a4a20',
     dotOn:'#1a2a0a',dotOff:'#7a8a65',dotOffB:'#5a6a45',
-    bg:'#b0bf8a',gr:'#9aae72',sn:'#1a2a0a',sh:'#2a3a14',ey:'#b0bf8a'
+    bg:'#b0bf8a',gr:'#9aae72',sn:'#1a2a0a',sh:'#2a3a14',ey:'#b0bf8a',
+    wall:'#1a2a0a'
   }
 };
 var t = THEMES.dark;
@@ -589,6 +607,9 @@ function step() {
 
 function gameOver() {
   state = 'dead';
+  turboActive = false;
+  document.getElementById('turboL').classList.remove('boosting');
+  document.getElementById('turboR').classList.remove('boosting');
   if (loop) { clearInterval(loop); loop = null; }
   dieS(); upBtn();
   show('OYUN BİTTİ', 'Tekrar için yeşil tuşa bas');
@@ -630,6 +651,11 @@ function draw() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(curFood.emoji, fx, fy);
+
+  // Duvar kenarlığı - her temada görünen sabit çizgi
+  ctx.strokeStyle = t.wall;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, W-1, H-1);
 }
 
 function hide() { document.getElementById('overlay').style.display = 'none'; }
@@ -642,6 +668,7 @@ function show(title, sub) {
   document.getElementById('osub').style.color = t.text;
   if (snake && snake.length > 0) draw();
   ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = t.wall; ctx.lineWidth = 1; ctx.strokeRect(0.5, 0.5, W-1, H-1);
 }
 function redrawState() {
   if      (state === 'idle')    show('SNAKE', 'Yeşil tuşa bas');
@@ -692,7 +719,40 @@ function toggleWall() {
   }
 }
 
-// ── EVENTS ────────────────────────────────────────────────────
+// ── TURBO ─────────────────────────────────────────────────────
+var turboActive = false;
+function turboStart() {
+  if (state !== 'playing' || turboActive) return;
+  turboActive = true;
+  document.getElementById('turboL').classList.add('boosting');
+  document.getElementById('turboR').classList.add('boosting');
+  if (loop) { clearInterval(loop); loop = null; }
+  var turboSpeed = Math.max(30, Math.round(LEVEL_SPEEDS[level-1] * 0.5));
+  loop = setInterval(step, turboSpeed);
+}
+function turboStop() {
+  if (!turboActive) return;
+  turboActive = false;
+  document.getElementById('turboL').classList.remove('boosting');
+  document.getElementById('turboR').classList.remove('boosting');
+  if (state === 'playing') {
+    if (loop) { clearInterval(loop); loop = null; }
+    loop = setInterval(step, LEVEL_SPEEDS[level-1]);
+  }
+}
+
+
+// Turbo butonları
+['turboL','turboR'].forEach(function(id) {
+  var btn = document.getElementById(id);
+  btn.addEventListener('mousedown',  turboStart);
+  btn.addEventListener('touchstart', function(e){ e.preventDefault(); turboStart(); }, {passive:false});
+  btn.addEventListener('mouseup',    turboStop);
+  btn.addEventListener('mouseleave', turboStop);
+  btn.addEventListener('touchend',   function(e){ e.preventDefault(); turboStop(); }, {passive:false});
+  btn.addEventListener('touchcancel',function(e){ e.preventDefault(); turboStop(); }, {passive:false});
+});
+
 document.getElementById('startbtn').onclick = function() {
   initAC(); // iOS: kullanıcı etkileşiminde AC başlat
   handleStart();
