@@ -88,13 +88,13 @@ html,body{
 /* CANVAS */
 #sborder{
   flex:1 1 auto;min-height:0;margin:0 10px;
-  border-radius:12px;padding:4px;border:2px solid #333;
-  background:#0d1117;overflow:hidden;
+  border-radius:12px;padding:0;border:3px solid #3fb950;
+  overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.05);
-  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  box-shadow:0 0 16px #3fb95044, 0 0 4px #3fb95066;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
-#sscreen{position:relative;flex-shrink:0;border-radius:4px;overflow:hidden;}
+#sscreen{position:relative;flex-shrink:0;}
 canvas{display:block;}
 #overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
@@ -271,8 +271,8 @@ var THEMES = {
     body:'#0a0a0f',text:'#eee',textDim:'#555',
     btnBg:'#1a1a24',btnBorder:'#2e2e42',btnText:'#ddd',
     selBg:'#1a1a24',selBorder:'#2e2e42',selText:'#aaa',
-    lvlBorder:'#2e2e42',canBorder:'#3fb95066',
-    canGlow:'0 0 0 1px #3fb95033, 0 0 20px #3fb95022, 0 0 40px #3fb95011',
+    lvlBorder:'#2e2e42',canBorder:'#3fb950',
+    canGlow:'0 0 20px #3fb95055, 0 0 6px #3fb95088',
     canBg:'#0d1117',
     mBg:'#12121a',mBorder:'#2e2e42',mText:'#eee',
     sBg:'#12121a',sTopBorder:'#2e2e42',sLbl:'#555',
@@ -280,28 +280,28 @@ var THEMES = {
     bg:'#0d1117',gr:'#12181f',sn:'#3fb950',sh:'#56d364',ey:'#0d1117'
   },
   light:{
-    body:'#c8cfc2',text:'#111',textDim:'#777',
-    btnBg:'#dde3d8',btnBorder:'#b0b8aa',btnText:'#222',
-    selBg:'#dde3d8',selBorder:'#b0b8aa',selText:'#333',
-    lvlBorder:'#b0b8aa',canBorder:'#2d8a2d99',
-    canGlow:'0 0 0 1px #2d8a2d44, 0 0 20px #2d8a2d22, 0 0 40px #2d8a2d11',
-    canBg:'#f5f7ef',
-    mBg:'#eef2e8',mBorder:'#b0b8aa',mText:'#111',
-    sBg:'#eef2e8',sTopBorder:'#b0b8aa',sLbl:'#777',
-    dotOn:'#2d8a2d',dotOff:'#c5ccc0',dotOffB:'#b0b8aa',
-    bg:'#f5f7ef',gr:'#e8ece0',sn:'#2d8a2d',sh:'#38b038',ey:'#f5f7ef'
+    body:'#9aab8a',text:'#111',textDim:'#5a6a4a',
+    btnBg:'#b8c8a8',btnBorder:'#7a9060',btnText:'#1a2a10',
+    selBg:'#b8c8a8',selBorder:'#7a9060',selText:'#1a2a10',
+    lvlBorder:'#7a9060',canBorder:'#2d7a20',
+    canGlow:'0 0 20px #2d7a2066, 0 0 6px #2d7a2099',
+    canBg:'#f0f8e8',
+    mBg:'#c8d8b8',mBorder:'#7a9060',mText:'#111',
+    sBg:'#c8d8b8',sTopBorder:'#7a9060',sLbl:'#5a6a4a',
+    dotOn:'#2d7a20',dotOff:'#8a9a7a',dotOffB:'#7a9060',
+    bg:'#f0f8e8',gr:'#e0ecd8',sn:'#2d8a2d',sh:'#38b038',ey:'#f0f8e8'
   },
   nokia:{
-    body:'#4a5535',text:'#c8d8a0',textDim:'#6a7a45',
-    btnBg:'#5a6540',btnBorder:'#3a4a25',btnText:'#c8d8a0',
-    selBg:'#5a6540',selBorder:'#3a4a25',selText:'#c8d8a0',
-    lvlBorder:'#3a4a25',canBorder:'#a8d82066',
-    canGlow:'0 0 0 1px #a8d82033, 0 0 20px #a8d82033, 0 0 40px #a8d82011',
-    canBg:'#1a2408',
-    mBg:'#4a5535',mBorder:'#3a4a25',mText:'#c8d8a0',
-    sBg:'#4a5535',sTopBorder:'#3a4a25',sLbl:'#6a7a45',
-    dotOn:'#a8d820',dotOff:'#3a4a25',dotOffB:'#2a3a15',
-    bg:'#1a2408',gr:'#222e0a',sn:'#a8d820',sh:'#c8f040',ey:'#1a2408'
+    body:'#2a3818',text:'#b8d870',textDim:'#5a7030',
+    btnBg:'#3a4a22',btnBorder:'#6a8030',btnText:'#b8d870',
+    selBg:'#3a4a22',selBorder:'#6a8030',selText:'#b8d870',
+    lvlBorder:'#6a8030',canBorder:'#a8d820',
+    canGlow:'0 0 20px #a8d82066, 0 0 6px #a8d82099',
+    canBg:'#0e1a04',
+    mBg:'#2a3818',mBorder:'#6a8030',mText:'#b8d870',
+    sBg:'#2a3818',sTopBorder:'#6a8030',sLbl:'#5a7030',
+    dotOn:'#a8d820',dotOff:'#2a3818',dotOffB:'#3a4a22',
+    bg:'#0e1a04',gr:'#1a2808',sn:'#a8d820',sh:'#c8f040',ey:'#0e1a04'
   }
 };
 var t = THEMES.dark;
@@ -320,9 +320,11 @@ function applyTheme(name) {
   sndbtn.style.background = t.btnBg; sndbtn.style.borderColor = t.btnBorder; sndbtn.style.color = t.btnText;
   var sbtn = document.getElementById('settingsbtn');
   sbtn.style.background = t.btnBg; sbtn.style.borderColor = t.btnBorder;
-  document.getElementById('sborder').style.borderColor = t.canBorder;
-  document.getElementById('sborder').style.background = t.canBg || t.bg;
-  document.getElementById('sborder').style.boxShadow = t.canGlow || '';
+  var sb = document.getElementById('sborder');
+  sb.style.borderColor = t.canBorder;
+  sb.style.boxShadow = t.canGlow || '';
+  // background is now on canvas bg only, sborder has no bg (overflow:hidden clips canvas)
+  document.getElementById('sscreen').style.background = t.bg;
   document.getElementById('sscreen').style.borderColor = t.canBorder;
   var dps = document.querySelectorAll('.dp');
   for (var i = 0; i < dps.length; i++) {
@@ -359,7 +361,8 @@ function sizeCanvas() {
   W = COLS * CELL; H = ROWS * CELL;
   cv.width = W; cv.height = H;
   var sc = document.getElementById('sscreen');
-  sc.style.width = W + 'px'; sc.style.height = H + 'px';
+  // sscreen fills sborder fully so no background gaps show
+  sc.style.width = aw + 'px'; sc.style.height = ah + 'px';
 }
 
 // ── LEVELS ───────────────────────────────────────────────────
