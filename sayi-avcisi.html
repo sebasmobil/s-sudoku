@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Sayı Avcısı – Tahmin Oyunu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,7 +41,7 @@
     --glow2: 0 0 30px rgba(224,0,106,0.2);
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
 
   body {
     font-family: 'Exo 2', sans-serif;
@@ -522,17 +522,16 @@
   /* ── TOP BAR ── */
   .top-bar {
     width: 100%; position: relative; z-index: 10;
-    background: linear-gradient(90deg, rgba(0,212,255,0.07) 0%, rgba(124,58,237,0.07) 50%, rgba(255,77,143,0.07) 100%);
-    border-bottom: 1px solid var(--border);
+    background: transparent;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
     padding: 5px 16px;
     display: flex; align-items: center; justify-content: center; gap: 10px;
     font-family: 'Orbitron', monospace; font-size: 0.58rem; letter-spacing: 1.5px;
     color: var(--text2);
-    backdrop-filter: blur(4px);
-    transition: background 0.4s, border-color 0.4s, color 0.4s;
+    transition: color 0.4s, border-color 0.4s;
   }
   .light-mode .top-bar {
-    background: linear-gradient(90deg, rgba(0,102,204,0.06) 0%, rgba(109,40,217,0.06) 50%, rgba(224,0,106,0.06) 100%);
+    border-bottom-color: rgba(0,0,0,0.08);
   }
   .top-bar-sep { opacity: 0.35; }
   .top-bar-ver { color: var(--accent); font-weight: 700; }
@@ -678,8 +677,7 @@
       <div class="game-badge" id="diffBadge">ORTA</div>
       <div class="timer-display" id="timerDisp" style="display:none">⏱ <span id="timerCount">60</span>sn</div>
       <div style="display:flex;gap:8px">
-        <button class="new-game-btn" id="inGameNew">🔄 Yeni Oyun</button>
-        <button class="new-game-btn" id="inGameSetup">⚙️ Ayarlar</button>
+        <button class="new-game-btn" id="inGameSetup">🚀 Yeni Oyun</button>
       </div>
     </div>
 
@@ -763,6 +761,23 @@
       </table>
     </div>
     <button class="clear-btn" id="clearStats">🗑️ İstatistikleri Temizle</button>
+  </div>
+</div>
+
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmOverlay" style="display:none">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title" style="font-size:1.1rem">Oyunu İptal Et?</div>
+    <div class="modal-stats" style="margin-bottom:20px">
+      Mevcut oyun <strong>iptal edilecek</strong> ve ayarlar ekranına dönülecek.<br><br>
+      Deneme sayısı: <strong id="confirmAttempts">0</strong> &nbsp;|&nbsp; Gizli sayı: <strong id="confirmSecret">?</strong>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn primary" id="confirmYes">✓ Evet, İptal Et</button>
+      <button class="modal-btn secondary" id="confirmNo">← Oyuna Dön</button>
+    </div>
   </div>
 </div>
 
@@ -872,8 +887,24 @@ timerSlider.addEventListener('input', () => {
 
 // ─── Start game ───────────────────────────────────────────────────
 document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('inGameNew').addEventListener('click', startGame);
-document.getElementById('inGameSetup').addEventListener('click', () => showScreen('setupScreen'));
+document.getElementById('inGameSetup').addEventListener('click', () => {
+  if (state.active) {
+    document.getElementById('confirmAttempts').textContent = state.attempts;
+    document.getElementById('confirmSecret').textContent = '?';
+    document.getElementById('confirmOverlay').style.display = 'flex';
+  } else {
+    showScreen('setupScreen');
+  }
+});
+document.getElementById('confirmYes').addEventListener('click', () => {
+  document.getElementById('confirmOverlay').style.display = 'none';
+  clearInterval(state.timerID);
+  state.active = false;
+  showScreen('setupScreen');
+});
+document.getElementById('confirmNo').addEventListener('click', () => {
+  document.getElementById('confirmOverlay').style.display = 'none';
+});
 
 function startGame() {
   clearInterval(state.timerID);
